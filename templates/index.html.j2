@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TFT Set 18 Meta & Patch Telemetry | {{ report.versions.latest_label }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #09090b;
+      --bg-surface: #111114;
+      --bg-elevated: #18181c;
+      --border-subtle: #232329;
+      --border-hover: #34343d;
+      --accent-gold: #c8aa6e;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-base);
+      color: #e4e4e7;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    /* Authentic TFT unit cost borders */
+    .cost-1 { border-color: #71717a; }
+    .cost-2 { border-color: #16a34a; }
+    .cost-3 { border-color: #2563eb; }
+    .cost-4 { border-color: #9333ea; }
+    .cost-5, .cost-6 { border-color: #d97706; }
+
+    .surface-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+    }
+    .surface-card:hover {
+      border-color: var(--border-hover);
+    }
+    .header-blur {
+      background: rgba(9, 9, 11, 0.88);
+      backdrop-filter: blur(12px);
+    }
+    .ad-slot-container {
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(24, 24, 28, 0.45),
+        rgba(24, 24, 28, 0.45) 10px,
+        rgba(17, 17, 20, 0.45) 10px,
+        rgba(17, 17, 20, 0.45) 20px
+      );
+      border: 1px dashed #27272f;
+    }
+    html[data-lang="tr"] .lang-en { display: none !important; }
+    html[data-lang="en"] .lang-tr { display: none !important; }
+  </style>
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryLang = urlParams.get('lang');
+      const storedLang = localStorage.getItem('tft_lang');
+      const browserLang = (navigator.language || '').toLowerCase().startsWith('tr') ? 'tr' : 'en';
+      const initialLang = (queryLang === 'en' || queryLang === 'tr') ? queryLang : (storedLang || browserLang);
+      document.documentElement.setAttribute('data-lang', initialLang);
+    })();
+  </script>
+</head>
+<body class="min-h-screen selection:bg-zinc-200 selection:text-zinc-950">
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-[#1f1f24] sticky top-0 z-30 header-blur">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-9 h-9 rounded-md bg-[#16161a] border border-[#2c2c35] flex items-center justify-center font-bold text-sm text-[#c8aa6e] mono shadow-inner">
+          S18
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-zinc-100">
+              <span class="lang-tr">TFT Set 18 Meta & Yama Telemetrisi</span>
+              <span class="lang-en">TFT Set 18 Meta & Patch Telemetry</span>
+            </h1>
+            <span class="px-2 py-0.5 text-[11px] font-medium rounded bg-zinc-900 text-[#c8aa6e] border border-[#2c2c35] mono">
+              {{ report.versions.latest_label }}
+            </span>
+          </div>
+          <p class="text-xs text-zinc-500 mt-0.5">
+            <span class="lang-tr">Master+ Kümeleme Analizi ({{ "{:,}".format(report.live_meta.matches_analyzed) }} Maç) &bull; BiS Eşya Dizilimleri &bull; CDragon Yama Diff</span>
+            <span class="lang-en">Master+ Match Clustering ({{ "{:,}".format(report.live_meta.matches_analyzed) }} Matches) &bull; Carry BiS Builds &bull; CDragon Patch Diff</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Status Indicators & Language Switcher -->
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <div class="px-2.5 py-1 rounded bg-[#121216] border border-[#232329] text-zinc-400 flex items-center gap-1.5">
+          <span class="text-zinc-500">
+            <span class="lang-tr">Yama:</span>
+            <span class="lang-en">Patch:</span>
+          </span>
+          <span class="text-zinc-200 font-semibold mono">{{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }}</span>
+        </div>
+
+        <div class="px-2.5 py-1 rounded bg-[#121216] border border-[#232329] text-zinc-400 flex items-center gap-1.5">
+          <span class="text-zinc-500">PBE:</span>
+          <span class="text-amber-400/90 font-semibold mono">{{ report.versions.pbe_label }}</span>
+        </div>
+
+        <div class="px-2.5 py-1 rounded bg-[#121216] border border-[#232329] text-zinc-500 mono hidden sm:block">
+          {{ report.generated_at }}
+        </div>
+
+        <!-- TR / EN Language Switcher -->
+        <div class="inline-flex rounded bg-[#121216] p-0.5 border border-[#27272f] ml-1">
+          <button id="lang-btn-tr" onclick="setLanguage('tr')" class="px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors">
+            TR
+          </button>
+          <button id="lang-btn-en" onclick="setLanguage('en')" class="px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors">
+            EN
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- ================================================================= -->
+    <!-- AD SLOT 1: TOP LEADERBOARD (728x90 Desktop / 320x50 Mobile)        -->
+    <!-- Replace inner content with Google AdSense / NitroPay / Venatus tag -->
+    <!-- ================================================================= -->
+    <aside id="ad-slot-header-leaderboard" aria-label="Sponsored Placement" class="ad-slot-container rounded-lg p-3 flex flex-col items-center justify-center min-h-[90px] text-center">
+      <span class="text-[10px] uppercase tracking-widest text-zinc-600 font-semibold mb-1">
+        <span class="lang-tr">Sponsor / Reklam Alanı &bull; IAB Leaderboard (728&times;90)</span>
+        <span class="lang-en">Sponsored Placement &bull; IAB Leaderboard (728&times;90)</span>
+      </span>
+      <p class="text-xs text-zinc-500 max-w-lg">
+        <span class="lang-tr">Google AdSense, NitroPay veya Venatus reklam birimi için ayrılmış üst banner alanı.</span>
+        <span class="lang-en">Reserved header leaderboard container ready for Google AdSense, NitroPay, or Venatus ad tags.</span>
+      </p>
+    </aside>
+
+    <!-- Navigation Bar: Lifecycle Mode Switcher + Live API Telemetry -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#1f1f24] pb-4">
+      <div class="inline-flex rounded-lg bg-[#111114] p-1 border border-[#232329] self-start">
+        <button id="btn-tab-live" onclick="switchTab('live')"
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm">
+          <span class="lang-tr">Canlı Yama & Master+ Meta ({{ report.versions.latest_label }})</span>
+          <span class="lang-en">Live Patch & Master+ Meta ({{ report.versions.latest_label }})</span>
+        </button>
+        <button id="btn-tab-pbe" onclick="switchTab('pbe')"
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200">
+          <span class="lang-tr">PBE Erken Bakış ({{ report.versions.pbe_label }})</span>
+          <span class="lang-en">PBE Early Preview ({{ report.versions.pbe_label }})</span>
+        </button>
+      </div>
+
+      <div class="text-xs text-zinc-400 flex flex-wrap items-center gap-2.5">
+        <div class="flex items-center gap-2 px-2.5 py-1 rounded bg-[#111114] border border-[#232329]">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span class="lang-tr text-zinc-300">{{ report.live_meta.data_source }}</span>
+          <span class="lang-en text-zinc-300">{{ report.live_meta.data_source_en or report.live_meta.data_source }}</span>
+        </div>
+        {% if report.live_meta.riot_official_api and report.live_meta.riot_official_api.connected %}
+        <div class="px-2.5 py-1 rounded bg-[#111114] border border-[#27272f] text-zinc-300 flex items-center gap-1.5">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#c8aa6e]"></span>
+          <span class="lang-tr">{{ report.live_meta.riot_official_api.status_tr }}</span>
+          <span class="lang-en">{{ report.live_meta.riot_official_api.status_en }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 1: LIVE PATCH & MASTER+ META ANALYSIS                         -->
+    <!-- ================================================================= -->
+    <div id="panel-live" class="space-y-8">
+
+      <!-- Executive Briefing Card -->
+      <section class="surface-card rounded-xl p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-4 rounded-sm bg-[#c8aa6e]"></span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              <span class="lang-tr">{{ report.ai_summary.engine }}</span>
+              <span class="lang-en">{{ report.ai_summary.engine_en or report.ai_summary.engine }}</span>
+            </span>
+          </div>
+          <span class="text-xs text-zinc-500 mono">
+            <span class="lang-tr">{{ "{:,}".format(report.live_meta.matches_analyzed) }} Master+ Maç Örneklemi</span>
+            <span class="lang-en">{{ "{:,}".format(report.live_meta.matches_analyzed) }} Master+ Matches Sampled</span>
+          </span>
+        </div>
+        <h2 class="text-lg sm:text-xl font-bold text-zinc-100 mb-2">
+          <span class="lang-tr">{{ report.ai_summary.live_headline }}</span>
+          <span class="lang-en">{{ report.ai_summary.live_headline_en or report.ai_summary.live_headline }}</span>
+        </h2>
+        <p class="text-zinc-400 text-sm leading-relaxed">
+          <span class="lang-tr">{{ report.ai_summary.live_analysis }}</span>
+          <span class="lang-en">{{ report.ai_summary.live_analysis_en or report.ai_summary.live_analysis }}</span>
+        </p>
+      </section>
+
+      <!-- Key Telemetry Metrics -->
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div class="surface-card rounded-xl p-4">
+          <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <span class="lang-tr">İncelenen Master+ Maç</span>
+            <span class="lang-en">Master+ Matches</span>
+          </p>
+          <p class="text-2xl sm:text-3xl font-bold text-zinc-100 mt-1.5 mono">{{ "{:,}".format(report.live_meta.matches_analyzed) }}</p>
+          <p class="text-xs text-zinc-500 mt-1">Challenger, GM & Master ({{ report.versions.latest_label }})</p>
+        </div>
+
+        <div class="surface-card rounded-xl p-4">
+          <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <span class="lang-tr">Yamada Buff Alanlar</span>
+            <span class="lang-en">Patch Buffs</span>
+          </p>
+          <p class="text-2xl sm:text-3xl font-bold text-emerald-400 mt-1.5 mono">+{{ report.live_diff.summary_counts.buffed_champions + report.live_diff.summary_counts.buffed_traits }}</p>
+          <p class="text-xs text-zinc-500 mt-1">
+            <span class="lang-tr">{{ report.live_diff.summary_counts.buffed_champions }} Şampiyon, {{ report.live_diff.summary_counts.buffed_traits }} Özellik</span>
+            <span class="lang-en">{{ report.live_diff.summary_counts.buffed_champions }} Champions, {{ report.live_diff.summary_counts.buffed_traits }} Traits</span>
+          </p>
+        </div>
+
+        <div class="surface-card rounded-xl p-4">
+          <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <span class="lang-tr">Yamada Nerf Alanlar</span>
+            <span class="lang-en">Patch Nerfs</span>
+          </p>
+          <p class="text-2xl sm:text-3xl font-bold text-rose-400 mt-1.5 mono">-{{ report.live_diff.summary_counts.nerfed_champions + report.live_diff.summary_counts.nerfed_traits }}</p>
+          <p class="text-xs text-zinc-500 mt-1">
+            <span class="lang-tr">{{ report.live_diff.summary_counts.nerfed_champions }} Şampiyon, {{ report.live_diff.summary_counts.nerfed_traits }} Özellik</span>
+            <span class="lang-en">{{ report.live_diff.summary_counts.nerfed_champions }} Champions, {{ report.live_diff.summary_counts.nerfed_traits }} Traits</span>
+          </p>
+        </div>
+
+        <div class="surface-card rounded-xl p-4">
+          <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <span class="lang-tr">Yama Etkisi Pozitif Komplar</span>
+            <span class="lang-en">Positive Delta Comps</span>
+          </p>
+          <p class="text-2xl sm:text-3xl font-bold text-[#c8aa6e] mt-1.5 mono">{{ report.live_meta.rising_comps_count }} / {{ report.live_meta.total_comps }}</p>
+          <p class="text-xs text-zinc-500 mt-1">
+            <span class="lang-tr">Net yama skoru &gt; 0 olan desteler</span>
+            <span class="lang-en">Archetypes with net positive patch score</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- Master+ Meta Compositions & BiS Section -->
+      <section class="space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-zinc-100">
+              <span class="lang-tr">Set 18 Master+ Meta Kompozisyonları & En İyi Eşyalar (BiS)</span>
+              <span class="lang-en">Set 18 Master+ Meta Compositions & Carry Best-in-Slot (BiS) Items</span>
+            </h3>
+            <p class="text-xs text-zinc-500 mt-0.5">
+              <span class="lang-tr">Master+ ortalama bitiriş sırasına göre dizilmiştir; {{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }} CDragon yama etki puanları entegre edilmiştir.</span>
+              <span class="lang-en">Ordered by Master+ average placement and overlaid with {{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }} CDragon patch delta scores.</span>
+            </p>
+          </div>
+
+          <!-- Search + Tier Filter Controls -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="relative">
+              <input id="comp-search-input" type="text" oninput="applyCompFilters()"
+                placeholder="Search unit, trait, item..."
+                class="bg-[#111114] border border-[#232329] focus:border-zinc-500 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 outline-none w-48 sm:w-56 transition-colors" />
+            </div>
+
+            <div class="inline-flex flex-wrap rounded-lg bg-[#111114] p-1 border border-[#232329] text-xs gap-1" id="comp-filter-bar">
+              <button data-filter="ALL" onclick="filterComps('ALL')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold bg-zinc-200 text-zinc-950">
+                <span class="lang-tr">Tümü ({{ report.live_meta.compositions | length }})</span>
+                <span class="lang-en">All ({{ report.live_meta.compositions | length }})</span>
+              </button>
+              <button data-filter="S" onclick="filterComps('S')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-amber-400 hover:bg-zinc-800/70">S</button>
+              <button data-filter="A" onclick="filterComps('A')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-zinc-300 hover:bg-zinc-800/70">A</button>
+              <button data-filter="B" onclick="filterComps('B')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-zinc-400 hover:bg-zinc-800/70">B</button>
+              <button data-filter="C" onclick="filterComps('C')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-zinc-500 hover:bg-zinc-800/70">C</button>
+              <button data-filter="YÜKSELEN" onclick="filterComps('YÜKSELEN')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-emerald-400 hover:bg-zinc-800/70">
+                <span class="lang-tr">&uarr; Buff</span>
+                <span class="lang-en">&uarr; Buffed</span>
+              </button>
+              <button data-filter="DÜŞEN" onclick="filterComps('DÜŞEN')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-rose-400 hover:bg-zinc-800/70">
+                <span class="lang-tr">&darr; Nerf</span>
+                <span class="lang-en">&darr; Nerfed</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3" id="live-comp-grid">
+          {% for comp in report.live_meta.compositions %}
+          <div data-tier="{{ comp.tier }}" data-status="{{ comp.meta_status }}"
+               data-search="{{ (comp.comp_name ~ ' ' ~ (comp.comp_name_en or '') ~ ' ' ~ (comp.active_traits | join(' ')) ~ ' ' ~ ((comp.active_traits_en or []) | join(' ')) ~ ' ' ~ (comp.units | map(attribute='name') | join(' ')) ~ ' ' ~ (comp.units | map(attribute='name_en') | join(' '))) | lower }}"
+               class="comp-card surface-card rounded-xl p-4 sm:p-5 transition-colors">
+            <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+
+              <!-- Left: Tier Badge + Archetype Details -->
+              <div class="flex items-start sm:items-center gap-3.5 min-w-[285px]">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-base shrink-0 mono
+                  {% if comp.tier == 'S' %}bg-amber-500/10 text-[#c8aa6e] border border-[#c8aa6e]/40
+                  {% elif comp.tier == 'A' %}bg-zinc-800/90 text-zinc-100 border border-zinc-700
+                  {% elif comp.tier == 'B' %}bg-zinc-900 text-zinc-400 border border-zinc-800
+                  {% else %}bg-zinc-900/60 text-zinc-500 border border-zinc-800/80{% endif %}">
+                  {{ comp.tier }}
+                </div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h4 class="text-sm sm:text-base font-bold text-zinc-100">
+                      <span class="lang-tr">{{ comp.comp_name }}</span>
+                      <span class="lang-en">{{ comp.comp_name_en or comp.comp_name }}</span>
+                    </h4>
+                    <span class="px-2 py-0.5 text-[11px] font-medium rounded bg-[#18181c] text-zinc-300 border border-[#27272f] mono">
+                      {{ comp.levelling }} &bull; {{ comp.unit_count }}
+                      <span class="lang-tr">Birim</span><span class="lang-en">Units</span>
+                    </span>
+                    {% if comp.comp_delta_score != 0 %}
+                    <span class="px-2 py-0.5 text-[11px] font-semibold rounded mono
+                      {% if comp.meta_status == 'YÜKSELEN' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/25
+                      {% elif comp.meta_status == 'DÜŞEN' %}bg-rose-500/10 text-rose-400 border border-rose-500/25
+                      {% else %}bg-zinc-900 text-zinc-400 border border-zinc-800{% endif %}">
+                      <span class="lang-tr">Yama: {{ '%+.1f'|format(comp.comp_delta_score) }}</span>
+                      <span class="lang-en">Delta: {{ '%+.1f'|format(comp.comp_delta_score) }}</span>
+                    </span>
+                    {% endif %}
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-zinc-500">
+                    <span>
+                      <span class="lang-tr"><strong class="text-zinc-400 font-medium">{{ comp.active_traits | join(' · ') }}</strong></span>
+                      <span class="lang-en"><strong class="text-zinc-400 font-medium">{{ (comp.active_traits_en or comp.active_traits) | join(' · ') }}</strong></span>
+                    </span>
+                    {% if comp.buffed_units or comp.buffed_traits %}
+                    <span class="text-emerald-400/90">
+                      <span class="lang-tr">+ {{ (comp.buffed_units + comp.buffed_traits) | join(', ') }}</span>
+                      <span class="lang-en">+ {{ ((comp.buffed_units_en or comp.buffed_units) + (comp.buffed_traits_en or comp.buffed_traits)) | join(', ') }}</span>
+                    </span>
+                    {% endif %}
+                    {% if comp.nerfed_units or comp.nerfed_traits %}
+                    <span class="text-rose-400/90">
+                      <span class="lang-tr">&minus; {{ (comp.nerfed_units + comp.nerfed_traits) | join(', ') }}</span>
+                      <span class="lang-en">&minus; {{ ((comp.nerfed_units_en or comp.nerfed_units) + (comp.nerfed_traits_en or comp.nerfed_traits)) | join(', ') }}</span>
+                    </span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Middle: Board Units & Mini BiS Item Strip -->
+              <div class="flex flex-wrap items-start gap-2">
+                {% for unit in comp.units %}
+                <div class="relative group flex flex-col items-center w-[52px]">
+                  <div class="relative w-11 h-11 rounded-md overflow-hidden border-2 cost-{{ unit.cost }} bg-zinc-900">
+                    <img src="{{ unit.icon }}" alt="{{ unit.name }}" loading="lazy"
+                         onerror="this.style.display='none'"
+                         class="w-full h-full object-cover" />
+                    {% if unit.is_three_star %}
+                    <span class="absolute top-0 left-0 bg-amber-400 text-zinc-950 text-[9px] font-bold px-1 rounded-br mono">3★</span>
+                    {% elif unit.is_carry %}
+                    <span class="absolute top-0 left-0 bg-zinc-100 text-zinc-950 text-[8px] font-bold px-1 rounded-br">
+                      <span class="lang-tr">C</span><span class="lang-en">C</span>
+                    </span>
+                    {% endif %}
+                    {% if unit.status == 'BUFF' %}
+                    <span class="absolute bottom-0 right-0 bg-emerald-500 text-zinc-950 text-[9px] font-bold px-1 rounded-tl mono">+</span>
+                    {% elif unit.status == 'NERF' %}
+                    <span class="absolute bottom-0 right-0 bg-rose-500 text-white text-[9px] font-bold px-1 rounded-tl mono">&minus;</span>
+                    {% endif %}
+                  </div>
+                  {% if unit.bis_items %}
+                  <div class="flex items-center justify-center gap-0.5 -mt-1.5 z-10 bg-[#0c0c0e] px-1 py-0.5 rounded border border-zinc-700/80 shadow">
+                    {% for item in unit.bis_items[:3] %}
+                    <img src="{{ item.icon }}" alt="{{ item.name }}" title="{{ item.name }} / {{ item.name_en }}"
+                         onerror="this.style.display='none'"
+                         class="w-3.5 h-3.5 rounded-sm object-cover" />
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  <span class="text-[10px] text-zinc-400 mt-1 max-w-[52px] truncate text-center">
+                    <span class="lang-tr">{{ unit.name }}</span>
+                    <span class="lang-en">{{ unit.name_en or unit.name }}</span>
+                  </span>
+                </div>
+                {% endfor %}
+              </div>
+
+              <!-- Right: Master+ Telemetry Columns -->
+              <div class="grid grid-cols-4 gap-4 border-t xl:border-t-0 pt-3 xl:pt-0 border-[#1f1f24] shrink-0 min-w-[230px]">
+                <div class="text-right">
+                  <p class="text-[10px] uppercase tracking-wider text-zinc-500">
+                    <span class="lang-tr">Ort. Sıra</span><span class="lang-en">Avg Place</span>
+                  </p>
+                  <p class="text-sm font-bold mono mt-0.5 {% if comp.master_stats.avg_placement <= 4.20 %}text-emerald-400{% elif comp.master_stats.avg_placement <= 4.45 %}text-zinc-100{% else %}text-rose-400{% endif %}">
+                    #{{ comp.master_stats.avg_placement }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[10px] uppercase tracking-wider text-zinc-500">Top 4</p>
+                  <p class="text-sm font-bold text-zinc-200 mono mt-0.5">{{ comp.master_stats.top4_rate }}%</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[10px] uppercase tracking-wider text-zinc-500">
+                    <span class="lang-tr">1.lik</span><span class="lang-en">Win %</span>
+                  </p>
+                  <p class="text-sm font-bold text-[#c8aa6e] mono mt-0.5">{{ comp.master_stats.win_rate }}%</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[10px] uppercase tracking-wider text-zinc-500">
+                    <span class="lang-tr">Örneklem</span><span class="lang-en">Sample</span>
+                  </p>
+                  <p class="text-xs font-semibold text-zinc-400 mono mt-1">{{ "{:,}".format(comp.master_stats.sample_size) }}</p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Carry Best-in-Slot (BiS) Items Strip -->
+            {% if comp.carry_builds %}
+            <div class="mt-3 pt-2.5 border-t border-[#1c1c21] flex flex-wrap items-center gap-2.5 text-xs">
+              <span class="text-zinc-500 font-medium text-[11px]">
+                <span class="lang-tr">Taşıyıcı Eşyaları (BiS):</span>
+                <span class="lang-en">Carry BiS Items:</span>
+              </span>
+              {% for cb in comp.carry_builds %}
+              <div class="flex flex-wrap items-center gap-1.5 bg-[#0c0c0f] px-2.5 py-1 rounded border border-[#222228]">
+                <img src="{{ cb.unit_icon }}" alt="{{ cb.unit_name }}" class="w-4 h-4 rounded-sm border cost-{{ cb.unit_cost }} object-cover" onerror="this.style.display='none'" />
+                <span class="font-semibold text-zinc-200 text-[11px]">
+                  <span class="lang-tr">{{ cb.unit_name }}:</span>
+                  <span class="lang-en">{{ cb.unit_name_en }}:</span>
+                </span>
+                <div class="flex flex-wrap items-center gap-1">
+                  {% for item in cb['items'] %}
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#16161b] border border-[#272730] text-zinc-300">
+                    {% if item.icon %}
+                    <img src="{{ item.icon }}" alt="{{ item.name }}" class="w-3.5 h-3.5 rounded-sm object-cover" onerror="this.style.display='none'" />
+                    {% endif %}
+                    <span class="lang-tr text-[11px]">{{ item.name }}</span>
+                    <span class="lang-en text-[11px]">{{ item.name_en }}</span>
+                  </span>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- AD SLOT 2: MID-PAGE IN-FEED BANNER (728x90 / 970x90)              -->
+      <!-- ================================================================= -->
+      <aside id="ad-slot-infeed-mid" aria-label="Sponsored Placement" class="ad-slot-container rounded-lg p-3 flex flex-col items-center justify-center min-h-[90px] text-center">
+        <span class="text-[10px] uppercase tracking-widest text-zinc-600 font-semibold mb-1">
+          <span class="lang-tr">Sponsor / Reklam Alanı &bull; İçerik Arası Banner (970&times;90 / 728&times;90)</span>
+          <span class="lang-en">Sponsored Placement &bull; Mid-Content Banner (970&times;90 / 728&times;90)</span>
+        </span>
+        <p class="text-xs text-zinc-500 max-w-lg">
+          <span class="lang-tr">Meta kompozisyonları ile CDragon yama değişiklikleri arasındaki yüksek görünürlüklü reklam alanı.</span>
+          <span class="lang-en">High-visibility mid-page ad container between Meta Compositions and CDragon Patch Diffs.</span>
+        </p>
+      </aside>
+
+      <!-- Champion Patch Diffs Section -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-zinc-100">
+              <span class="lang-tr">Set 18 Şampiyon Yama Değişiklikleri ({{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }})</span>
+              <span class="lang-en">Set 18 Champion Balance Changes ({{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }})</span>
+            </h3>
+            <p class="text-xs text-zinc-500 mt-0.5">
+              <span class="lang-tr">CommunityDragon JSON dosyalarından matematiksel olarak çıkarılan temel nitelik ve 1/2/3 yıldız yetenek farkları</span>
+              <span class="lang-en">Base stat and 1/2/3-star ability scaling diffs extracted mathematically from CommunityDragon JSON files</span>
+            </p>
+          </div>
+          <div class="inline-flex rounded-lg bg-[#111114] p-1 border border-[#232329] text-xs gap-1">
+            <button onclick="filterChamps('ALL')" class="px-2.5 py-1 rounded font-semibold bg-zinc-200 text-zinc-950">
+              <span class="lang-tr">Tümü ({{ report.live_diff.champion_diffs | length }})</span>
+              <span class="lang-en">All ({{ report.live_diff.champion_diffs | length }})</span>
+            </button>
+            <button onclick="filterChamps('BUFF')" class="px-2.5 py-1 rounded font-semibold text-emerald-400 hover:bg-zinc-800/70">
+              Buff ({{ report.live_diff.summary_counts.buffed_champions }})
+            </button>
+            <button onclick="filterChamps('NERF')" class="px-2.5 py-1 rounded font-semibold text-rose-400 hover:bg-zinc-800/70">
+              Nerf ({{ report.live_diff.summary_counts.nerfed_champions }})
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5" id="live-champ-grid">
+          {% for champ in report.live_diff.champion_diffs %}
+          <div data-status="{{ champ.status }}" class="champ-card surface-card rounded-xl p-4">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3">
+                <img src="{{ champ.icon }}" alt="{{ champ.name }}" class="w-11 h-11 rounded-md border-2 cost-{{ champ.cost }} object-cover bg-zinc-900" onerror="this.style.display='none'" />
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="font-bold text-zinc-100 text-sm">
+                      <span class="lang-tr">{{ champ.name }}</span>
+                      <span class="lang-en">{{ champ.name_en or champ.name }}</span>
+                    </h4>
+                    <span class="text-[11px] px-1.5 py-0.5 rounded bg-[#18181c] text-zinc-400 border border-[#27272f] mono">
+                      {{ champ.cost }}G
+                    </span>
+                  </div>
+                  <p class="text-xs text-zinc-500 mt-0.5">{{ champ.traits | join(' · ') }}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="px-2 py-0.5 rounded text-xs font-bold mono
+                  {% if champ.status == 'BUFF' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/25
+                  {% elif champ.status == 'NERF' %}bg-rose-500/10 text-rose-400 border border-rose-500/25
+                  {% else %}bg-amber-500/10 text-amber-400 border border-amber-500/25{% endif %}">
+                  {{ champ.status }} ({{ '%+.1f'|format(champ.impact_score) }})
+                </span>
+              </div>
+            </div>
+
+            <div class="space-y-1 border-t border-[#1c1c21] pt-2.5 text-xs">
+              {% for chg in champ.changes %}
+              <div class="flex items-center justify-between py-1 px-2 rounded bg-[#0c0c0f]">
+                <span class="text-zinc-400">
+                  <span class="lang-tr">{{ chg.label }}</span>
+                  <span class="lang-en">{{ chg.label_en or chg.label }}</span>
+                </span>
+                <div class="flex items-center gap-2 mono">
+                  <span class="text-zinc-600 line-through">{{ chg.old }}</span>
+                  <span class="text-zinc-500">&rarr;</span>
+                  <span class="font-semibold {% if chg.type == 'BUFF' %}text-emerald-400{% else %}text-rose-400{% endif %}">{{ chg.new }}</span>
+                  <span class="text-[11px] px-1.5 py-0.2 rounded {% if chg.type == 'BUFF' %}bg-emerald-500/10 text-emerald-400{% else %}bg-rose-500/10 text-rose-400{% endif %}">
+                    {{ '%+.1f'|format(chg.delta_pct) }}%
+                  </span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- Trait Diffs Section -->
+      {% if report.live_diff.trait_diffs %}
+      <section class="space-y-4">
+        <h3 class="text-base sm:text-lg font-bold text-zinc-100">
+          <span class="lang-tr">Set 18 Sinerji / Özellik (Trait) Değişiklikleri</span>
+          <span class="lang-en">Set 18 Trait Balance Changes</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {% for tr in report.live_diff.trait_diffs %}
+          <div class="surface-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2.5">
+              <span class="font-bold text-zinc-100 text-sm">
+                <span class="lang-tr">{{ tr.name }}</span>
+                <span class="lang-en">{{ tr.name_en or tr.name }}</span>
+              </span>
+              <span class="px-2 py-0.5 rounded text-xs font-bold mono {% if tr.status == 'BUFF' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/25{% else %}bg-rose-500/10 text-rose-400 border border-rose-500/25{% endif %}">
+                {{ tr.status }} ({{ '%+.1f'|format(tr.impact_score) }})
+              </span>
+            </div>
+            <div class="space-y-1 text-xs">
+              {% for chg in tr.changes %}
+              <div class="flex items-center justify-between py-1 px-2 rounded bg-[#0c0c0f]">
+                <span class="text-zinc-400">{{ chg.label }}</span>
+                <div class="mono">
+                  <span class="text-zinc-600 line-through">{{ chg.old }}</span>
+                  <span class="mx-1 text-zinc-500">&rarr;</span>
+                  <span class="font-semibold {% if chg.type == 'BUFF' %}text-emerald-400{% else %}text-rose-400{% endif %}">{{ chg.new }}</span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 2: PBE UPCOMING PATCH EARLY PREVIEW                           -->
+    <!-- ================================================================= -->
+    <div id="panel-pbe" class="space-y-8 hidden">
+
+      <section class="surface-card rounded-xl p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-4 rounded-sm bg-amber-400"></span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-amber-400/90">
+              <span class="lang-tr">PBE Gelecek Yama Analizi ({{ report.versions.latest_label }} &rarr; {{ report.versions.pbe_label }})</span>
+              <span class="lang-en">PBE Upcoming Patch Analysis ({{ report.versions.latest_label }} &rarr; {{ report.versions.pbe_label }})</span>
+            </span>
+          </div>
+          <span class="text-xs text-zinc-500">
+            <span class="lang-tr">Canlı Master+ Desteleri Üzerine PBE Değişim Projeksiyonu</span>
+            <span class="lang-en">PBE Balance Overlay on Live Master+ Archetypes</span>
+          </span>
+        </div>
+        <h2 class="text-lg sm:text-xl font-bold text-zinc-100 mb-2">
+          <span class="lang-tr">{{ report.ai_summary.pbe_headline }}</span>
+          <span class="lang-en">{{ report.ai_summary.pbe_headline_en or report.ai_summary.pbe_headline }}</span>
+        </h2>
+        <p class="text-zinc-400 text-sm leading-relaxed">
+          <span class="lang-tr">{{ report.ai_summary.pbe_analysis }}</span>
+          <span class="lang-en">{{ report.ai_summary.pbe_analysis_en or report.ai_summary.pbe_analysis }}</span>
+        </p>
+      </section>
+
+      {% if report.pbe_diff.champion_diffs or report.pbe_diff.trait_diffs %}
+      <section class="space-y-4">
+        <h3 class="text-base sm:text-lg font-bold text-zinc-100">
+          <span class="lang-tr">PBE Değişikliklerinden Etkilenen Master+ Desteleri</span>
+          <span class="lang-en">Master+ Compositions Impacted by PBE Changes</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          {% for comp in report.pbe_meta.compositions[:8] %}
+          <div class="surface-card rounded-xl p-4 flex items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold px-2 py-0.5 rounded bg-[#18181c] text-zinc-300 border border-[#27272f] mono">
+                  {{ comp.levelling }} &bull; {{ comp.unit_count }} <span class="lang-tr">Birim</span><span class="lang-en">Units</span>
+                </span>
+                <span class="text-xs font-bold mono {% if comp.comp_delta_score > 0 %}text-emerald-400{% elif comp.comp_delta_score < 0 %}text-rose-400{% else %}text-zinc-400{% endif %}">
+                  PBE Delta: {{ '%+.1f'|format(comp.comp_delta_score) }}
+                </span>
+              </div>
+              <h4 class="font-bold text-zinc-100 mt-1 text-sm">
+                <span class="lang-tr">{{ comp.comp_name }}</span>
+                <span class="lang-en">{{ comp.comp_name_en or comp.comp_name }}</span>
+              </h4>
+            </div>
+            <div class="flex -space-x-2 shrink-0">
+              {% for u in comp.units[:6] %}
+              <img src="{{ u.icon }}" alt="{{ u.name }}" title="{{ u.name }}" class="w-8 h-8 rounded-full border-2 border-[#111114] bg-zinc-800 object-cover" onerror="this.style.display='none'" />
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% else %}
+      <div class="surface-card rounded-xl p-8 text-center space-y-2">
+        <p class="text-sm font-bold text-zinc-200">
+          <span class="lang-tr">PBE Dalı Güncel Canlı Yama ({{ report.versions.latest_label }}) İle Senkronize</span>
+          <span class="lang-en">PBE Branch Matches Live Patch ({{ report.versions.latest_label }})</span>
+        </p>
+        <p class="text-xs text-zinc-500 max-w-xl mx-auto">
+          <span class="lang-tr">CommunityDragon üzerindeki <code>pbe</code> dalında şu an <code>{{ report.versions.latest_label }}</code> yamasından farklı bir Set 18 değişikliği bulunmuyor. Yeni PBE yaması yüklendiğinde otomatik olarak burada listelenir.</span>
+          <span class="lang-en">No Set 18 balance differences are currently present on the CommunityDragon <code>pbe</code> branch compared to live patch <code>{{ report.versions.latest_label }}</code>.</span>
+        </p>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- AD SLOT 3: FOOTER MULTIPLEX / LEADERBOARD (728x90)                -->
+    <!-- ================================================================= -->
+    <aside id="ad-slot-footer-banner" aria-label="Sponsored Placement" class="ad-slot-container rounded-lg p-3 flex flex-col items-center justify-center min-h-[85px] text-center">
+      <span class="text-[10px] uppercase tracking-widest text-zinc-600 font-semibold mb-1">
+        <span class="lang-tr">Sponsor / Reklam Alanı &bull; Alt Banner (728&times;90)</span>
+        <span class="lang-en">Sponsored Placement &bull; Footer Leaderboard (728&times;90)</span>
+      </span>
+      <p class="text-xs text-zinc-500">
+        <span class="lang-tr">Sayfa sonu reklam / sponsorluk yerleşimi için ayrılmış alan.</span>
+        <span class="lang-en">Reserved footer banner slot for display monetization or partner links.</span>
+      </p>
+    </aside>
+
+  </main>
+
+  <footer class="border-t border-[#1f1f24] mt-12 py-6 text-center text-xs text-zinc-500">
+    <p>TFT Set 18 Meta & Patch Telemetry &bull; Automated via GitHub Actions CI/CD &bull; <a href="https://github.com/Apexq/TFT-Meta-Patch-Telemetry" class="text-zinc-300 hover:text-white underline underline-offset-4">GitHub (@Apexq)</a></p>
+  </footer>
+
+  <script>
+    let activeCompFilter = 'ALL';
+
+    function setLanguage(lang) {
+      document.documentElement.setAttribute('data-lang', lang);
+      localStorage.setItem('tft_lang', lang);
+      const btnTr = document.getElementById('lang-btn-tr');
+      const btnEn = document.getElementById('lang-btn-en');
+      const searchInput = document.getElementById('comp-search-input');
+      if (searchInput) {
+        searchInput.placeholder = lang === 'tr' ? 'Şampiyon, sinerji ara...' : 'Search unit, trait...';
+      }
+      if (lang === 'tr') {
+        btnTr.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors bg-zinc-200 text-zinc-950';
+        btnEn.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors text-zinc-400 hover:text-zinc-200';
+      } else {
+        btnEn.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors bg-zinc-200 text-zinc-950';
+        btnTr.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors text-zinc-400 hover:text-zinc-200';
+      }
+    }
+
+    setLanguage(document.documentElement.getAttribute('data-lang') || 'tr');
+
+    function switchTab(tab) {
+      const livePanel = document.getElementById('panel-live');
+      const pbePanel = document.getElementById('panel-pbe');
+      const btnLive = document.getElementById('btn-tab-live');
+      const btnPbe = document.getElementById('btn-tab-pbe');
+      if (tab === 'live') {
+        livePanel.classList.remove('hidden');
+        pbePanel.classList.add('hidden');
+        btnLive.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm';
+        btnPbe.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200';
+      } else {
+        pbePanel.classList.remove('hidden');
+        livePanel.classList.add('hidden');
+        btnPbe.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm';
+        btnLive.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200';
+      }
+    }
+
+    function filterChamps(status) {
+      document.querySelectorAll('#live-champ-grid .champ-card').forEach(card => {
+        if (status === 'ALL' || card.getAttribute('data-status') === status) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    function filterComps(filterVal) {
+      activeCompFilter = filterVal;
+      document.querySelectorAll('#comp-filter-bar .comp-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-filter') === filterVal) {
+          btn.classList.add('bg-zinc-200', 'text-zinc-950');
+        } else {
+          btn.classList.remove('bg-zinc-200', 'text-zinc-950');
+        }
+      });
+      applyCompFilters();
+    }
+
+    function applyCompFilters() {
+      const query = (document.getElementById('comp-search-input')?.value || '').trim().toLowerCase();
+      document.querySelectorAll('#live-comp-grid .comp-card').forEach(card => {
+        const tier = card.getAttribute('data-tier');
+        const status = card.getAttribute('data-status');
+        const searchBlob = card.getAttribute('data-search') || '';
+        const matchesTier = (activeCompFilter === 'ALL' || tier === activeCompFilter || status === activeCompFilter);
+        const matchesQuery = (!query || searchBlob.includes(query));
+        if (matchesTier && matchesQuery) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+name: "TFT Set 18 Meta & Patch Intelligence Pipeline"
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: "Force full analysis and static site rebuild even if patch state is unchanged"
+        required: false
+        default: true
+        type: boolean
+      create_release:
+        description: "Publish a tagged GitHub Release for this run"
+        required: false
+        default: false
+        type: boolean
+
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - "data/state.json"
+      - "README.md"
+
+# Principle of least privilege at workflow root; elevated per-job below
+permissions:
+  contents: read
+
+concurrency:
+  group: "tft-set18-pipeline-${{ github.ref }}"
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.12"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  detect-patch:
+    name: "1. Detect Set 18 Live & PBE Updates"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+      live_changed: ${{ steps.check.outputs.live_changed }}
+      pbe_changed: ${{ steps.check.outputs.pbe_changed }}
+      latest_label: ${{ steps.check.outputs.latest_label }}
+      previous_label: ${{ steps.check.outputs.previous_label }}
+      pbe_label: ${{ steps.check.outputs.pbe_label }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Restore CommunityDragon Set 18 JSON Cache
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: cdragon-set18-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            cdragon-set18-${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Diff Engine Unit Tests
+        run: python -m pytest -v
+
+      - name: Check CommunityDragon Live & PBE State
+        id: check
+        env:
+          FORCE_REBUILD: ${{ github.event.inputs.force_rebuild }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$FORCE_REBUILD" = "true" ] || [ "$EVENT_NAME" = "push" ]; then
+            python -m src.main --check-only --force
+          else
+            python -m src.main --check-only
+          fi
+
+  analyze-set18-meta:
+    name: "2. Analyze Set 18 Diff & Master+ Telemetry"
+    needs: detect-patch
+    if: needs.detect-patch.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      models: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Restore CommunityDragon Set 18 JSON Cache
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: cdragon-set18-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            cdragon-set18-${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Execute Set 18 Meta Intelligence Pipeline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+          RIOT_PLATFORM_REGION: ${{ vars.RIOT_PLATFORM_REGION || 'tr1' }}
+          RIOT_ROUTING_REGION: ${{ vars.RIOT_ROUTING_REGION || 'europe' }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python -m src.main --force
+
+      - name: Commit & Push Updated Dashboard and State
+        env:
+          LATEST_LABEL: ${{ needs.detect-patch.outputs.latest_label }}
+          PBE_LABEL: ${{ needs.detect-patch.outputs.pbe_label }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/state.json docs/
+          if git diff --staged --quiet; then
+            echo "No changes in output artifacts; skipping commit."
+          else
+            git commit -m "chore(meta): update Set 18 analysis (${LATEST_LABEL} & ${PBE_LABEL}) [skip ci]"
+            git push origin HEAD:main
+          fi
+
+      - name: Upload Static Site Artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+
+      - name: Upload Report Artifact for Release Job
+        uses: actions/upload-artifact@v4
+        with:
+          name: set18-meta-report
+          path: |
+            docs/STEP_SUMMARY.md
+            docs/meta_report.json
+          retention-days: 14
+
+  deploy-pages:
+    name: "3. Deploy Static Dashboard to GitHub Pages"
+    needs: analyze-set18-meta
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  publish-release:
+    name: "4. Publish Patch Release Archive"
+    needs: [detect-patch, analyze-set18-meta]
+    if: needs.detect-patch.outputs.live_changed == 'true' || github.event.inputs.create_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Meta Report Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: set18-meta-report
+          path: ./release_assets
+
+      - name: Create GitHub Release for Patch ${{ needs.detect-patch.outputs.latest_label }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "patch-${{ needs.detect-patch.outputs.latest_label }}-${{ github.run_number }}"
+          name: "TFT Set 18 Meta Report — Patch ${{ needs.detect-patch.outputs.latest_label }}"
+          body_path: ./release_assets/STEP_SUMMARY.md
+          files: ./release_assets/meta_report.json
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
