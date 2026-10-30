@@ -99,3 +99,11 @@ The pipeline runs out of the box with zero external secrets required. The follow
 
 - `RIOT_API_KEY`: Riot Developer API key (`X-Riot-Token`) for direct regional Challenger/Grandmaster/Master ladder telemetry (`RIOT_PLATFORM_REGION`, defaults to `tr1`).
 - `DISCORD_WEBHOOK_URL`: Posts an automated patch summary embed to a Discord channel when the pipeline runs.
+
+---
+
+## Data Attribution & Credits
+
+- **Master+ Composition Clustering & Carry BiS Telemetry:** Provided courtesy of [MetaTFT.com](https://www.metatft.com). Special thanks to the MetaTFT team for permitting the use of high-elo match aggregation data in this project.
+- **Game Data & Assets:** Champion stats, ability scalings, trait breakpoints, and icons are sourced from [CommunityDragon](https://communitydragon.org/) and Riot Games' DataDragon CDN.
+- **Official Ladder Telemetry:** Regional Challenger/Grandmaster/Master standings are queried via the official [Riot Games Developer API](https://developer.riotgames.com/).

@@ -159,11 +159,12 @@
       </div>
 
       <div class="text-xs text-zinc-400 flex flex-wrap items-center gap-2.5">
-        <div class="flex items-center gap-2 px-2.5 py-1 rounded bg-[#111114] border border-[#232329]">
+        <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer"
+           class="flex items-center gap-2 px-2.5 py-1 rounded bg-[#111114] border border-[#232329] hover:border-[#c8aa6e]/60 transition-colors group">
           <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span class="lang-tr text-zinc-300">{{ report.live_meta.data_source }}</span>
-          <span class="lang-en text-zinc-300">{{ report.live_meta.data_source_en or report.live_meta.data_source }}</span>
-        </div>
+          <span class="lang-tr text-zinc-300">Master+ Kümeleme Verisi: <strong class="text-zinc-100 group-hover:text-[#c8aa6e] underline underline-offset-2">MetaTFT.com</strong></span>
+          <span class="lang-en text-zinc-300">Master+ Telemetry Provided by <strong class="text-zinc-100 group-hover:text-[#c8aa6e] underline underline-offset-2">MetaTFT.com</strong></span>
+        </a>
         {% if report.live_meta.riot_official_api and report.live_meta.riot_official_api.connected %}
         <div class="px-2.5 py-1 rounded bg-[#111114] border border-[#27272f] text-zinc-300 flex items-center gap-1.5">
           <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#c8aa6e]"></span>
@@ -680,8 +681,12 @@
 
   </main>
 
-  <footer class="border-t border-[#1f1f24] mt-12 py-6 text-center text-xs text-zinc-500">
-    <p>TFT Set 18 Meta & Patch Telemetry &bull; Automated via GitHub Actions CI/CD &bull; <a href="https://github.com/Apexq/TFT-Meta-Patch-Telemetry" class="text-zinc-300 hover:text-white underline underline-offset-4">GitHub (@Apexq)</a></p>
+  <footer class="border-t border-[#1f1f24] mt-12 py-8 text-center text-xs text-zinc-500 space-y-2">
+    <p>
+      <span class="lang-tr">Master+ Maç Kümeleme &amp; Eşya İstatistikleri <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer" class="text-[#c8aa6e] hover:underline font-semibold">MetaTFT.com</a> izniyle kullanılmaktadır &bull; Yama Verileri: <a href="https://communitydragon.org" target="_blank" rel="noopener noreferrer" class="text-zinc-300 hover:underline">CommunityDragon</a> &amp; Riot Games API</span>
+      <span class="lang-en">Master+ Match Clustering &amp; BiS Item Telemetry courtesy of <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer" class="text-[#c8aa6e] hover:underline font-semibold">MetaTFT.com</a> &bull; Game Data via <a href="https://communitydragon.org" target="_blank" rel="noopener noreferrer" class="text-zinc-300 hover:underline">CommunityDragon</a> &amp; Riot Games API</span>
+    </p>
+    <p>TFT Set 18 Meta &amp; Patch Telemetry &bull; Automated via GitHub Actions CI/CD &bull; <a href="https://github.com/Apexq/TFT-Meta-Patch-Telemetry" class="text-zinc-300 hover:text-white underline underline-offset-4">GitHub (@Apexq)</a></p>
   </footer>
 
   <script>
