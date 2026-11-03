@@ -152,6 +152,9 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
     riot_telemetry = riot_analyzer.fetch_official_riot_api_telemetry()
     print(f"[Riot Official API] Connected={riot_telemetry.get('connected')} | {riot_telemetry.get('status_tr')}")
 
+    leaderboards = riot_analyzer.fetch_regional_leaderboards(limit_per_region=25)
+    print(f"[Leaderboards] Fetched {leaderboards.get('total_players_listed', 0)} Challenger players across {len(leaderboards.get('regions', []))} regions")
+
     live_meta = riot_analyzer.build_set18_meta_compositions(
         set18_data=latest_data,
         diff_report=live_diff,
@@ -186,6 +189,7 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         "live_meta": live_meta,
         "pbe_diff": pbe_diff,
         "pbe_meta": pbe_meta,
+        "leaderboards": leaderboards,
     }
 
     builder = DashboardBuilder()

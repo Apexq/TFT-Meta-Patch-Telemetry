@@ -145,11 +145,17 @@
 
     <!-- Navigation Bar: Lifecycle Mode Switcher + Live API Telemetry -->
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#1f1f24] pb-4">
-      <div class="inline-flex rounded-lg bg-[#111114] p-1 border border-[#232329] self-start">
+      <div class="inline-flex flex-wrap rounded-lg bg-[#111114] p-1 border border-[#232329] self-start gap-1">
         <button id="btn-tab-live" onclick="switchTab('live')"
           class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm">
           <span class="lang-tr">Canlı Yama & Master+ Meta ({{ report.versions.latest_label }})</span>
           <span class="lang-en">Live Patch & Master+ Meta ({{ report.versions.latest_label }})</span>
+        </button>
+        <button id="btn-tab-leaderboard" onclick="switchTab('leaderboard')"
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#c8aa6e]"></span>
+          <span class="lang-tr">Liderlik Tablosu (TR / EMEA / NA / KR)</span>
+          <span class="lang-en">Leaderboards (TR / EMEA / NA / KR)</span>
         </button>
         <button id="btn-tab-pbe" onclick="switchTab('pbe')"
           class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200">
@@ -666,6 +672,232 @@
     </div>
 
     <!-- ================================================================= -->
+    <!-- TAB 3: REGIONAL CHALLENGER LEADERBOARDS (TR / EMEA / NA / KR)      -->
+    <!-- ================================================================= -->
+    <div id="panel-leaderboard" class="space-y-6 hidden">
+      {% if report.leaderboards and report.leaderboards.regions %}
+      <!-- Server Selector & Search Bar -->
+      <div class="surface-card rounded-xl p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-4 rounded-sm bg-[#c8aa6e]"></span>
+            <h2 class="text-base sm:text-lg font-bold text-zinc-100">
+              <span class="lang-tr">Bölgesel Challenger Liderlik Tablosu &amp; LP Barajları</span>
+              <span class="lang-en">Regional Challenger Leaderboards &amp; Promotion Cutoffs</span>
+            </h2>
+          </div>
+          <p class="text-xs text-zinc-500 mt-1">
+            <span class="lang-tr">Sunuculara göre anlık zirve oyuncuları, Challenger/GM LP barajları, son 20 maç formları ve oyun stilleri</span>
+            <span class="lang-en">Live regional Challenger standings, LP promotion cutoffs, recent 20-game form, and playstyle flexibility</span>
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- Region Filter Buttons -->
+          <div class="inline-flex flex-wrap rounded-lg bg-[#0c0c0f] p-1 border border-[#232329] gap-1" id="lb-region-bar">
+            {% for reg in report.leaderboards.regions %}
+            <button data-region="{{ reg.id }}" onclick="switchLeaderboardRegion('{{ reg.id }}')"
+              class="lb-region-btn px-3 py-1.5 rounded text-xs font-bold mono transition-colors {% if loop.first %}bg-[#c8aa6e] text-zinc-950{% else %}text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60{% endif %}">
+              {{ reg.code }}
+            </button>
+            {% endfor %}
+          </div>
+
+          <!-- Player Search -->
+          <input id="lb-search-input" type="text" oninput="filterLeaderboardPlayers()"
+            placeholder="Riot ID ara..."
+            class="bg-[#0c0c0f] border border-[#232329] focus:border-zinc-500 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 outline-none w-44 sm:w-52 transition-colors" />
+        </div>
+      </div>
+
+      <!-- Per-Region Containers -->
+      {% for reg in report.leaderboards.regions %}
+      <div data-region-panel="{{ reg.id }}" class="lb-region-panel space-y-4 {% if not loop.first %}hidden{% endif %}">
+
+        <!-- Regional Cutoffs & Server KPIs -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div class="surface-card rounded-xl p-4">
+            <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+              <span class="lang-tr">{{ reg.code }} Sunucu 1.si</span>
+              <span class="lang-en">{{ reg.code }} Rank #1</span>
+            </p>
+            <p class="text-xl sm:text-2xl font-bold text-[#c8aa6e] mt-1 mono">{{ "{:,}".format(reg.top_lp) }} LP</p>
+            <p class="text-xs text-zinc-300 font-semibold truncate mt-1">{{ reg.top_player }}</p>
+          </div>
+
+          <div class="surface-card rounded-xl p-4">
+            <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+              <span class="lang-tr">Challenger Barajı (Cutoff)</span>
+              <span class="lang-en">Challenger Cutoff</span>
+            </p>
+            <p class="text-xl sm:text-2xl font-bold text-amber-400 mt-1 mono">{{ "{:,}".format(reg.challenger_cutoff) }} LP</p>
+            <p class="text-xs text-zinc-500 mt-1">
+              <span class="lang-tr">{{ reg.challenger_slots }} Kontenjan ({{ reg.name_tr }})</span>
+              <span class="lang-en">{{ reg.challenger_slots }} Slots ({{ reg.name_en }})</span>
+            </p>
+          </div>
+
+          <div class="surface-card rounded-xl p-4">
+            <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+              <span class="lang-tr">Grandmaster Barajı (Cutoff)</span>
+              <span class="lang-en">Grandmaster Cutoff</span>
+            </p>
+            <p class="text-xl sm:text-2xl font-bold text-zinc-100 mt-1 mono">{{ "{:,}".format(reg.grandmaster_cutoff) }} LP</p>
+            <p class="text-xs text-zinc-500 mt-1">
+              <span class="lang-tr">{{ reg.grandmaster_slots }} Kontenjan</span>
+              <span class="lang-en">{{ reg.grandmaster_slots }} Slots</span>
+            </p>
+          </div>
+
+          <div class="surface-card rounded-xl p-4">
+            <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+              <span class="lang-tr">Toplam Master+ Oyuncu</span>
+              <span class="lang-en">Master+ Population</span>
+            </p>
+            <p class="text-xl sm:text-2xl font-bold text-emerald-400 mt-1 mono">{{ "{:,}".format(reg.master_population) }}</p>
+            <p class="text-xs text-zinc-500 mt-1">
+              <span class="lang-tr">Aktif Dereceli Havuzu</span>
+              <span class="lang-en">Active Ranked Ladder</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Leaderboard Table -->
+        <div class="surface-card rounded-xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-[#232329] bg-[#0d0d10] text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">
+                  <th class="py-3 px-4 w-16">
+                    <span class="lang-tr">Sıra</span><span class="lang-en">Rank</span>
+                  </th>
+                  <th class="py-3 px-4">
+                    <span class="lang-tr">Oyuncu (Riot ID)</span><span class="lang-en">Player (Riot ID)</span>
+                  </th>
+                  <th class="py-3 px-4">
+                    <span class="lang-tr">Derece &amp; LP</span><span class="lang-en">Tier &amp; LP</span>
+                  </th>
+                  <th class="py-3 px-4 text-right">
+                    <span class="lang-tr">Yama LP</span><span class="lang-en">Patch LP</span>
+                  </th>
+                  <th class="py-3 px-4 text-right">
+                    <span class="lang-tr">Son 20 LP</span><span class="lang-en">Last 20 LP</span>
+                  </th>
+                  <th class="py-3 px-4 text-right">
+                    <span class="lang-tr">Ort. Sıra</span><span class="lang-en">Avg Place</span>
+                  </th>
+                  <th class="py-3 px-4 text-right">
+                    <span class="lang-tr">1.lik (Win%)</span><span class="lang-en">Win Rate</span>
+                  </th>
+                  <th class="py-3 px-4">
+                    <span class="lang-tr">Oyun Stili &amp; Eşya Eğilimi</span><span class="lang-en">Playstyle &amp; Item Bias</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#1c1c22] text-xs">
+                {% for p in reg.players %}
+                <tr data-player-search="{{ p.riot_id | lower }}" class="lb-player-row hover:bg-[#16161b] transition-colors">
+                  <!-- Rank -->
+                  <td class="py-3 px-4 mono font-bold">
+                    {% if p.rank == 1 %}
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded bg-amber-500/15 text-[#c8aa6e] border border-[#c8aa6e]/50">#1</span>
+                    {% elif p.rank == 2 %}
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded bg-zinc-300/10 text-zinc-200 border border-zinc-400/40">#2</span>
+                    {% elif p.rank == 3 %}
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded bg-amber-700/15 text-amber-500 border border-amber-700/40">#3</span>
+                    {% else %}
+                    <span class="text-zinc-400 pl-1.5">#{{ p.rank }}</span>
+                    {% endif %}
+                  </td>
+
+                  <!-- Riot ID -->
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-2">
+                      <a href="{{ p.profile_url }}" target="_blank" rel="noopener noreferrer"
+                         class="font-bold text-zinc-100 hover:text-[#c8aa6e] transition-colors">
+                        {{ p.game_name }}<span class="text-zinc-500 font-normal ml-0.5">{{ p.tag_line }}</span>
+                      </a>
+                      <span class="px-1.5 py-0.5 text-[10px] rounded bg-[#18181d] text-zinc-400 border border-[#272730] mono">{{ reg.code }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Tier & LP -->
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-2">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-amber-500/10 text-[#c8aa6e] border border-[#c8aa6e]/30">
+                        {{ p.tier }}
+                      </span>
+                      <span class="font-bold text-zinc-100 mono text-sm">{{ "{:,}".format(p.lp) }} LP</span>
+                    </div>
+                  </td>
+
+                  <!-- Patch LP Delta -->
+                  <td class="py-3 px-4 text-right mono">
+                    <span class="font-bold {% if p.patch_lp_change > 0 %}text-emerald-400{% elif p.patch_lp_change < 0 %}text-rose-400{% else %}text-zinc-400{% endif %}">
+                      {{ '%+d'|format(p.patch_lp_change) }} LP
+                    </span>
+                    <div class="text-[10px] text-zinc-500">{{ p.patch_games }} <span class="lang-tr">maç</span><span class="lang-en">games</span></div>
+                  </td>
+
+                  <!-- Recent 20 Games LP Delta -->
+                  <td class="py-3 px-4 text-right mono">
+                    <span class="font-bold {% if p.recent_lp_change > 0 %}text-emerald-400{% elif p.recent_lp_change < 0 %}text-rose-400{% else %}text-zinc-400{% endif %}">
+                      {{ '%+d'|format(p.recent_lp_change) }} LP
+                    </span>
+                    <div class="text-[10px] text-zinc-500">
+                      <span class="lang-tr">Son 20:</span><span class="lang-en">L20:</span> #{{ p.recent_avg_place }}
+                    </div>
+                  </td>
+
+                  <!-- Season Average Placement -->
+                  <td class="py-3 px-4 text-right mono">
+                    <span class="font-bold text-sm {% if p.avg_place <= 3.85 %}text-emerald-400{% elif p.avg_place <= 4.15 %}text-zinc-100{% else %}text-amber-400{% endif %}">
+                      #{{ p.avg_place }}
+                    </span>
+                    <div class="text-[10px] text-zinc-500">{{ p.games }} <span class="lang-tr">maç</span><span class="lang-en">games</span></div>
+                  </td>
+
+                  <!-- Win Rate -->
+                  <td class="py-3 px-4 text-right mono">
+                    <span class="font-bold text-[#c8aa6e]">{{ p.win_rate }}%</span>
+                    <div class="text-[10px] text-zinc-500">{{ p.wins }}W</div>
+                  </td>
+
+                  <!-- Playstyle & Item Bias -->
+                  <td class="py-3 px-4">
+                    <div class="flex flex-col gap-1.5 min-w-[165px]">
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold
+                          {% if p.playstyle_code == 'FLEX' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/25
+                          {% elif p.playstyle_code == 'FORCER' %}bg-amber-500/10 text-amber-400 border border-amber-500/25
+                          {% else %}bg-zinc-800 text-zinc-300 border border-zinc-700{% endif %}">
+                          <span class="lang-tr">{{ p.playstyle_tr }}</span>
+                          <span class="lang-en">{{ p.playstyle_en }}</span>
+                        </span>
+                        <span class="text-[10px] text-zinc-500 mono">
+                          T:{{ p.item_bias.tank }}% AD:{{ p.item_bias.ad }}% AP:{{ p.item_bias.ap }}%
+                        </span>
+                      </div>
+                      <div class="w-full h-1.5 rounded-full bg-zinc-900 overflow-hidden flex">
+                        <div style="width: {{ p.item_bias.tank }}%" class="bg-emerald-500/80" title="Tank Items: {{ p.item_bias.tank }}%"></div>
+                        <div style="width: {{ p.item_bias.ad }}%" class="bg-amber-500/80" title="AD Items: {{ p.item_bias.ad }}%"></div>
+                        <div style="width: {{ p.item_bias.ap }}%" class="bg-sky-500/80" title="AP Items: {{ p.item_bias.ap }}%"></div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- ================================================================= -->
     <!-- AD SLOT 3: FOOTER MULTIPLEX / LEADERBOARD (728x90)                -->
     <!-- ================================================================= -->
     <aside id="ad-slot-footer-banner" aria-label="Sponsored Placement" class="ad-slot-container rounded-lg p-3 flex flex-col items-center justify-center min-h-[85px] text-center">
@@ -683,14 +915,15 @@
 
   <footer class="border-t border-[#1f1f24] mt-12 py-8 text-center text-xs text-zinc-500 space-y-2">
     <p>
-      <span class="lang-tr">Master+ Maç Kümeleme &amp; Eşya İstatistikleri <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer" class="text-[#c8aa6e] hover:underline font-semibold">MetaTFT.com</a> izniyle kullanılmaktadır &bull; Yama Verileri: <a href="https://communitydragon.org" target="_blank" rel="noopener noreferrer" class="text-zinc-300 hover:underline">CommunityDragon</a> &amp; Riot Games API</span>
-      <span class="lang-en">Master+ Match Clustering &amp; BiS Item Telemetry courtesy of <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer" class="text-[#c8aa6e] hover:underline font-semibold">MetaTFT.com</a> &bull; Game Data via <a href="https://communitydragon.org" target="_blank" rel="noopener noreferrer" class="text-zinc-300 hover:underline">CommunityDragon</a> &amp; Riot Games API</span>
+      <span class="lang-tr">Master+ Maç Kümeleme, Liderlik Tablosu &amp; Eşya İstatistikleri <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer" class="text-[#c8aa6e] hover:underline font-semibold">MetaTFT.com</a> izniyle kullanılmaktadır &bull; Yama Verileri: <a href="https://communitydragon.org" target="_blank" rel="noopener noreferrer" class="text-zinc-300 hover:underline">CommunityDragon</a> &amp; Riot Games API</span>
+      <span class="lang-en">Master+ Match Clustering, Leaderboards &amp; BiS Item Telemetry courtesy of <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer" class="text-[#c8aa6e] hover:underline font-semibold">MetaTFT.com</a> &bull; Game Data via <a href="https://communitydragon.org" target="_blank" rel="noopener noreferrer" class="text-zinc-300 hover:underline">CommunityDragon</a> &amp; Riot Games API</span>
     </p>
     <p>TFT Set 18 Meta &amp; Patch Telemetry &bull; Automated via GitHub Actions CI/CD &bull; <a href="https://github.com/Apexq/TFT-Meta-Patch-Telemetry" class="text-zinc-300 hover:text-white underline underline-offset-4">GitHub (@Apexq)</a></p>
   </footer>
 
   <script>
     let activeCompFilter = 'ALL';
+    let activeLbRegion = 'tr1';
 
     function setLanguage(lang) {
       document.documentElement.setAttribute('data-lang', lang);
@@ -698,8 +931,12 @@
       const btnTr = document.getElementById('lang-btn-tr');
       const btnEn = document.getElementById('lang-btn-en');
       const searchInput = document.getElementById('comp-search-input');
+      const lbSearchInput = document.getElementById('lb-search-input');
       if (searchInput) {
         searchInput.placeholder = lang === 'tr' ? 'Şampiyon, sinerji ara...' : 'Search unit, trait...';
+      }
+      if (lbSearchInput) {
+        lbSearchInput.placeholder = lang === 'tr' ? 'Riot ID ara...' : 'Search Riot ID...';
       }
       if (lang === 'tr') {
         btnTr.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors bg-zinc-200 text-zinc-950';
@@ -713,21 +950,57 @@
     setLanguage(document.documentElement.getAttribute('data-lang') || 'tr');
 
     function switchTab(tab) {
-      const livePanel = document.getElementById('panel-live');
-      const pbePanel = document.getElementById('panel-pbe');
-      const btnLive = document.getElementById('btn-tab-live');
-      const btnPbe = document.getElementById('btn-tab-pbe');
-      if (tab === 'live') {
-        livePanel.classList.remove('hidden');
-        pbePanel.classList.add('hidden');
-        btnLive.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm';
-        btnPbe.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200';
-      } else {
-        pbePanel.classList.remove('hidden');
-        livePanel.classList.add('hidden');
-        btnPbe.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm';
-        btnLive.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200';
-      }
+      const panels = {
+        live: document.getElementById('panel-live'),
+        leaderboard: document.getElementById('panel-leaderboard'),
+        pbe: document.getElementById('panel-pbe')
+      };
+      const buttons = {
+        live: document.getElementById('btn-tab-live'),
+        leaderboard: document.getElementById('btn-tab-leaderboard'),
+        pbe: document.getElementById('btn-tab-pbe')
+      };
+      Object.keys(panels).forEach(k => {
+        if (!panels[k] || !buttons[k]) return;
+        if (k === tab) {
+          panels[k].classList.remove('hidden');
+          buttons[k].className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm flex items-center gap-1.5';
+        } else {
+          panels[k].classList.add('hidden');
+          buttons[k].className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5';
+        }
+      });
+    }
+
+    function switchLeaderboardRegion(regionId) {
+      activeLbRegion = regionId;
+      document.querySelectorAll('#lb-region-bar .lb-region-btn').forEach(btn => {
+        if (btn.getAttribute('data-region') === regionId) {
+          btn.className = 'lb-region-btn px-3 py-1.5 rounded text-xs font-bold mono transition-colors bg-[#c8aa6e] text-zinc-950';
+        } else {
+          btn.className = 'lb-region-btn px-3 py-1.5 rounded text-xs font-bold mono transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60';
+        }
+      });
+      document.querySelectorAll('.lb-region-panel').forEach(panel => {
+        if (panel.getAttribute('data-region-panel') === regionId) {
+          panel.classList.remove('hidden');
+        } else {
+          panel.classList.add('hidden');
+        }
+      });
+      filterLeaderboardPlayers();
+    }
+
+    function filterLeaderboardPlayers() {
+      const query = (document.getElementById('lb-search-input')?.value || '').trim().toLowerCase();
+      document.querySelectorAll(`.lb-region-panel[data-region-panel="${activeLbRegion}"] .lb-player-row`).forEach(row => {
+        const rid = row.getAttribute('data-player-search') || '';
+        if (!query || rid.includes(query)) {
+          row.classList.remove('hidden');
+        } else {
+          row.classList.add('hidden');
+        }
+      });
     }
 
     function filterChamps(status) {

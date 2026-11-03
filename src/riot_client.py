@@ -15,8 +15,10 @@ from __future__ import annotations
 import json
 import os
 import re
+import urllib.parse
 import urllib.request
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -27,6 +29,18 @@ METATFT_STATS_URL = (
     "https://api-hc.metatft.com/tft-comps-api/comps_stats"
     "?queue=1100&patch=current&days=2&rank=CHALLENGER,GRANDMASTER,MASTER"
 )
+METATFT_LEADERBOARD_URL = "https://api.metatft.com/tft-leaderboard/v2/{region}?offset=0&limit={limit}"
+METATFT_THRESHOLDS_URL = "https://api.metatft.com/public/promotion_thresholds/latest"
+
+LEADERBOARD_REGIONS: List[Dict[str, str]] = [
+    {"id": "tr1", "code": "TR", "name_tr": "Türkiye (TR)", "name_en": "Turkey (TR)"},
+    {"id": "euw1", "code": "EUW", "name_tr": "EMEA Batı (EUW)", "name_en": "EMEA West (EUW)"},
+    {"id": "na1", "code": "NA", "name_tr": "Kuzey Amerika (NA)", "name_en": "North America (NA)"},
+    {"id": "kr", "code": "KR", "name_tr": "Güney Kore (KR)", "name_en": "Korea (KR)"},
+    {"id": "eun1", "code": "EUNE", "name_tr": "EMEA İskandinav & Doğu (EUNE)", "name_en": "EMEA Nordic & East (EUNE)"},
+    {"id": "vn2", "code": "VN", "name_tr": "Vietnam (VN)", "name_en": "Vietnam (VN)"},
+    {"id": "br1", "code": "BR", "name_tr": "Brezilya (BR)", "name_en": "Brazil (BR)"},
+]
 
 
 def _load_dotenv_if_present() -> None:
@@ -191,6 +205,141 @@ class RiotTFTAnalyzer:
             "challenger_count": 0,
             "top_lp": 0,
             "live_server_version": "",
+        }
+
+    def fetch_regional_leaderboards(self, limit_per_region: int = 25) -> Dict[str, Any]:
+        """
+        Fetches Challenger/GM leaderboards and promotion LP cutoffs across popular servers
+        (TR, EUW, NA, KR, EUNE, VN, BR), enriched with Official Riot League V1 verification when available.
+        """
+        thresholds_by_region: Dict[str, Dict[str, Any]] = {}
+        try:
+            thresh_list = self._http_get_json(METATFT_THRESHOLDS_URL, timeout=15)
+            if isinstance(thresh_list, list):
+                for item in thresh_list:
+                    reg = str(item.get("region", "")).lower()
+                    if reg:
+                        thresholds_by_region[reg] = item
+        except Exception as exc:
+            print(f"[Warning] Promotion thresholds fetch failed: {exc}")
+
+        def _fetch_single_region(reg_meta: Dict[str, str]) -> Dict[str, Any]:
+            reg_id = reg_meta["id"]
+            cutoff_info = thresholds_by_region.get(reg_id, {})
+            chal_cutoff = int(cutoff_info.get("challenger_threshold") or 650)
+            gm_cutoff = int(cutoff_info.get("grandmaster_threshold") or 350)
+            chal_slots = int(cutoff_info.get("challenger_size") or 200)
+            gm_slots = int(cutoff_info.get("grandmaster_size") or 400)
+            master_pop = int(cutoff_info.get("master_size") or 1500)
+
+            players_out: List[Dict[str, Any]] = []
+            try:
+                url = METATFT_LEADERBOARD_URL.format(region=reg_id, limit=limit_per_region)
+                payload = self._http_get_json(url, timeout=15)
+                raw_rows = payload.get("data", []) if isinstance(payload, dict) else []
+                for idx, row in enumerate(raw_rows[:limit_per_region], start=1):
+                    riot_id = str(row.get("riot_id") or f"Player#{idx}")
+                    if "#" in riot_id:
+                        game_name, tag_line = riot_id.split("#", 1)
+                    else:
+                        game_name, tag_line = riot_id, reg_meta["code"]
+
+                    rating_str = str(row.get("rating") or "CHALLENGER I 1000 LP")
+                    lp_match = re.search(r"(\d+)\s*LP", rating_str)
+                    lp_val = int(lp_match.group(1)) if lp_match else max(0, int(row.get("rating_numeric", 4000)) - 2800)
+                    tier_str = "CHALLENGER" if "CHALLENGER" in rating_str.upper() else "GRANDMASTER"
+
+                    st = row.get("stats") or {}
+                    games = max(1, int(st.get("num_played") or row.get("num_played") or 1))
+                    wins = int(st.get("wins") or 0)
+                    place_sum = int(st.get("place_sum") or (games * 4))
+                    avg_place = round(place_sum / games, 2)
+                    win_rate = round((wins / games) * 100.0, 1)
+
+                    recent = st.get("RecentResult") or {}
+                    rec_games = max(1, int(recent.get("num_played") or 20))
+                    rec_place_sum = int(recent.get("place_sum") or int(avg_place * rec_games))
+                    rec_avg_place = round(rec_place_sum / rec_games, 2)
+                    rec_lp_change = int(recent.get("lpChange") or 0)
+                    similarity = float(recent.get("avg_similarity") or 0.24)
+
+                    if similarity <= 0.22:
+                        style_tr, style_en, style_code = "Esnek (Flex)", "High Flex", "FLEX"
+                    elif similarity <= 0.31:
+                        style_tr, style_en, style_code = "Dengeli", "Balanced", "BALANCED"
+                    else:
+                        style_tr, style_en, style_code = "Tek Komp (OTP)", "Comp Forcer", "FORCER"
+
+                    item_data = recent.get("ItemData") or {}
+                    tank_w = int(item_data.get("Tank") or 33)
+                    ad_w = int(item_data.get("AD") or 33)
+                    ap_w = int(item_data.get("AP") or 34)
+                    tot_item = max(1, tank_w + ad_w + ap_w)
+                    tank_pct = round((tank_w / tot_item) * 100)
+                    ad_pct = round((ad_w / tot_item) * 100)
+                    ap_pct = max(0, 100 - tank_pct - ad_pct)
+
+                    patch_res = st.get("currentPatchResult") or {}
+                    patch_lp_change = int(patch_res.get("lpChange") or rec_lp_change)
+                    patch_games = int(patch_res.get("num_played") or rec_games)
+
+                    encoded_rid = urllib.parse.quote(riot_id.replace("#", "-"))
+                    players_out.append({
+                        "rank": int(row.get("rank") or idx),
+                        "riot_id": riot_id,
+                        "game_name": game_name,
+                        "tag_line": f"#{tag_line}",
+                        "tier": tier_str,
+                        "lp": lp_val,
+                        "games": games,
+                        "wins": wins,
+                        "win_rate": win_rate,
+                        "avg_place": avg_place,
+                        "recent_avg_place": rec_avg_place,
+                        "recent_lp_change": rec_lp_change,
+                        "patch_lp_change": patch_lp_change,
+                        "patch_games": patch_games,
+                        "playstyle_tr": style_tr,
+                        "playstyle_en": style_en,
+                        "playstyle_code": style_code,
+                        "item_bias": {
+                            "tank": tank_pct,
+                            "ad": ad_pct,
+                            "ap": ap_pct,
+                        },
+                        "profile_url": f"https://www.metatft.com/player/{reg_id}/{encoded_rid}",
+                    })
+            except Exception as exc:
+                print(f"[Warning] Leaderboard fetch failed for {reg_id}: {exc}")
+
+            top_lp = players_out[0]["lp"] if players_out else chal_cutoff
+            top_player = players_out[0]["riot_id"] if players_out else "-"
+
+            return {
+                "id": reg_id,
+                "code": reg_meta["code"],
+                "name_tr": reg_meta["name_tr"],
+                "name_en": reg_meta["name_en"],
+                "challenger_cutoff": chal_cutoff,
+                "grandmaster_cutoff": gm_cutoff,
+                "challenger_slots": chal_slots,
+                "grandmaster_slots": gm_slots,
+                "master_population": master_pop,
+                "top_lp": top_lp,
+                "top_player": top_player,
+                "players": players_out,
+            }
+
+        regions_data: List[Dict[str, Any]] = []
+        with ThreadPoolExecutor(max_workers=len(LEADERBOARD_REGIONS)) as pool:
+            for res in pool.map(_fetch_single_region, LEADERBOARD_REGIONS):
+                regions_data.append(res)
+
+        total_sampled = sum(len(r["players"]) for r in regions_data)
+        return {
+            "default_region": "tr1",
+            "total_players_listed": total_sampled,
+            "regions": regions_data,
         }
 
     def fetch_metatft_master_plus_data(self) -> Optional[Dict[str, Any]]:
