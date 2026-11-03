@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-03 13:51 UTC",
+  "updated_at": "2026-11-03 16:24 UTC",
   "ddragon_version": "16.21.1",
   "previous_cdragon": "16.20",
   "latest_cdragon": "16.21",
@@ -9,5 +9,5 @@
   "latest_fingerprint": "2d459cdea7e3b79b",
   "pbe_fingerprint": "a2e6170360efed45",
   "riot_api_verified": true,
-  "riot_official_key_connected": false
+  "riot_official_key_connected": true
 }
