@@ -515,12 +515,12 @@
                 </button>
 
                 <button type="button"
-                  data-copy-tr="[{{ comp.tier }} Tier] {{ comp.comp_name }} ({{ comp.levelling }} - Ort. #{{ comp.master_stats.avg_placement }}) | Şampiyonlar: {{ comp.units | map(attribute='name') | join(', ') }}{% if comp.carry_builds %} | BiS: {% for cb in comp.carry_builds %}{{ cb.unit_name }} ({{ cb['items'] | map(attribute='name') | join(' + ') }}){% if not loop.last %}, {% endif %}{% endfor %}{% endif %}"
-                  data-copy-en="[{{ comp.tier }} Tier] {{ comp.comp_name_en or comp.comp_name }} ({{ comp.levelling }} - Avg #{{ comp.master_stats.avg_placement }}) | Units: {{ comp.units | map(attribute='name_en') | join(', ') }}{% if comp.carry_builds %} | BiS: {% for cb in comp.carry_builds %}{{ cb.unit_name_en }} ({{ cb['items'] | map(attribute='name_en') | join(' + ') }}){% if not loop.last %}, {% endif %}{% endfor %}{% endif %}"
+                  data-team-code="{{ comp.team_planner_code }}"
+                  title="TFT Team Planner Code: {{ comp.team_planner_code }}"
                   onclick="copyCompSummary(this)"
-                  class="px-2.5 py-1 rounded bg-[#0c0c0f] hover:bg-zinc-800 border border-[#232329] text-zinc-300 font-semibold text-[11px] transition-colors">
-                  <span class="lang-tr">Kompu Kopyala</span>
-                  <span class="lang-en">Copy Comp</span>
+                  class="px-2.5 py-1 rounded bg-[#0c0c0f] hover:bg-zinc-800 border border-[#232329] hover:border-[#c8aa6e]/50 text-[#c8aa6e] font-semibold text-[11px] transition-colors">
+                  <span class="lang-tr">Takım Kodu Kopyala</span>
+                  <span class="lang-en">Copy Team Code</span>
                 </button>
               </div>
             </div>
@@ -610,6 +610,27 @@
                       </span>
                     </div>
                     {% endfor %}
+                  </div>
+                </div>
+                {% endif %}
+
+                {% if comp.team_planner_code %}
+                <div class="pt-3 border-t border-[#1c1c22]">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[11px] font-semibold text-zinc-400">
+                      <span class="lang-tr">Oyun İçi Takım Planlayıcı Kodu (TFT İstemcisi):</span>
+                      <span class="lang-en">In-Game Team Planner Code (TFT Client Import):</span>
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <code class="flex-1 bg-[#141419] border border-[#23232c] rounded px-2.5 py-1.5 text-[11px] text-[#c8aa6e] mono select-all overflow-x-auto whitespace-nowrap">{{ comp.team_planner_code }}</code>
+                    <button type="button"
+                      data-team-code="{{ comp.team_planner_code }}"
+                      onclick="copyCompSummary(this)"
+                      class="px-2.5 py-1.5 rounded bg-[#18181f] hover:bg-zinc-800 border border-[#2c2c35] text-zinc-200 font-semibold text-[11px] shrink-0 transition-colors">
+                      <span class="lang-tr">Kodu Kopyala</span>
+                      <span class="lang-en">Copy Code</span>
+                    </button>
                   </div>
                 </div>
                 {% endif %}
@@ -1407,14 +1428,14 @@
 
     function copyCompSummary(btnEl) {
       const lang = document.documentElement.getAttribute('data-lang') || 'tr';
-      const text = btnEl.getAttribute(lang === 'tr' ? 'data-copy-tr' : 'data-copy-en') || '';
-      if (navigator.clipboard && text) {
-        navigator.clipboard.writeText(text);
+      const code = btnEl.getAttribute('data-team-code') || '';
+      if (navigator.clipboard && code) {
+        navigator.clipboard.writeText(code);
       }
       const origHtml = btnEl.innerHTML;
       btnEl.innerHTML = lang === 'tr'
-        ? '<span class="text-emerald-400">&#10003; Kopyalandı!</span>'
-        : '<span class="text-emerald-400">&#10003; Copied!</span>';
+        ? '<span class="text-emerald-400">&#10003; Kod Kopyalandı!</span>'
+        : '<span class="text-emerald-400">&#10003; Code Copied!</span>';
       setTimeout(() => {
         btnEl.innerHTML = origHtml;
       }, 1800);

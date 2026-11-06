@@ -31,6 +31,7 @@ METATFT_STATS_URL = (
 )
 METATFT_COMP_DETAILS_URL = "https://api-hc.metatft.com/tft-comps-api/comp_details?comp={cid}&cluster_id={cluster_group}"
 METATFT_UNIT_ITEMS_URL = "https://api-hc.metatft.com/tft-comps-api/unit_items_processed"
+METATFT_SET18_LOOKUP_URL = "https://data.metatft.com/lookups/TFTSet18_latest_en_us.json"
 METATFT_LEADERBOARD_URL = "https://api.metatft.com/tft-leaderboard/v2/{region}?offset=0&limit={limit}"
 METATFT_THRESHOLDS_URL = "https://api.metatft.com/public/promotion_thresholds/latest"
 
@@ -849,6 +850,8 @@ class RiotTFTAnalyzer:
             with ThreadPoolExecutor(max_workers=8) as pool:
                 list(pool.map(_fetch_detail, comps[:16]))
 
+        tp_map = self._get_team_planner_code_map(champ_map)
+
         for comp in comps:
             cid = str(comp.get("cluster_id", ""))
             det = details_by_cid.get(cid, {})
@@ -936,6 +939,44 @@ class RiotTFTAnalyzer:
             comp["board_grid"] = grid
             comp["level_schedule"] = self._build_level_schedule(comp.get("levelling", "Fast 8"))
             comp["early_units"] = early_units
+
+            tp_codes: List[str] = []
+            for u in comp.get("units", []):
+                c_hex = tp_map.get(u["apiName"])
+                if c_hex and c_hex not in tp_codes:
+                    tp_codes.append(c_hex)
+            padded = (tp_codes[:10] + ["000"] * 10)[:10]
+            comp["team_planner_code"] = "02" + "".join(padded) + "TFTSet18"
+
+    def _get_team_planner_code_map(self, champ_map: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
+        """Returns a mapping of Set 18 unit apiName -> 3-hex-digit League Client Team Planner code."""
+        if getattr(self, "_cached_tp_map", None):
+            return self._cached_tp_map  # type: ignore[return-value]
+
+        tp_map: Dict[str, str] = {}
+        try:
+            lookup = self._http_get_json(METATFT_SET18_LOOKUP_URL, timeout=15)
+            for u_entry in lookup.get("units", []):
+                code = str(u_entry.get("code") or "").strip()
+                if not code or not u_entry.get("shopUnit", True):
+                    continue
+                code_padded = code.zfill(3)[-3:]
+                api_n = str(u_entry.get("apiName") or "").strip()
+                if api_n:
+                    tp_map[api_n] = code_padded
+                for asset_n in u_entry.get("assetNames") or []:
+                    if asset_n:
+                        tp_map[str(asset_n).strip()] = code_padded
+        except Exception as exc:
+            print(f"[Warning] Team Planner lookup fetch failed, using deterministic hex fallback: {exc}")
+            shop_units = sorted(
+                [uid for uid, c in champ_map.items() if 1 <= int(c.get("cost", 0)) <= 5],
+            )
+            for idx, uid in enumerate(shop_units, start=1001):
+                tp_map[uid] = format(idx, "03x")
+
+        self._cached_tp_map = tp_map
+        return tp_map
 
     def fetch_item_and_unit_tier_lists(
         self,
