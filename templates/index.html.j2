@@ -147,9 +147,14 @@
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#1f1f24] pb-4">
       <div class="inline-flex flex-wrap rounded-lg bg-[#111114] p-1 border border-[#232329] self-start gap-1">
         <button id="btn-tab-live" onclick="switchTab('live')"
-          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm">
-          <span class="lang-tr">Canlı Yama & Master+ Meta ({{ report.versions.latest_label }})</span>
-          <span class="lang-en">Live Patch & Master+ Meta ({{ report.versions.latest_label }})</span>
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm flex items-center gap-1.5">
+          <span class="lang-tr">Canlı Yama &amp; Meta ({{ report.versions.latest_label }})</span>
+          <span class="lang-en">Live Patch &amp; Meta ({{ report.versions.latest_label }})</span>
+        </button>
+        <button id="btn-tab-tierlist" onclick="switchTab('tierlist')"
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5">
+          <span class="lang-tr">Eşya &amp; Şampiyon Tier Listesi</span>
+          <span class="lang-en">Item &amp; Unit Tier List</span>
         </button>
         <button id="btn-tab-leaderboard" onclick="switchTab('leaderboard')"
           class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5">
@@ -158,7 +163,7 @@
           <span class="lang-en">Leaderboards (TR / EMEA / NA / KR)</span>
         </button>
         <button id="btn-tab-pbe" onclick="switchTab('pbe')"
-          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200">
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5">
           <span class="lang-tr">PBE Erken Bakış ({{ report.versions.pbe_label }})</span>
           <span class="lang-en">PBE Early Preview ({{ report.versions.pbe_label }})</span>
         </button>
@@ -261,6 +266,46 @@
 
       <!-- Master+ Meta Compositions & BiS Section -->
       <section class="space-y-4">
+
+        <!-- FEATURE 1: INTERACTIVE ITEM-TO-COMP MATCHER ("ELİMDEKİ EŞYAYLA NE OYNANIR?") -->
+        {% if report.tier_lists and report.tier_lists.matcher_items %}
+        <div class="surface-card rounded-xl p-4 sm:p-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-4 rounded-sm bg-[#c8aa6e]"></span>
+                <h4 class="text-sm font-bold text-zinc-100">
+                  <span class="lang-tr">Elimdeki Eşyayla Ne Oynanır? (İnteraktif Eşyadan Komp Bulucu)</span>
+                  <span class="lang-en">What Should I Play With My Items? (Interactive Item-to-Comp Matcher)</span>
+                </h4>
+              </div>
+              <p class="text-xs text-zinc-500 mt-0.5">
+                <span class="lang-tr">Elindeki 1 ila 3 eşyaya tıkla; o eşyaları BiS (En İyi Eşya) olarak kullanan Master+ desteleri anında filtrelensin.</span>
+                <span class="lang-en">Click 1 to 3 items you hold in-game to immediately filter Master+ compositions that use them as Best-in-Slot.</span>
+              </p>
+            </div>
+            <button id="clear-items-btn" onclick="clearSelectedItems()" class="hidden self-start sm:self-auto px-2.5 py-1 rounded text-xs font-semibold bg-zinc-800 text-zinc-200 hover:bg-zinc-700 transition-colors">
+              <span class="lang-tr">Seçimi Temizle &times;</span>
+              <span class="lang-en">Clear Items &times;</span>
+            </button>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2" id="matcher-item-bar">
+            {% for mit in report.tier_lists.matcher_items %}
+            <button type="button" data-item-id="{{ mit.apiName }}" onclick="toggleItemMatcher('{{ mit.apiName }}')"
+              title="{{ mit.name }} / {{ mit.name_en }} (Avg: #{{ mit.avg_place }})"
+              class="matcher-item-btn group relative flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#0c0c0f] border border-[#232329] hover:border-zinc-500 transition-all text-xs">
+              <img src="{{ mit.icon }}" alt="{{ mit.name }}" class="w-6 h-6 rounded-sm object-cover" onerror="this.style.display='none'" />
+              <span class="text-[11px] text-zinc-300 group-hover:text-zinc-100 max-w-[110px] truncate hidden md:inline">
+                <span class="lang-tr">{{ mit.name }}</span>
+                <span class="lang-en">{{ mit.name_en }}</span>
+              </span>
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
         <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
           <div>
             <h3 class="text-base sm:text-lg font-bold text-zinc-100">
@@ -305,6 +350,7 @@
         <div class="grid grid-cols-1 gap-3" id="live-comp-grid">
           {% for comp in report.live_meta.compositions %}
           <div data-tier="{{ comp.tier }}" data-status="{{ comp.meta_status }}"
+               data-items="{{ (comp.comp_item_ids or []) | join(',') }}"
                data-search="{{ (comp.comp_name ~ ' ' ~ (comp.comp_name_en or '') ~ ' ' ~ (comp.active_traits | join(' ')) ~ ' ' ~ ((comp.active_traits_en or []) | join(' ')) ~ ' ' ~ (comp.units | map(attribute='name') | join(' ')) ~ ' ' ~ (comp.units | map(attribute='name_en') | join(' '))) | lower }}"
                class="comp-card surface-card rounded-xl p-4 sm:p-5 transition-colors">
             <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
@@ -428,33 +474,147 @@
 
             </div>
 
-            <!-- Carry Best-in-Slot (BiS) Items Strip -->
-            {% if comp.carry_builds %}
-            <div class="mt-3 pt-2.5 border-t border-[#1c1c21] flex flex-wrap items-center gap-2.5 text-xs">
-              <span class="text-zinc-500 font-medium text-[11px]">
-                <span class="lang-tr">Taşıyıcı Eşyaları (BiS):</span>
-                <span class="lang-en">Carry BiS Items:</span>
-              </span>
-              {% for cb in comp.carry_builds %}
-              <div class="flex flex-wrap items-center gap-1.5 bg-[#0c0c0f] px-2.5 py-1 rounded border border-[#222228]">
-                <img src="{{ cb.unit_icon }}" alt="{{ cb.unit_name }}" class="w-4 h-4 rounded-sm border cost-{{ cb.unit_cost }} object-cover" onerror="this.style.display='none'" />
-                <span class="font-semibold text-zinc-200 text-[11px]">
-                  <span class="lang-tr">{{ cb.unit_name }}:</span>
-                  <span class="lang-en">{{ cb.unit_name_en }}:</span>
+            <!-- Carry Best-in-Slot (BiS) Items Strip + Action Buttons (Board Drawer & Copy Comp) -->
+            <div class="mt-3 pt-2.5 border-t border-[#1c1c21] flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
+              <div class="flex flex-wrap items-center gap-2.5">
+                {% if comp.carry_builds %}
+                <span class="text-zinc-500 font-medium text-[11px]">
+                  <span class="lang-tr">Taşıyıcı Eşyaları (BiS):</span>
+                  <span class="lang-en">Carry BiS Items:</span>
                 </span>
-                <div class="flex flex-wrap items-center gap-1">
-                  {% for item in cb['items'] %}
-                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#16161b] border border-[#272730] text-zinc-300">
-                    {% if item.icon %}
-                    <img src="{{ item.icon }}" alt="{{ item.name }}" class="w-3.5 h-3.5 rounded-sm object-cover" onerror="this.style.display='none'" />
-                    {% endif %}
-                    <span class="lang-tr text-[11px]">{{ item.name }}</span>
-                    <span class="lang-en text-[11px]">{{ item.name_en }}</span>
+                {% for cb in comp.carry_builds %}
+                <div class="flex flex-wrap items-center gap-1.5 bg-[#0c0c0f] px-2.5 py-1 rounded border border-[#222228]">
+                  <img src="{{ cb.unit_icon }}" alt="{{ cb.unit_name }}" class="w-4 h-4 rounded-sm border cost-{{ cb.unit_cost }} object-cover" onerror="this.style.display='none'" />
+                  <span class="font-semibold text-zinc-200 text-[11px]">
+                    <span class="lang-tr">{{ cb.unit_name }}:</span>
+                    <span class="lang-en">{{ cb.unit_name_en }}:</span>
                   </span>
+                  <div class="flex flex-wrap items-center gap-1">
+                    {% for item in cb['items'] %}
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#16161b] border border-[#272730] text-zinc-300">
+                      {% if item.icon %}
+                      <img src="{{ item.icon }}" alt="{{ item.name }}" class="w-3.5 h-3.5 rounded-sm object-cover" onerror="this.style.display='none'" />
+                      {% endif %}
+                      <span class="lang-tr text-[11px]">{{ item.name }}</span>
+                      <span class="lang-en text-[11px]">{{ item.name_en }}</span>
+                    </span>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+              </div>
+
+              <!-- Action Buttons: Expand 4x7 Hex Board & 1-Click Copy Comp -->
+              <div class="flex items-center gap-2 shrink-0 self-end lg:self-auto">
+                <button type="button" onclick="toggleCompDrawer('comp-drawer-{{ loop.index }}', this)"
+                  class="px-2.5 py-1 rounded bg-[#16161b] hover:bg-zinc-800 border border-[#272730] text-zinc-200 font-semibold text-[11px] transition-colors flex items-center gap-1.5">
+                  <span class="text-[#c8aa6e]">&#9638;</span>
+                  <span class="lang-tr">Tahta Dizilimi &amp; Rehber</span>
+                  <span class="lang-en">4&times;7 Board &amp; Guide</span>
+                </button>
+
+                <button type="button"
+                  data-copy-tr="[{{ comp.tier }} Tier] {{ comp.comp_name }} ({{ comp.levelling }} - Ort. #{{ comp.master_stats.avg_placement }}) | Şampiyonlar: {{ comp.units | map(attribute='name') | join(', ') }}{% if comp.carry_builds %} | BiS: {% for cb in comp.carry_builds %}{{ cb.unit_name }} ({{ cb['items'] | map(attribute='name') | join(' + ') }}){% if not loop.last %}, {% endif %}{% endfor %}{% endif %}"
+                  data-copy-en="[{{ comp.tier }} Tier] {{ comp.comp_name_en or comp.comp_name }} ({{ comp.levelling }} - Avg #{{ comp.master_stats.avg_placement }}) | Units: {{ comp.units | map(attribute='name_en') | join(', ') }}{% if comp.carry_builds %} | BiS: {% for cb in comp.carry_builds %}{{ cb.unit_name_en }} ({{ cb['items'] | map(attribute='name_en') | join(' + ') }}){% if not loop.last %}, {% endif %}{% endfor %}{% endif %}"
+                  onclick="copyCompSummary(this)"
+                  class="px-2.5 py-1 rounded bg-[#0c0c0f] hover:bg-zinc-800 border border-[#232329] text-zinc-300 font-semibold text-[11px] transition-colors">
+                  <span class="lang-tr">Kompu Kopyala</span>
+                  <span class="lang-en">Copy Comp</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- EXPANDABLE DRAWER: 4x7 HEX BOARD POSITIONING & LEVELING GUIDE -->
+            {% if comp.board_grid %}
+            <div id="comp-drawer-{{ loop.index }}" class="hidden mt-4 pt-4 border-t border-[#232329] grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+              <!-- Left (7 cols): 4x7 TFT Hexagonal Board Positioning Grid -->
+              <div class="lg:col-span-7 bg-[#0c0c0f] border border-[#1f1f26] rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                    <span class="lang-tr">4&times;7 Tahta Dizilimi (Üst: Ön Saf / Alt: Arka Saf)</span>
+                    <span class="lang-en">4&times;7 Board Positioning (Top: Frontline / Bottom: Backline)</span>
+                  </span>
+                  <span class="text-[11px] text-zinc-500 mono">28 Hex</span>
+                </div>
+
+                <div class="space-y-2 overflow-x-auto pb-1">
+                  {% for row in comp.board_grid %}
+                  {% set row_idx = loop.index0 %}
+                  <div class="flex items-center gap-2 {% if row_idx % 2 == 1 %}pl-5 sm:pl-6{% endif %}">
+                    <span class="text-[10px] text-zinc-600 mono w-8 shrink-0">
+                      <span class="lang-tr">Sıra {{ row_idx + 1 }}</span>
+                      <span class="lang-en">Row {{ row_idx + 1 }}</span>
+                    </span>
+                    {% for cell in row %}
+                    {% if cell %}
+                    <div class="relative w-11 h-11 sm:w-12 sm:h-12 rounded-lg border-2 cost-{{ cell.cost }} bg-zinc-900 flex flex-col items-center justify-center shrink-0 shadow-md"
+                         title="{{ cell.name }} / {{ cell.name_en }}">
+                      <img src="{{ cell.icon }}" alt="{{ cell.name }}" class="w-full h-full object-cover rounded-[6px]" onerror="this.style.display='none'" />
+                      {% if cell.is_three_star %}
+                      <span class="absolute -top-1.5 -right-1 bg-amber-400 text-zinc-950 text-[8px] font-bold px-1 rounded mono">3★</span>
+                      {% elif cell.is_carry %}
+                      <span class="absolute -top-1.5 -right-1 bg-[#c8aa6e] text-zinc-950 text-[8px] font-bold px-1 rounded mono">C</span>
+                      {% endif %}
+                      <span class="absolute bottom-0 inset-x-0 bg-black/80 text-[8px] text-zinc-100 text-center truncate px-0.5 rounded-b">
+                        <span class="lang-tr">{{ cell.name }}</span>
+                        <span class="lang-en">{{ cell.name_en or cell.name }}</span>
+                      </span>
+                    </div>
+                    {% else %}
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-lg border border-dashed border-[#22222a] bg-[#111115]/60 shrink-0"></div>
+                    {% endif %}
+                    {% endfor %}
+                  </div>
                   {% endfor %}
                 </div>
               </div>
-              {% endfor %}
+
+              <!-- Right (5 cols): Stage-by-Stage Leveling Schedule & Early Opener -->
+              <div class="lg:col-span-5 flex flex-col justify-between gap-4 bg-[#0c0c0f] border border-[#1f1f26] rounded-xl p-4">
+                <div>
+                  <h5 class="text-xs font-bold text-zinc-200 uppercase tracking-wider mb-2.5">
+                    <span class="lang-tr">Aşama &amp; Seviye Basma Temposu ({{ comp.levelling }})</span>
+                    <span class="lang-en">Stage Leveling &amp; Roll Schedule ({{ comp.levelling }})</span>
+                  </h5>
+                  <div class="space-y-1.5 text-xs">
+                    {% for step in comp.level_schedule %}
+                    <div class="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded bg-[#141419] border border-[#22222a]">
+                      <div class="flex items-center gap-2 shrink-0">
+                        <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-[#c8aa6e] font-bold mono text-[11px]">{{ step.stage }}</span>
+                        <span class="font-bold text-zinc-100 mono text-[11px]">{{ step.level }}</span>
+                      </div>
+                      <span class="text-zinc-400 text-[11px] text-right">
+                        <span class="lang-tr">{{ step.note_tr }}</span>
+                        <span class="lang-en">{{ step.note_en }}</span>
+                      </span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                {% if comp.early_units %}
+                <div class="pt-3 border-t border-[#1c1c22]">
+                  <span class="text-[11px] font-semibold text-zinc-400 block mb-2">
+                    <span class="lang-tr">Önerilen Aşama 2 (Lvl 4) Erken Geçiş Tahtası:</span>
+                    <span class="lang-en">Recommended Stage 2 (Lvl 4) Opener Board:</span>
+                  </span>
+                  <div class="flex items-center gap-2.5">
+                    {% for eu in comp.early_units %}
+                    <div class="flex items-center gap-1.5 bg-[#141419] px-2 py-1 rounded border border-[#23232c]">
+                      <img src="{{ eu.icon }}" alt="{{ eu.name }}" class="w-5 h-5 rounded-sm border cost-{{ eu.cost }} object-cover" onerror="this.style.display='none'" />
+                      <span class="text-[11px] text-zinc-200 font-medium">
+                        <span class="lang-tr">{{ eu.name }}</span>
+                        <span class="lang-en">{{ eu.name_en or eu.name }}</span>
+                      </span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+
             </div>
             {% endif %}
 
@@ -898,6 +1058,208 @@
     </div>
 
     <!-- ================================================================= -->
+    <!-- TAB 4: MASTER+ ITEM & CHAMPION TIER LISTS                         -->
+    <!-- ================================================================= -->
+    <div id="panel-tierlist" class="space-y-6 hidden">
+      {% if report.tier_lists %}
+      <div class="surface-card rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-4 rounded-sm bg-[#c8aa6e]"></span>
+            <h2 class="text-base sm:text-lg font-bold text-zinc-100">
+              <span class="lang-tr">Set 18 Master+ Eşya &amp; Şampiyon Tier Listesi</span>
+              <span class="lang-en">Set 18 Master+ Item &amp; Champion Tier List</span>
+            </h2>
+          </div>
+          <p class="text-xs text-zinc-500 mt-1">
+            <span class="lang-tr">Erken aşamada basılabilecek en yüksek kazanma oranlı eşyalar (Slammable Items) ve yama diff puanlarıyla şampiyon sıralaması</span>
+            <span class="lang-en">Highest-performing slammable items and Set 18 unit standings overlaid with CDragon patch diff scores</span>
+          </p>
+        </div>
+
+        <!-- Sub-Tab Switcher: Items vs Champions -->
+        <div class="inline-flex rounded-lg bg-[#0c0c0f] p-1 border border-[#232329] gap-1 self-start sm:self-auto">
+          <button id="btn-sub-items" onclick="switchTierSubTab('items')"
+            class="px-3.5 py-1.5 rounded text-xs font-bold bg-[#c8aa6e] text-zinc-950 transition-colors">
+            <span class="lang-tr">Eşya Tier Listesi ({{ report.tier_lists.item_tiers | length }})</span>
+            <span class="lang-en">Item Tier List ({{ report.tier_lists.item_tiers | length }})</span>
+          </button>
+          <button id="btn-sub-units" onclick="switchTierSubTab('units')"
+            class="px-3.5 py-1.5 rounded text-xs font-bold text-zinc-400 hover:text-zinc-100 transition-colors">
+            <span class="lang-tr">Şampiyon Tier Listesi ({{ report.tier_lists.unit_tiers | length }})</span>
+            <span class="lang-en">Champion Tier List ({{ report.tier_lists.unit_tiers | length }})</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SUB-PANEL 1: ITEM TIER LIST -->
+      <div id="subpanel-items" class="surface-card rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-[#232329] bg-[#0d0d10] text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">
+                <th class="py-3 px-4 w-16">Tier</th>
+                <th class="py-3 px-4">
+                  <span class="lang-tr">Eşya (Item)</span><span class="lang-en">Item</span>
+                </th>
+                <th class="py-3 px-4 text-right">
+                  <span class="lang-tr">Ort. Sıra</span><span class="lang-en">Avg Place</span>
+                </th>
+                <th class="py-3 px-4 text-right">
+                  <span class="lang-tr">Oynanma</span><span class="lang-en">Play Rate</span>
+                </th>
+                <th class="py-3 px-4 text-right">
+                  <span class="lang-tr">Örneklem</span><span class="lang-en">Matches</span>
+                </th>
+                <th class="py-3 px-4">
+                  <span class="lang-tr">En İyi Kullanan Şampiyonlar</span><span class="lang-en">Best Unit Holders</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#1c1c22] text-xs">
+              {% for it in report.tier_lists.item_tiers %}
+              <tr class="hover:bg-[#16161b] transition-colors">
+                <td class="py-2.5 px-4 mono font-bold">
+                  <span class="inline-flex items-center justify-center w-7 h-7 rounded text-xs
+                    {% if it.tier == 'S' %}bg-amber-500/15 text-[#c8aa6e] border border-[#c8aa6e]/40
+                    {% elif it.tier == 'A' %}bg-zinc-800 text-zinc-100 border border-zinc-700
+                    {% elif it.tier == 'B' %}bg-zinc-900 text-zinc-400 border border-zinc-800
+                    {% else %}bg-zinc-900/60 text-zinc-500 border border-zinc-800{% endif %}">
+                    {{ it.tier }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-4">
+                  <div class="flex items-center gap-2.5">
+                    <img src="{{ it.icon }}" alt="{{ it.name }}" class="w-8 h-8 rounded border border-zinc-700 object-cover bg-zinc-900" onerror="this.style.display='none'" />
+                    <div>
+                      <span class="font-bold text-zinc-100">
+                        <span class="lang-tr">{{ it.name }}</span>
+                        <span class="lang-en">{{ it.name_en }}</span>
+                      </span>
+                      {% if it.is_emblem %}
+                      <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded bg-amber-500/10 text-[#c8aa6e] border border-[#c8aa6e]/30">Emblem</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td class="py-2.5 px-4 text-right mono font-bold {% if it.avg_place <= 4.20 %}text-emerald-400{% elif it.avg_place <= 4.40 %}text-zinc-100{% else %}text-rose-400{% endif %}">
+                  #{{ it.avg_place }}
+                </td>
+                <td class="py-2.5 px-4 text-right mono text-zinc-300">{{ it.pick_rate }}%</td>
+                <td class="py-2.5 px-4 text-right mono text-zinc-400">{{ "{:,}".format(it.games) }}</td>
+                <td class="py-2.5 px-4">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    {% for h in it.holders %}
+                    <div class="inline-flex items-center gap-1 bg-[#0c0c0f] px-2 py-0.5 rounded border border-[#23232c]">
+                      <img src="{{ h.icon }}" alt="{{ h.name }}" class="w-4 h-4 rounded-sm border cost-{{ h.cost }} object-cover" onerror="this.style.display='none'" />
+                      <span class="text-[11px] text-zinc-300">
+                        <span class="lang-tr">{{ h.name }}</span>
+                        <span class="lang-en">{{ h.name_en }}</span>
+                      </span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SUB-PANEL 2: CHAMPION TIER LIST -->
+      <div id="subpanel-units" class="surface-card rounded-xl overflow-hidden hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-[#232329] bg-[#0d0d10] text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">
+                <th class="py-3 px-4 w-16">Tier</th>
+                <th class="py-3 px-4">
+                  <span class="lang-tr">Şampiyon</span><span class="lang-en">Champion</span>
+                </th>
+                <th class="py-3 px-4">
+                  <span class="lang-tr">Yama Durumu</span><span class="lang-en">Patch Status</span>
+                </th>
+                <th class="py-3 px-4 text-right">
+                  <span class="lang-tr">Ort. Sıra</span><span class="lang-en">Avg Place</span>
+                </th>
+                <th class="py-3 px-4 text-right">
+                  <span class="lang-tr">Oynanma</span><span class="lang-en">Play Rate</span>
+                </th>
+                <th class="py-3 px-4">
+                  <span class="lang-tr">En İyi 3 Eşyası (BiS)</span><span class="lang-en">Top 3 Best-in-Slot Items</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#1c1c22] text-xs">
+              {% for u in report.tier_lists.unit_tiers %}
+              <tr class="hover:bg-[#16161b] transition-colors">
+                <td class="py-2.5 px-4 mono font-bold">
+                  <span class="inline-flex items-center justify-center w-7 h-7 rounded text-xs
+                    {% if u.tier == 'S' %}bg-amber-500/15 text-[#c8aa6e] border border-[#c8aa6e]/40
+                    {% elif u.tier == 'A' %}bg-zinc-800 text-zinc-100 border border-zinc-700
+                    {% elif u.tier == 'B' %}bg-zinc-900 text-zinc-400 border border-zinc-800
+                    {% else %}bg-zinc-900/60 text-zinc-500 border border-zinc-800{% endif %}">
+                    {{ u.tier }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-4">
+                  <div class="flex items-center gap-2.5">
+                    <img src="{{ u.icon }}" alt="{{ u.name }}" class="w-9 h-9 rounded-md border-2 cost-{{ u.cost }} object-cover bg-zinc-900" onerror="this.style.display='none'" />
+                    <div>
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-zinc-100">
+                          <span class="lang-tr">{{ u.name }}</span>
+                          <span class="lang-en">{{ u.name_en }}</span>
+                        </span>
+                        <span class="px-1.5 py-0.5 text-[10px] rounded bg-[#18181c] text-zinc-400 border border-[#27272f] mono">{{ u.cost }}G</span>
+                      </div>
+                      <p class="text-[11px] text-zinc-500">{{ u.traits | join(' · ') }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-2.5 px-4 mono">
+                  {% if u.patch_status == 'BUFF' %}
+                  <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+                    BUFF ({{ '%+.1f'|format(u.patch_impact) }})
+                  </span>
+                  {% elif u.patch_status == 'NERF' %}
+                  <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/25">
+                    NERF ({{ '%+.1f'|format(u.patch_impact) }})
+                  </span>
+                  {% else %}
+                  <span class="text-zinc-600 text-[11px]">—</span>
+                  {% endif %}
+                </td>
+                <td class="py-2.5 px-4 text-right mono font-bold {% if u.avg_place <= 4.22 %}text-emerald-400{% elif u.avg_place <= 4.42 %}text-zinc-100{% else %}text-rose-400{% endif %}">
+                  #{{ u.avg_place }}
+                </td>
+                <td class="py-2.5 px-4 text-right mono text-zinc-300">{{ u.pick_rate }}%</td>
+                <td class="py-2.5 px-4">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    {% for bi in u.best_items %}
+                    <div class="inline-flex items-center gap-1 bg-[#0c0c0f] px-2 py-0.5 rounded border border-[#23232c]">
+                      {% if bi.icon %}
+                      <img src="{{ bi.icon }}" alt="{{ bi.name }}" class="w-4 h-4 rounded-sm object-cover" onerror="this.style.display='none'" />
+                      {% endif %}
+                      <span class="text-[11px] text-zinc-300">
+                        <span class="lang-tr">{{ bi.name }}</span>
+                        <span class="lang-en">{{ bi.name_en }}</span>
+                      </span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ================================================================= -->
     <!-- AD SLOT 3: FOOTER MULTIPLEX / LEADERBOARD (728x90)                -->
     <!-- ================================================================= -->
     <aside id="ad-slot-footer-banner" aria-label="Sponsored Placement" class="ad-slot-container rounded-lg p-3 flex flex-col items-center justify-center min-h-[85px] text-center">
@@ -924,6 +1286,7 @@
   <script>
     let activeCompFilter = 'ALL';
     let activeLbRegion = 'tr1';
+    let selectedMatcherItems = new Set();
 
     function setLanguage(lang) {
       document.documentElement.setAttribute('data-lang', lang);
@@ -952,11 +1315,13 @@
     function switchTab(tab) {
       const panels = {
         live: document.getElementById('panel-live'),
+        tierlist: document.getElementById('panel-tierlist'),
         leaderboard: document.getElementById('panel-leaderboard'),
         pbe: document.getElementById('panel-pbe')
       };
       const buttons = {
         live: document.getElementById('btn-tab-live'),
+        tierlist: document.getElementById('btn-tab-tierlist'),
         leaderboard: document.getElementById('btn-tab-leaderboard'),
         pbe: document.getElementById('btn-tab-pbe')
       };
@@ -970,6 +1335,89 @@
           buttons[k].className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5';
         }
       });
+    }
+
+    function switchTierSubTab(sub) {
+      const pItems = document.getElementById('subpanel-items');
+      const pUnits = document.getElementById('subpanel-units');
+      const bItems = document.getElementById('btn-sub-items');
+      const bUnits = document.getElementById('btn-sub-units');
+      if (sub === 'items') {
+        pItems.classList.remove('hidden');
+        pUnits.classList.add('hidden');
+        bItems.className = 'px-3.5 py-1.5 rounded text-xs font-bold bg-[#c8aa6e] text-zinc-950 transition-colors';
+        bUnits.className = 'px-3.5 py-1.5 rounded text-xs font-bold text-zinc-400 hover:text-zinc-100 transition-colors';
+      } else {
+        pUnits.classList.remove('hidden');
+        pItems.classList.add('hidden');
+        bUnits.className = 'px-3.5 py-1.5 rounded text-xs font-bold bg-[#c8aa6e] text-zinc-950 transition-colors';
+        bItems.className = 'px-3.5 py-1.5 rounded text-xs font-bold text-zinc-400 hover:text-zinc-100 transition-colors';
+      }
+    }
+
+    function toggleItemMatcher(itemId) {
+      if (selectedMatcherItems.has(itemId)) {
+        selectedMatcherItems.delete(itemId);
+      } else {
+        if (selectedMatcherItems.size >= 3) {
+          const first = selectedMatcherItems.values().next().value;
+          selectedMatcherItems.delete(first);
+        }
+        selectedMatcherItems.add(itemId);
+      }
+      updateMatcherButtonsUI();
+      applyCompFilters();
+    }
+
+    function clearSelectedItems() {
+      selectedMatcherItems.clear();
+      updateMatcherButtonsUI();
+      applyCompFilters();
+    }
+
+    function updateMatcherButtonsUI() {
+      const clearBtn = document.getElementById('clear-items-btn');
+      if (clearBtn) {
+        if (selectedMatcherItems.size > 0) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+        }
+      }
+      document.querySelectorAll('#matcher-item-bar .matcher-item-btn').forEach(btn => {
+        const id = btn.getAttribute('data-item-id');
+        if (selectedMatcherItems.has(id)) {
+          btn.className = 'matcher-item-btn group relative flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/15 border-2 border-[#c8aa6e] text-zinc-100 transition-all text-xs shadow';
+        } else {
+          btn.className = 'matcher-item-btn group relative flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#0c0c0f] border border-[#232329] hover:border-zinc-500 transition-all text-xs';
+        }
+      });
+    }
+
+    function toggleCompDrawer(drawerId, btnEl) {
+      const drawer = document.getElementById(drawerId);
+      if (!drawer) return;
+      drawer.classList.toggle('hidden');
+      if (!drawer.classList.contains('hidden')) {
+        btnEl.classList.add('border-[#c8aa6e]', 'text-[#c8aa6e]');
+      } else {
+        btnEl.classList.remove('border-[#c8aa6e]', 'text-[#c8aa6e]');
+      }
+    }
+
+    function copyCompSummary(btnEl) {
+      const lang = document.documentElement.getAttribute('data-lang') || 'tr';
+      const text = btnEl.getAttribute(lang === 'tr' ? 'data-copy-tr' : 'data-copy-en') || '';
+      if (navigator.clipboard && text) {
+        navigator.clipboard.writeText(text);
+      }
+      const origHtml = btnEl.innerHTML;
+      btnEl.innerHTML = lang === 'tr'
+        ? '<span class="text-emerald-400">&#10003; Kopyalandı!</span>'
+        : '<span class="text-emerald-400">&#10003; Copied!</span>';
+      setTimeout(() => {
+        btnEl.innerHTML = origHtml;
+      }, 1800);
     }
 
     function switchLeaderboardRegion(regionId) {
@@ -1031,9 +1479,19 @@
         const tier = card.getAttribute('data-tier');
         const status = card.getAttribute('data-status');
         const searchBlob = card.getAttribute('data-search') || '';
+        const compItems = (card.getAttribute('data-items') || '').split(',');
         const matchesTier = (activeCompFilter === 'ALL' || tier === activeCompFilter || status === activeCompFilter);
         const matchesQuery = (!query || searchBlob.includes(query));
-        if (matchesTier && matchesQuery) {
+        let matchesSelectedItems = true;
+        if (selectedMatcherItems.size > 0) {
+          for (const reqItem of selectedMatcherItems) {
+            if (!compItems.includes(reqItem)) {
+              matchesSelectedItems = false;
+              break;
+            }
+          }
+        }
+        if (matchesTier && matchesQuery && matchesSelectedItems) {
           card.classList.remove('hidden');
         } else {
           card.classList.add('hidden');

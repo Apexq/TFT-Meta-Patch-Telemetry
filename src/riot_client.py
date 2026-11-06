@@ -29,6 +29,8 @@ METATFT_STATS_URL = (
     "https://api-hc.metatft.com/tft-comps-api/comps_stats"
     "?queue=1100&patch=current&days=2&rank=CHALLENGER,GRANDMASTER,MASTER"
 )
+METATFT_COMP_DETAILS_URL = "https://api-hc.metatft.com/tft-comps-api/comp_details?comp={cid}&cluster_id={cluster_group}"
+METATFT_UNIT_ITEMS_URL = "https://api-hc.metatft.com/tft-comps-api/unit_items_processed"
 METATFT_LEADERBOARD_URL = "https://api.metatft.com/tft-leaderboard/v2/{region}?offset=0&limit={limit}"
 METATFT_THRESHOLDS_URL = "https://api.metatft.com/public/promotion_thresholds/latest"
 
@@ -648,6 +650,24 @@ class RiotTFTAnalyzer:
             levelling = cluster.get("levelling") or f"lvl {len(units_out)}"
             pick_rate = round((st["sample_size"] / total_games) * 100.0, 2)
 
+            # Collect all priority & BiS item IDs for Interactive Item-to-Comp Matcher
+            comp_item_ids: List[str] = []
+            priority_items: List[Dict[str, Any]] = []
+            for cb in carry_builds_out:
+                for it in cb.get("items", []):
+                    if it["apiName"] not in comp_item_ids:
+                        comp_item_ids.append(it["apiName"])
+            for top_it in cluster.get("top_itemNames", [])[:6]:
+                it_id = top_it.get("itemNames", "")
+                if it_id:
+                    if it_id not in comp_item_ids:
+                        comp_item_ids.append(it_id)
+                    if len(priority_items) < 5:
+                        res_it = self.resolve_item_info(it_id, icon_version)
+                        res_it["avg_placement"] = round(float(top_it.get("avg", st["avg_placement"])), 2)
+                        res_it["pcnt"] = round(float(top_it.get("pcnt", 0.0)) * 100.0, 1)
+                        priority_items.append(res_it)
+
             parsed_comps.append({
                 "cluster_id": str(cid),
                 "comp_name": comp_title_tr,
@@ -672,6 +692,8 @@ class RiotTFTAnalyzer:
                 "nerfed_units": nerfed_units_tr,
                 "nerfed_units_en": nerfed_units_en,
                 "carry_builds": carry_builds_out,
+                "comp_item_ids": comp_item_ids,
+                "priority_items": priority_items,
                 "units": units_out,
                 "master_stats": {
                     "avg_placement": st["avg_placement"],
@@ -688,7 +710,9 @@ class RiotTFTAnalyzer:
         else:
             parsed_comps.sort(key=lambda c: (c["tier_rank"], c["master_stats"]["avg_placement"]))
 
-        return parsed_comps[:24]
+        top_comps = parsed_comps[:24]
+        self._enrich_comps_with_board_and_guide(top_comps, champ_map, icon_version, fetch_remote=not is_pbe)
+        return top_comps
 
     def _synthesize_fallback_comps(
         self,
@@ -759,3 +783,297 @@ class RiotTFTAnalyzer:
                 },
             })
         return comps[:12]
+
+
+    @staticmethod
+    def _build_level_schedule(levelling: str) -> List[Dict[str, str]]:
+        lvl_low = (levelling or "").lower()
+        if "5" in lvl_low:
+            return [
+                {"stage": "2-1", "level": "Lvl 4", "note_tr": "Seviye basma, 50 altın biriktir", "note_en": "Do not level; save for 50g interest"},
+                {"stage": "3-1", "level": "Lvl 5", "note_tr": "1G taşıyıcıları 3★ yapmak için 50g üstü rolla", "note_en": "Slowroll above 50g for 3★ 1-cost units"},
+                {"stage": "4-1", "level": "Lvl 6", "note_tr": "3★ sonrası sinerji tamamla", "note_en": "Push Lvl 6 after hitting 3★ core"},
+                {"stage": "5-1", "level": "Lvl 8", "note_tr": "Üst seviye destek birimleri ekle", "note_en": "Add high-cost frontline/support units"},
+            ]
+        if "6" in lvl_low:
+            return [
+                {"stage": "2-1", "level": "Lvl 4", "note_tr": "Ekonomi odaklı başlangıç yap", "note_en": "Play for economy and item components"},
+                {"stage": "3-2", "level": "Lvl 6", "note_tr": "Lvl 6'ya çık ve 2G taşıyıcıları 3★ için rolla", "note_en": "Level to 6 and slowroll for 3★ 2-costs"},
+                {"stage": "4-2", "level": "Lvl 7", "note_tr": "3★ bulunduğunda Lvl 7'ye geç", "note_en": "Push Lvl 7 once primary carry is 3★"},
+                {"stage": "5-1", "level": "Lvl 8", "note_tr": "Ana sinerjiyi tamamla", "note_en": "Cap board with final trait breakpoint"},
+            ]
+        if "7" in lvl_low:
+            return [
+                {"stage": "2-1", "level": "Lvl 4", "note_tr": "Kazanma serisi veya ekonomi koru", "note_en": "Maintain streak or maximize economy"},
+                {"stage": "3-2", "level": "Lvl 6", "note_tr": "Ara taşıyıcılarla tahtayı dengede tut", "note_en": "Stabilize board with item holders"},
+                {"stage": "4-1", "level": "Lvl 7", "note_tr": "3G taşıyıcıyı 3★ yapmak için 50g üstü rolla", "note_en": "Slowroll at Lvl 7 for 3★ 3-cost carry"},
+                {"stage": "5-1", "level": "Lvl 8", "note_tr": "3★ tamamlanınca Lvl 8'e çık", "note_en": "Level to 8 after completing 3★ upgrades"},
+            ]
+        if "9" in lvl_low:
+            return [
+                {"stage": "2-1", "level": "Lvl 4", "note_tr": "Güçlü erken tahta + maksimum faiz", "note_en": "Strong opener + maximum gold interest"},
+                {"stage": "3-2", "level": "Lvl 6", "note_tr": "Can koruyacak erken eşyaları bas", "note_en": "Slam flexible items to preserve HP"},
+                {"stage": "4-2", "level": "Lvl 8", "note_tr": "Az altın harcayarak geçiş tahtası kur", "note_en": "Stabilize lightly without emptying gold"},
+                {"stage": "5-2", "level": "Lvl 9", "note_tr": "Lvl 9'a çık ve 5G efsaneleri 2★ yap", "note_en": "Reach Lvl 9 and roll for 2★ 5-cost carries"},
+            ]
+        return [
+            {"stage": "2-1", "level": "Lvl 4", "note_tr": "Erken sinerji + eşya tutucu açılışı", "note_en": "Early synergy + item holder opener"},
+            {"stage": "2-5", "level": "Lvl 5", "note_tr": "Seriyi korumak için seviye bas", "note_en": "Level to preserve win streak"},
+            {"stage": "3-2", "level": "Lvl 6", "note_tr": "Tahtayı güçlendir, 50 altın faizini koru", "note_en": "Upgrade board while holding 50g interest"},
+            {"stage": "4-2", "level": "Lvl 8", "note_tr": "Lvl 8'e çık ve 4G ana taşıyıcıları 2★ yap", "note_en": "Roll down at Lvl 8 for 2★ 4-cost carries"},
+        ]
+
+    def _enrich_comps_with_board_and_guide(
+        self,
+        comps: List[Dict[str, Any]],
+        champ_map: Dict[str, Dict[str, Any]],
+        icon_version: str,
+        fetch_remote: bool = True,
+    ) -> None:
+        details_by_cid: Dict[str, Dict[str, Any]] = {}
+        if fetch_remote and comps:
+            def _fetch_detail(comp_obj: Dict[str, Any]) -> None:
+                cid = str(comp_obj.get("cluster_id", ""))
+                if not cid or not cid.isdigit():
+                    return
+                cluster_group = cid[:3]
+                try:
+                    url = METATFT_COMP_DETAILS_URL.format(cid=cid, cluster_group=cluster_group)
+                    resp = self._http_get_json(url, timeout=6)
+                    res = resp.get("results", {}) if isinstance(resp, dict) else {}
+                    if res:
+                        details_by_cid[cid] = res
+                except Exception:
+                    pass
+
+            with ThreadPoolExecutor(max_workers=8) as pool:
+                list(pool.map(_fetch_detail, comps[:16]))
+
+        for comp in comps:
+            cid = str(comp.get("cluster_id", ""))
+            det = details_by_cid.get(cid, {})
+            pos_units = (det.get("positioning") or {}).get("units") or {}
+
+            # 4 rows x 7 cols hex board (Row 0 = Frontline, Row 3 = Backline)
+            grid: List[List[Optional[Dict[str, Any]]]] = [[None for _ in range(7)] for _ in range(4)]
+            occupied: set[tuple[int, int]] = set()
+
+            # Sort units so carries and primary frontline tanks claim their preferred hex first
+            units_sorted = sorted(
+                comp.get("units", []),
+                key=lambda u: (0 if u.get("is_carry") else 1, -int(u.get("cost", 1))),
+            )
+
+            for u in units_sorted:
+                uid = u["apiName"]
+                placed = False
+                u_pos_list = (pos_units.get(uid) or {}).get("positions") or []
+                for p_entry in u_pos_list:
+                    cell_str = str(p_entry.get("cell", ""))
+                    if cell_str.startswith("cell_"):
+                        try:
+                            cell_num = int(cell_str.split("_")[1])
+                            if 1 <= cell_num <= 28:
+                                r = 3 - ((cell_num - 1) // 7)
+                                c = (cell_num - 1) % 7
+                                if (r, c) not in occupied:
+                                    grid[r][c] = u
+                                    occupied.add((r, c))
+                                    placed = True
+                                    break
+                        except ValueError:
+                            continue
+
+                if not placed:
+                    c_raw = champ_map.get(uid, {})
+                    atk_range = int((c_raw.get("stats") or {}).get("range") or (4 if u.get("is_carry") else 1))
+                    if atk_range <= 1:
+                        pref_coords = [(0, 3), (0, 2), (0, 4), (0, 1), (0, 5), (0, 0), (0, 6), (1, 3), (1, 2), (1, 4)]
+                    elif atk_range == 2:
+                        pref_coords = [(1, 2), (1, 4), (1, 1), (1, 5), (0, 1), (0, 5), (1, 3), (2, 2), (2, 4)]
+                    else:
+                        pref_coords = [(3, 6), (3, 0), (3, 5), (3, 1), (3, 4), (3, 2), (3, 3), (2, 6), (2, 0)]
+
+                    for r, c in pref_coords:
+                        if (r, c) not in occupied:
+                            grid[r][c] = u
+                            occupied.add((r, c))
+                            placed = True
+                            break
+
+            # Early game (Stage 2 Lvl 4) transition units
+            early_units: List[Dict[str, Any]] = []
+            early_opts = (det.get("early_options") or {}).get("4") or []
+            if early_opts and isinstance(early_opts, list):
+                unit_list_str = str(early_opts[0].get("unit_list", ""))
+                for e_uid in unit_list_str.split("&"):
+                    e_uid = e_uid.strip()
+                    if e_uid in champ_map:
+                        c_info = champ_map[e_uid]
+                        early_units.append({
+                            "apiName": e_uid,
+                            "name": c_info["name"],
+                            "name_en": self.en_champ_names.get(e_uid, c_info["name"]),
+                            "cost": c_info.get("cost", 1),
+                            "icon": CDragonClient.resolve_icon_url(
+                                c_info.get("tileIcon") or c_info.get("squareIcon") or c_info.get("icon"),
+                                icon_version,
+                            ),
+                        })
+            if not early_units:
+                low_cost = sorted(comp.get("units", []), key=lambda x: x.get("cost", 1))[:4]
+                early_units = [
+                    {
+                        "apiName": u["apiName"],
+                        "name": u["name"],
+                        "name_en": u.get("name_en", u["name"]),
+                        "cost": u.get("cost", 1),
+                        "icon": u.get("icon", ""),
+                    }
+                    for u in low_cost
+                ]
+
+            comp["board_grid"] = grid
+            comp["level_schedule"] = self._build_level_schedule(comp.get("levelling", "Fast 8"))
+            comp["early_units"] = early_units
+
+    def fetch_item_and_unit_tier_lists(
+        self,
+        set18_data: Dict[str, Any],
+        diff_report: Dict[str, Any],
+        icon_version: str = "latest",
+    ) -> Dict[str, Any]:
+        """
+        Fetches Master+ item and champion performance telemetry from `unit_items_processed`,
+        overlaying CommunityDragon Set 18 icons, bilingual names, and patch diff scores.
+        """
+        champ_map = {c["apiName"]: c for c in set18_data.get("champions", [])}
+        champ_diff_map = {c["apiName"]: c for c in diff_report.get("champion_diffs", [])}
+
+        item_tiers: List[Dict[str, Any]] = []
+        unit_tiers: List[Dict[str, Any]] = []
+        matcher_items: List[Dict[str, Any]] = []
+
+        try:
+            payload = self._http_get_json(METATFT_UNIT_ITEMS_URL, timeout=15)
+            raw_items = payload.get("itemNames", {}) if isinstance(payload, dict) else {}
+            raw_units = payload.get("units", {}) if isinstance(payload, dict) else {}
+
+            # 1. Process Master+ Slammable Items Tier List
+            valid_items: List[Dict[str, Any]] = []
+            for item_id, i_data in raw_items.items():
+                cnt = int(i_data.get("count") or 0)
+                if cnt < 10000:
+                    continue
+                avg_pl = round(float(i_data.get("avg") or 4.5), 2)
+                pick_pct = round(float(i_data.get("pick") or 0.0) * 100.0, 1)
+                resolved = self.resolve_item_info(item_id, icon_version)
+                if not resolved.get("icon"):
+                    continue
+
+                holders: List[Dict[str, Any]] = []
+                for h_obj in (i_data.get("units") or [])[:5]:
+                    u_api = h_obj.get("unit", "")
+                    if u_api in champ_map:
+                        c_info = champ_map[u_api]
+                        holders.append({
+                            "apiName": u_api,
+                            "name": c_info["name"],
+                            "name_en": self.en_champ_names.get(u_api, c_info["name"]),
+                            "cost": c_info.get("cost", 1),
+                            "icon": CDragonClient.resolve_icon_url(
+                                c_info.get("tileIcon") or c_info.get("squareIcon") or c_info.get("icon"),
+                                icon_version,
+                            ),
+                        })
+
+                if avg_pl <= 4.18:
+                    tier = "S"
+                elif avg_pl <= 4.32:
+                    tier = "A"
+                elif avg_pl <= 4.45:
+                    tier = "B"
+                else:
+                    tier = "C"
+
+                is_emblem = "emblem" in item_id.lower()
+                valid_items.append({
+                    "apiName": item_id,
+                    "name": resolved["name"],
+                    "name_en": resolved["name_en"],
+                    "icon": resolved["icon"],
+                    "tier": tier,
+                    "avg_place": avg_pl,
+                    "pick_rate": min(99.9, pick_pct),
+                    "games": cnt,
+                    "is_emblem": is_emblem,
+                    "holders": holders[:4],
+                })
+
+            valid_items.sort(key=lambda x: x["avg_place"])
+            item_tiers = valid_items[:36]
+
+            # Select top 18 most played non-emblem core items for Interactive Item-to-Comp Matcher
+            craftable_by_pop = sorted(
+                [it for it in valid_items if not it["is_emblem"]],
+                key=lambda x: -x["games"],
+            )
+            matcher_items = craftable_by_pop[:18]
+
+            # 2. Process Master+ Champion Tier List overlaid with CDragon Patch Diffs
+            valid_units: List[Dict[str, Any]] = []
+            for u_api, u_data in raw_units.items():
+                if u_api not in champ_map:
+                    continue
+                cnt = int(u_data.get("count") or 0)
+                if cnt < 5000:
+                    continue
+                c_info = champ_map[u_api]
+                c_diff = champ_diff_map.get(u_api)
+                avg_pl = round(float(u_data.get("avg") or 4.5), 2)
+                pick_pct = round(float(u_data.get("pick") or 0.0) * 100.0, 1)
+
+                if avg_pl <= 4.22:
+                    tier = "S"
+                elif avg_pl <= 4.38:
+                    tier = "A"
+                elif avg_pl <= 4.52:
+                    tier = "B"
+                else:
+                    tier = "C"
+
+                best_items: List[Dict[str, str]] = []
+                for bi in (u_data.get("items") or [])[:3]:
+                    bi_id = bi.get("itemName", "")
+                    if bi_id:
+                        best_items.append(self.resolve_item_info(bi_id, icon_version))
+
+                valid_units.append({
+                    "apiName": u_api,
+                    "name": c_info["name"],
+                    "name_en": self.en_champ_names.get(u_api, c_info["name"]),
+                    "cost": c_info.get("cost", 1),
+                    "traits": c_info.get("traits", []),
+                    "icon": CDragonClient.resolve_icon_url(
+                        c_info.get("tileIcon") or c_info.get("squareIcon") or c_info.get("icon"),
+                        icon_version,
+                    ),
+                    "tier": tier,
+                    "avg_place": avg_pl,
+                    "pick_rate": min(99.9, pick_pct),
+                    "games": cnt,
+                    "patch_status": c_diff["status"] if c_diff else "UNCHANGED",
+                    "patch_impact": round(c_diff["impact_score"], 1) if c_diff else 0.0,
+                    "best_items": best_items,
+                })
+
+            valid_units.sort(key=lambda x: x["avg_place"])
+            unit_tiers = valid_units
+        except Exception as exc:
+            print(f"[Warning] Item & Unit tier list fetch failed: {exc}")
+
+        return {
+            "matcher_items": matcher_items,
+            "item_tiers": item_tiers,
+            "unit_tiers": unit_tiers,
+        }

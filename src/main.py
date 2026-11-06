@@ -155,6 +155,13 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
     leaderboards = riot_analyzer.fetch_regional_leaderboards(limit_per_region=25)
     print(f"[Leaderboards] Fetched {leaderboards.get('total_players_listed', 0)} Challenger players across {len(leaderboards.get('regions', []))} regions")
 
+    tier_lists = riot_analyzer.fetch_item_and_unit_tier_lists(
+        set18_data=latest_data,
+        diff_report=live_diff,
+        icon_version=versions["latest_cdragon"],
+    )
+    print(f"[Tier Lists] Items={len(tier_lists.get('item_tiers', []))} | Units={len(tier_lists.get('unit_tiers', []))}")
+
     live_meta = riot_analyzer.build_set18_meta_compositions(
         set18_data=latest_data,
         diff_report=live_diff,
@@ -190,6 +197,7 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         "pbe_diff": pbe_diff,
         "pbe_meta": pbe_meta,
         "leaderboards": leaderboards,
+        "tier_lists": tier_lists,
     }
 
     builder = DashboardBuilder()
