@@ -201,7 +201,7 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         "tier_lists": tier_lists,
         "chat": {
             # Public URL of the Cloudflare Worker AI Coach (not a secret). Empty = widget shows "coming soon".
-            "endpoint": os.environ.get("CHAT_WORKER_URL", "").strip(),
+            "endpoint": os.environ.get("CHAT_WORKER_URL", "https://tft-ai-coach.besirsecilmis.workers.dev").strip(),
         },
     }
 

@@ -1,11 +1,5 @@
 /**
  * TFT AI Coach — Cloudflare Worker (RAG proxy)
- *
- * Flow: browser widget -> this Worker -> rag_context.json (GitHub Pages) -> Gemini API -> answer
- *
- * - The Gemini API key lives only in Cloudflare (`wrangler secret put GEMINI_API_KEY`), never in the repo or browser.
- * - Retrieval is a lightweight keyword scorer over the pre-built chunks (no vector DB needed).
- * - Requests are restricted to ALLOWED_ORIGINS, size-capped and rate-limited per IP.
  */
 
 const MAX_MESSAGE_CHARS = 500;
@@ -20,9 +14,9 @@ export default {
   async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
     const allowed = (env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean);
-    const originOk = allowed.includes(origin);
+    const originOk = allowed.includes(origin) || origin.endsWith("github.io");
     const cors = {
-      "Access-Control-Allow-Origin": originOk ? origin : allowed[0] || "",
+      "Access-Control-Allow-Origin": originOk ? origin : "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
       "Access-Control-Max-Age": "86400",
@@ -31,11 +25,9 @@ export default {
 
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (request.method !== "POST") return json({ error: "Method not allowed" }, 405, cors);
-    if (!originOk) return json({ error: "Origin not allowed" }, 403, cors);
-    if (!env.GEMINI_API_KEY) return json({ error: "Server not configured" }, 500, cors);
 
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-    if (isRateLimited(ip, Number(env.RATE_LIMIT_PER_MINUTE || 8))) {
+    if (isRateLimited(ip, Number(env.RATE_LIMIT_PER_MINUTE || 15))) {
       return json({ error: "rate_limited" }, 429, cors);
     }
 
@@ -59,9 +51,9 @@ export default {
 
     let rag;
     try {
-      rag = await loadRag(env, ctx);
+      rag = await loadRag(env);
     } catch (e) {
-      return json({ error: "Knowledge base unavailable" }, 502, cors);
+      return json({ error: "Knowledge base unavailable: " + e.message }, 502, cors);
     }
 
     const chunks = retrieve(rag.chunks || [], message + " " + history.map((h) => h.parts[0].text).slice(-2).join(" "));
@@ -84,22 +76,29 @@ export default {
       context,
     ].join("\n");
 
-    const model = env.GEMINI_MODEL || "gemini-3.8-flash";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+    const model = env.GEMINI_MODEL || "gemini-3.5-flash";
+    const apiKey = env.GEMINI_API_KEY || "";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-    const llmRes = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: [...history, { role: "user", parts: [{ text: message }] }],
-        generationConfig: { temperature: 0.3, maxOutputTokens: 600 },
-      }),
-    });
+    let llmRes;
+    try {
+      llmRes = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [...history, { role: "user", parts: [{ text: message }] }],
+          generationConfig: { temperature: 0.3, maxOutputTokens: 600 },
+        }),
+      });
+    } catch (e) {
+      return json({ error: "Fetch error to Gemini API: " + e.message }, 502, cors);
+    }
 
     if (!llmRes.ok) {
+      const errText = await llmRes.text().catch(() => "");
       const status = llmRes.status === 429 ? 429 : 502;
-      return json({ error: status === 429 ? "rate_limited" : "LLM request failed" }, status, cors);
+      return json({ error: status === 429 ? "rate_limited" : "LLM request failed", details: errText }, status, cors);
     }
 
     const data = await llmRes.json();
@@ -127,7 +126,6 @@ function json(obj, status, headers) {
 }
 
 function isRateLimited(ip, perMinute) {
-  // Best-effort, per-isolate limiter. For stricter limits add a Cloudflare Rate Limiting rule in the dashboard.
   const now = Date.now();
   const hits = (ipHits.get(ip) || []).filter((t) => now - t < 60_000);
   hits.push(now);
@@ -136,11 +134,13 @@ function isRateLimited(ip, perMinute) {
   return hits.length > perMinute;
 }
 
-async function loadRag(env, ctx) {
+async function loadRag(env) {
   const now = Date.now();
   if (ragCache.data && now - ragCache.loadedAt < RAG_CACHE_SECONDS * 1000) return ragCache.data;
   const ragUrl = new URL("api/rag_context.json", env.SITE_URL).toString();
-  const res = await fetch(ragUrl, { cf: { cacheTtl: RAG_CACHE_SECONDS, cacheEverything: true } });
+  const res = await fetch(ragUrl, {
+    headers: { "User-Agent": "TFT-AI-Coach-Worker/1.0" },
+  });
   if (!res.ok) throw new Error(`RAG fetch failed: ${res.status}`);
   const data = await res.json();
   ragCache = { loadedAt: now, data };
@@ -194,7 +194,6 @@ function retrieve(chunks, query) {
   scored.sort((a, b) => b.score - a.score);
   let picked = scored.filter((s) => s.score > 0).slice(0, TOP_K_CHUNKS).map((s) => s.c);
 
-  // Generic questions ("what's meta?") -> fall back to top-tier comps.
   if (picked.length <= 1) {
     picked = [
       ...picked,
