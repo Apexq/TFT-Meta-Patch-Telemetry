@@ -8,7 +8,7 @@ SITE_URL = "https://apexq.github.io/TFT-Meta-Patch-Telemetry/"
 # Comma-separated list of origins allowed to call this Worker
 ALLOWED_ORIGINS = "https://apexq.github.io"
 # Gemini model id. Check https://ai.google.dev/gemini-api/docs/models for the current list.
-GEMINI_MODEL = "gemini-flash-latest"
+GEMINI_MODEL = "gemini-3.8-flash"
 RATE_LIMIT_PER_MINUTE = "8"
 
 # Secret (do NOT put it here). Set it with:

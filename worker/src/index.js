@@ -84,7 +84,7 @@ export default {
       context,
     ].join("\n");
 
-    const model = env.GEMINI_MODEL || "gemini-flash-latest";
+    const model = env.GEMINI_MODEL || "gemini-3.8-flash";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 
     const llmRes = await fetch(url, {
