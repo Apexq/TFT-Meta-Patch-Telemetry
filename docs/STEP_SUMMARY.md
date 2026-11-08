@@ -35,8 +35,8 @@ Across 333,984 real Challenger, Grandmaster, and Master matches, 'Riftbeast Bram
 | **Taric** | 5 | `BUFF` | `+17.6` | Armor: 65 -> 70, Max Mana: 70 -> 65 |
 
 ## PBE Early Preview (18.7 (PBE))
-**18.7 (PBE) Early Preview: 'Adaptor Master Yi' Gains Momentum on PBE**
+**18.7 (PBE): PBE Branch Synchronized with Live Patch (18.6)**
 
-Comparing live patch 18.6 against the 18.7 (PBE) branch on CommunityDragon reveals 0 champion and 1 trait adjustments. Buffs to key units directly strengthen the 'Adaptor Master Yi' Master+ archetype. Once the PBE patch reaches live servers, this projection will be finalized against live Master+ match telemetry.
+No numeric Set 18 differences currently exist between CommunityDragon's PBE branch and live patch 18.6. When the next PBE cycle deploys, impact projections on existing Master+ compositions will be computed automatically.
 
 *Generated at: 2026-11-08 10:42 UTC | Target Mutator: `TFTSet18`*

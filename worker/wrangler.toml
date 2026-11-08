@@ -1,0 +1,15 @@
+name = "tft-ai-coach"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+# Public site that hosts docs/api/rag_context.json (must end with a slash)
+SITE_URL = "https://apexq.github.io/TFT-Meta-Patch-Telemetry/"
+# Comma-separated list of origins allowed to call this Worker
+ALLOWED_ORIGINS = "https://apexq.github.io"
+# Gemini model id. Check https://ai.google.dev/gemini-api/docs/models for the current list.
+GEMINI_MODEL = "gemini-flash-latest"
+RATE_LIMIT_PER_MINUTE = "8"
+
+# Secret (do NOT put it here). Set it with:
+#   npx wrangler secret put GEMINI_API_KEY

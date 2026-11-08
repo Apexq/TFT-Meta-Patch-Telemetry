@@ -18,6 +18,7 @@ from src.cdragon_client import CDragonClient
 from src.dashboard_builder import DashboardBuilder
 from src.diff_engine import Set18DiffEngine
 from src.meta_synthesizer import MetaSynthesizer
+from src.rag_builder import RAGBuilder
 from src.riot_client import RiotTFTAnalyzer
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -198,11 +199,18 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         "pbe_meta": pbe_meta,
         "leaderboards": leaderboards,
         "tier_lists": tier_lists,
+        "chat": {
+            # Public URL of the Cloudflare Worker AI Coach (not a secret). Empty = widget shows "coming soon".
+            "endpoint": os.environ.get("CHAT_WORKER_URL", "").strip(),
+        },
     }
 
     builder = DashboardBuilder()
     paths = builder.build_all(full_report)
     print(f"[Dashboard] Generated: {paths['index_html']}")
+
+    rag_paths = RAGBuilder(full_report).write_all()
+    print(f"[AI Knowledge Base] Generated: {', '.join(p.name for p in rag_paths.values())}")
 
     gh_step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if gh_step_summary:

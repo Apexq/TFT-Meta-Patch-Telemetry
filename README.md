@@ -61,11 +61,17 @@ TFT-Meta-Patch-Telemetry/
 │   ├── riot_client.py           # Master+ match cluster analyzer, BiS items & Riot API client
 │   ├── meta_synthesizer.py      # GitHub Models AI synthesis & Discord webhook client
 │   ├── dashboard_builder.py     # Jinja2 static site & GitHub Step Summary builder
+│   ├── rag_builder.py           # AI Knowledge Base generator (llms.txt, llms-full.txt, rag_context.json)
 │   └── main.py                  # Pipeline CLI orchestrator (--check-only / --force)
+├── worker/                      # Serverless Cloudflare Worker RAG proxy for the TFT AI Coach widget
+│   ├── src/index.js             # Keyword retrieval + Gemini API proxy with CORS & rate limiting
+│   ├── wrangler.toml            # Worker configuration
+│   └── README.md                # Deployment & setup guide
 ├── templates/
-│   └── index.html.j2            # Tailwind CSS dashboard template with EN/TR toggle
+│   └── index.html.j2            # Tailwind CSS dashboard template with EN/TR toggle & AI Coach widget
 ├── tests/
-│   └── test_diff_engine.py      # Unit tests for stat and ability diff scoring
+│   ├── test_diff_engine.py      # Unit tests for stat and ability diff scoring
+│   └── test_rag_builder.py      # Unit tests for RAG chunking & llms.txt output
 ├── data/
 │   └── state.json               # Tracked patch versions and SHA-256 data fingerprints
 ├── docs/                        # Generated static site & JSON artifacts for GitHub Pages
@@ -99,6 +105,7 @@ The pipeline runs out of the box with zero external secrets required. The follow
 
 - `RIOT_API_KEY`: Riot Developer API key (`X-Riot-Token`) for direct regional Challenger/Grandmaster/Master ladder telemetry (`RIOT_PLATFORM_REGION`, defaults to `tr1`).
 - `DISCORD_WEBHOOK_URL`: Posts an automated patch summary embed to a Discord channel when the pipeline runs.
+- `CHAT_WORKER_URL` *(Repository Variable)*: Public URL of the deployed Cloudflare Worker (`worker/`) to activate the live TFT AI Coach widget on the dashboard. See [`worker/README.md`](worker/README.md) for deployment steps.
 
 ---
 

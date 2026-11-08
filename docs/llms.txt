@@ -1,0 +1,17 @@
+# TFT Set 18 Meta & Patch Telemetry
+
+> Automatically updated Teamfight Tactics Set 18 knowledge base for live patch 18.6 (PBE 18.7 (PBE)). Master+ compositions, carry best-in-slot items, item and champion tier lists, CommunityDragon patch diffs, regional Challenger leaderboards and official in-game Team Planner codes. Last generated: 2026-11-08 11:35 UTC.
+
+Attribution: Master+ match clustering, leaderboards and item telemetry courtesy of MetaTFT.com (used with permission). Patch data via CommunityDragon and the Riot Games API. Not endorsed by Riot Games.
+
+## Knowledge Base
+
+- [Full knowledge base (Markdown)](https://apexq.github.io/TFT-Meta-Patch-Telemetry/llms-full.txt): Every composition, champion, item, patch change and leaderboard cutoff for the current patch in one file
+- [RAG chunks (JSON)](https://apexq.github.io/TFT-Meta-Patch-Telemetry/api/rag_context.json): Pre-chunked retrieval documents with keywords (TR + EN names)
+- [Raw report (JSON)](https://apexq.github.io/TFT-Meta-Patch-Telemetry/meta_report.json): Complete structured pipeline output
+
+## Optional
+
+- [Interactive dashboard](https://apexq.github.io/TFT-Meta-Patch-Telemetry/): Bilingual (TR / EN) web dashboard
+- [Patch release archive](https://github.com/Apexq/TFT-Meta-Patch-Telemetry/releases): Versioned, patch-pinned snapshots of the knowledge base
+- [Source code](https://github.com/Apexq/TFT-Meta-Patch-Telemetry): Python pipeline orchestrated by GitHub Actions

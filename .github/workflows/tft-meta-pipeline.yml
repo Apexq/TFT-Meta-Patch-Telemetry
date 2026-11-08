@@ -24,6 +24,7 @@ on:
       - "docs/**"
       - "data/state.json"
       - "README.md"
+      - "worker/**"
 
 # Principle of least privilege at workflow root; elevated per-job below
 permissions:
@@ -122,6 +123,7 @@ jobs:
           RIOT_PLATFORM_REGION: ${{ vars.RIOT_PLATFORM_REGION || 'tr1' }}
           RIOT_ROUTING_REGION: ${{ vars.RIOT_ROUTING_REGION || 'europe' }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          CHAT_WORKER_URL: ${{ vars.CHAT_WORKER_URL }}
         run: python -m src.main --force
 
       - name: Commit & Push Updated Dashboard and State
@@ -151,6 +153,9 @@ jobs:
           path: |
             docs/STEP_SUMMARY.md
             docs/meta_report.json
+            docs/llms.txt
+            docs/llms-full.txt
+            docs/api/rag_context.json
           retention-days: 14
 
   deploy-pages:
@@ -188,7 +193,11 @@ jobs:
           tag_name: "patch-${{ needs.detect-patch.outputs.latest_label }}-${{ github.run_number }}"
           name: "TFT Set 18 Meta Report — Patch ${{ needs.detect-patch.outputs.latest_label }}"
           body_path: ./release_assets/STEP_SUMMARY.md
-          files: ./release_assets/meta_report.json
+          files: |
+            ./release_assets/meta_report.json
+            ./release_assets/llms.txt
+            ./release_assets/llms-full.txt
+            ./release_assets/api/rag_context.json
           generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
