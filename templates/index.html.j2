@@ -9,50 +9,53 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-base: #09090b;
-      --bg-surface: #111114;
-      --bg-elevated: #18181c;
-      --border-subtle: #232329;
-      --border-hover: #34343d;
-      --accent-gold: #c8aa6e;
+      --bg-base: #0a0e17;
+      --bg-surface: #121722;
+      --bg-elevated: #182030;
+      --bg-inset: #0d121c;
+      --border-subtle: #222d42;
+      --border-hover: #3b4b6c;
+      --accent-gold: #f0c374;
+      --accent-gold-hover: #ffd98f;
     }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg-base);
-      color: #e4e4e7;
+      color: #f1f5f9;
       -webkit-font-smoothing: antialiased;
     }
     .mono {
       font-family: 'JetBrains Mono', monospace;
       font-variant-numeric: tabular-nums;
     }
-    /* Authentic TFT unit cost borders */
-    .cost-1 { border-color: #71717a; }
-    .cost-2 { border-color: #16a34a; }
-    .cost-3 { border-color: #2563eb; }
-    .cost-4 { border-color: #9333ea; }
-    .cost-5, .cost-6 { border-color: #d97706; }
+    /* Authentic TFT unit cost borders - radiant & high contrast */
+    .cost-1 { border-color: #94a3b8; }
+    .cost-2 { border-color: #22c55e; }
+    .cost-3 { border-color: #38bdf8; }
+    .cost-4 { border-color: #c084fc; }
+    .cost-5, .cost-6 { border-color: #fbbf24; }
 
     .surface-card {
       background-color: var(--bg-surface);
       border: 1px solid var(--border-subtle);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
     }
     .surface-card:hover {
       border-color: var(--border-hover);
     }
     .header-blur {
-      background: rgba(9, 9, 11, 0.88);
+      background: rgba(10, 14, 23, 0.92);
       backdrop-filter: blur(12px);
     }
     .ad-slot-container {
       background: repeating-linear-gradient(
         -45deg,
-        rgba(24, 24, 28, 0.45),
-        rgba(24, 24, 28, 0.45) 10px,
-        rgba(17, 17, 20, 0.45) 10px,
-        rgba(17, 17, 20, 0.45) 20px
+        rgba(24, 32, 48, 0.45),
+        rgba(24, 32, 48, 0.45) 10px,
+        rgba(18, 23, 34, 0.45) 10px,
+        rgba(18, 23, 34, 0.45) 20px
       );
-      border: 1px dashed #27272f;
+      border: 1px dashed #2b3952;
     }
     html[data-lang="tr"] .lang-en { display: none !important; }
     html[data-lang="en"] .lang-tr { display: none !important; }
@@ -71,23 +74,23 @@
 <body class="min-h-screen selection:bg-zinc-200 selection:text-zinc-950">
 
   <!-- Top Navigation Header -->
-  <header class="border-b border-[#1f1f24] sticky top-0 z-30 header-blur">
+  <header class="border-b border-[#222d42] sticky top-0 z-30 header-blur">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div class="flex items-center gap-3.5">
-        <div class="w-9 h-9 rounded-md bg-[#16161a] border border-[#2c2c35] flex items-center justify-center font-bold text-sm text-[#c8aa6e] mono shadow-inner">
+        <div class="w-9 h-9 rounded-md bg-[#182030] border border-[#29364f] flex items-center justify-center font-bold text-sm text-[#f0c374] mono shadow-inner">
           S18
         </div>
         <div>
           <div class="flex items-center gap-2.5">
-            <h1 class="text-base sm:text-lg font-bold tracking-tight text-zinc-100">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">
               <span class="lang-tr">TFT Set 18 Meta & Yama Telemetrisi</span>
               <span class="lang-en">TFT Set 18 Meta & Patch Telemetry</span>
             </h1>
-            <span class="px-2 py-0.5 text-[11px] font-medium rounded bg-zinc-900 text-[#c8aa6e] border border-[#2c2c35] mono">
+            <span class="px-2 py-0.5 text-[11px] font-medium rounded bg-slate-900 text-[#f0c374] border border-[#29364f] mono">
               {{ report.versions.latest_label }}
             </span>
           </div>
-          <p class="text-xs text-zinc-500 mt-0.5">
+          <p class="text-xs text-slate-400 mt-0.5">
             <span class="lang-tr">Master+ Kümeleme Analizi ({{ "{:,}".format(report.live_meta.matches_analyzed) }} Maç) &bull; BiS Eşya Dizilimleri &bull; CDragon Yama Diff</span>
             <span class="lang-en">Master+ Match Clustering ({{ "{:,}".format(report.live_meta.matches_analyzed) }} Matches) &bull; Carry BiS Builds &bull; CDragon Patch Diff</span>
           </p>
@@ -96,25 +99,25 @@
 
       <!-- Status Indicators & Language Switcher -->
       <div class="flex flex-wrap items-center gap-2 text-xs">
-        <div class="px-2.5 py-1 rounded bg-[#121216] border border-[#232329] text-zinc-400 flex items-center gap-1.5">
-          <span class="text-zinc-500">
+        <div class="px-2.5 py-1 rounded bg-[#161e2e] border border-[#222d42] text-slate-300 flex items-center gap-1.5">
+          <span class="text-slate-400">
             <span class="lang-tr">Yama:</span>
             <span class="lang-en">Patch:</span>
           </span>
-          <span class="text-zinc-200 font-semibold mono">{{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }}</span>
+          <span class="text-slate-100 font-semibold mono">{{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }}</span>
         </div>
 
-        <div class="px-2.5 py-1 rounded bg-[#121216] border border-[#232329] text-zinc-400 flex items-center gap-1.5">
-          <span class="text-zinc-500">PBE:</span>
-          <span class="text-amber-400/90 font-semibold mono">{{ report.versions.pbe_label }}</span>
+        <div class="px-2.5 py-1 rounded bg-[#161e2e] border border-[#222d42] text-slate-300 flex items-center gap-1.5">
+          <span class="text-slate-400">PBE:</span>
+          <span class="text-amber-300 font-semibold mono">{{ report.versions.pbe_label }}</span>
         </div>
 
-        <div class="px-2.5 py-1 rounded bg-[#121216] border border-[#232329] text-zinc-500 mono hidden sm:block">
+        <div class="px-2.5 py-1 rounded bg-[#161e2e] border border-[#222d42] text-slate-400 mono hidden sm:block">
           {{ report.generated_at }}
         </div>
 
         <!-- TR / EN Language Switcher -->
-        <div class="inline-flex rounded bg-[#121216] p-0.5 border border-[#27272f] ml-1">
+        <div class="inline-flex rounded bg-[#161e2e] p-0.5 border border-[#29364f] ml-1">
           <button id="lang-btn-tr" onclick="setLanguage('tr')" class="px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors">
             TR
           </button>
@@ -133,52 +136,52 @@
     <!-- Replace inner content with Google AdSense / NitroPay / Venatus tag -->
     <!-- ================================================================= -->
     <aside id="ad-slot-header-leaderboard" aria-label="Sponsored Placement" class="ad-slot-container rounded-lg p-3 flex flex-col items-center justify-center min-h-[90px] text-center">
-      <span class="text-[10px] uppercase tracking-widest text-zinc-600 font-semibold mb-1">
+      <span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-1">
         <span class="lang-tr">Sponsor / Reklam Alanı &bull; IAB Leaderboard (728&times;90)</span>
         <span class="lang-en">Sponsored Placement &bull; IAB Leaderboard (728&times;90)</span>
       </span>
-      <p class="text-xs text-zinc-500 max-w-lg">
+      <p class="text-xs text-slate-400 max-w-lg">
         <span class="lang-tr">Google AdSense, NitroPay veya Venatus reklam birimi için ayrılmış üst banner alanı.</span>
         <span class="lang-en">Reserved header leaderboard container ready for Google AdSense, NitroPay, or Venatus ad tags.</span>
       </p>
     </aside>
 
     <!-- Navigation Bar: Lifecycle Mode Switcher + Live API Telemetry -->
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#1f1f24] pb-4">
-      <div class="inline-flex flex-wrap rounded-lg bg-[#111114] p-1 border border-[#232329] self-start gap-1">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#222d42] pb-4">
+      <div class="inline-flex flex-wrap rounded-lg bg-[#121722] p-1 border border-[#222d42] self-start gap-1">
         <button id="btn-tab-live" onclick="switchTab('live')"
           class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm flex items-center gap-1.5">
           <span class="lang-tr">Canlı Yama &amp; Meta ({{ report.versions.latest_label }})</span>
           <span class="lang-en">Live Patch &amp; Meta ({{ report.versions.latest_label }})</span>
         </button>
         <button id="btn-tab-tierlist" onclick="switchTab('tierlist')"
-          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5">
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-slate-100 flex items-center gap-1.5">
           <span class="lang-tr">Eşya &amp; Şampiyon Tier Listesi</span>
           <span class="lang-en">Item &amp; Unit Tier List</span>
         </button>
         <button id="btn-tab-leaderboard" onclick="switchTab('leaderboard')"
-          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#c8aa6e]"></span>
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-slate-100 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#f0c374]"></span>
           <span class="lang-tr">Liderlik Tablosu (TR / EMEA / NA / KR)</span>
           <span class="lang-en">Leaderboards (TR / EMEA / NA / KR)</span>
         </button>
         <button id="btn-tab-pbe" onclick="switchTab('pbe')"
-          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5">
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-slate-100 flex items-center gap-1.5">
           <span class="lang-tr">PBE Erken Bakış ({{ report.versions.pbe_label }})</span>
           <span class="lang-en">PBE Early Preview ({{ report.versions.pbe_label }})</span>
         </button>
       </div>
 
-      <div class="text-xs text-zinc-400 flex flex-wrap items-center gap-2.5">
+      <div class="text-xs text-slate-300 flex flex-wrap items-center gap-2.5">
         <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer"
-           class="flex items-center gap-2 px-2.5 py-1 rounded bg-[#111114] border border-[#232329] hover:border-[#c8aa6e]/60 transition-colors group">
+           class="flex items-center gap-2 px-2.5 py-1 rounded bg-[#121722] border border-[#222d42] hover:border-[#f0c374]/60 transition-colors group">
           <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span class="lang-tr text-zinc-300">Master+ Kümeleme Verisi: <strong class="text-zinc-100 group-hover:text-[#c8aa6e] underline underline-offset-2">MetaTFT.com</strong></span>
-          <span class="lang-en text-zinc-300">Master+ Telemetry Provided by <strong class="text-zinc-100 group-hover:text-[#c8aa6e] underline underline-offset-2">MetaTFT.com</strong></span>
+          <span class="lang-tr text-slate-200">Master+ Kümeleme Verisi: <strong class="text-white group-hover:text-[#f0c374] underline underline-offset-2">MetaTFT.com</strong></span>
+          <span class="lang-en text-slate-200">Master+ Telemetry Provided by <strong class="text-white group-hover:text-[#f0c374] underline underline-offset-2">MetaTFT.com</strong></span>
         </a>
         {% if report.live_meta.riot_official_api and report.live_meta.riot_official_api.connected %}
-        <div class="px-2.5 py-1 rounded bg-[#111114] border border-[#27272f] text-zinc-300 flex items-center gap-1.5">
-          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#c8aa6e]"></span>
+        <div class="px-2.5 py-1 rounded bg-[#121722] border border-[#29364f] text-slate-200 flex items-center gap-1.5">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#f0c374]"></span>
           <span class="lang-tr">{{ report.live_meta.riot_official_api.status_tr }}</span>
           <span class="lang-en">{{ report.live_meta.riot_official_api.status_en }}</span>
         </div>
@@ -195,22 +198,22 @@
       <section class="surface-card rounded-xl p-5 sm:p-6">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div class="flex items-center gap-2">
-            <span class="w-1.5 h-4 rounded-sm bg-[#c8aa6e]"></span>
-            <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <span class="w-1.5 h-4 rounded-sm bg-[#f0c374]"></span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">
               <span class="lang-tr">{{ report.ai_summary.engine }}</span>
               <span class="lang-en">{{ report.ai_summary.engine_en or report.ai_summary.engine }}</span>
             </span>
           </div>
-          <span class="text-xs text-zinc-500 mono">
+          <span class="text-xs text-slate-400 mono">
             <span class="lang-tr">{{ "{:,}".format(report.live_meta.matches_analyzed) }} Master+ Maç Örneklemi</span>
             <span class="lang-en">{{ "{:,}".format(report.live_meta.matches_analyzed) }} Master+ Matches Sampled</span>
           </span>
         </div>
-        <h2 class="text-lg sm:text-xl font-bold text-zinc-100 mb-2">
+        <h2 class="text-lg sm:text-xl font-bold text-white mb-2">
           <span class="lang-tr">{{ report.ai_summary.live_headline }}</span>
           <span class="lang-en">{{ report.ai_summary.live_headline_en or report.ai_summary.live_headline }}</span>
         </h2>
-        <p class="text-zinc-400 text-sm leading-relaxed">
+        <p class="text-slate-300 text-sm leading-relaxed">
           <span class="lang-tr">{{ report.ai_summary.live_analysis }}</span>
           <span class="lang-en">{{ report.ai_summary.live_analysis_en or report.ai_summary.live_analysis }}</span>
         </p>
@@ -219,45 +222,45 @@
       <!-- Key Telemetry Metrics -->
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div class="surface-card rounded-xl p-4">
-          <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+          <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
             <span class="lang-tr">İncelenen Master+ Maç</span>
             <span class="lang-en">Master+ Matches</span>
           </p>
-          <p class="text-2xl sm:text-3xl font-bold text-zinc-100 mt-1.5 mono">{{ "{:,}".format(report.live_meta.matches_analyzed) }}</p>
-          <p class="text-xs text-zinc-500 mt-1">Challenger, GM & Master ({{ report.versions.latest_label }})</p>
+          <p class="text-2xl sm:text-3xl font-bold text-white mt-1.5 mono">{{ "{:,}".format(report.live_meta.matches_analyzed) }}</p>
+          <p class="text-xs text-slate-400 mt-1">Challenger, GM & Master ({{ report.versions.latest_label }})</p>
         </div>
 
         <div class="surface-card rounded-xl p-4">
-          <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+          <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
             <span class="lang-tr">Yamada Buff Alanlar</span>
             <span class="lang-en">Patch Buffs</span>
           </p>
           <p class="text-2xl sm:text-3xl font-bold text-emerald-400 mt-1.5 mono">+{{ report.live_diff.summary_counts.buffed_champions + report.live_diff.summary_counts.buffed_traits }}</p>
-          <p class="text-xs text-zinc-500 mt-1">
+          <p class="text-xs text-slate-400 mt-1">
             <span class="lang-tr">{{ report.live_diff.summary_counts.buffed_champions }} Şampiyon, {{ report.live_diff.summary_counts.buffed_traits }} Özellik</span>
             <span class="lang-en">{{ report.live_diff.summary_counts.buffed_champions }} Champions, {{ report.live_diff.summary_counts.buffed_traits }} Traits</span>
           </p>
         </div>
 
         <div class="surface-card rounded-xl p-4">
-          <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+          <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
             <span class="lang-tr">Yamada Nerf Alanlar</span>
             <span class="lang-en">Patch Nerfs</span>
           </p>
           <p class="text-2xl sm:text-3xl font-bold text-rose-400 mt-1.5 mono">-{{ report.live_diff.summary_counts.nerfed_champions + report.live_diff.summary_counts.nerfed_traits }}</p>
-          <p class="text-xs text-zinc-500 mt-1">
+          <p class="text-xs text-slate-400 mt-1">
             <span class="lang-tr">{{ report.live_diff.summary_counts.nerfed_champions }} Şampiyon, {{ report.live_diff.summary_counts.nerfed_traits }} Özellik</span>
             <span class="lang-en">{{ report.live_diff.summary_counts.nerfed_champions }} Champions, {{ report.live_diff.summary_counts.nerfed_traits }} Traits</span>
           </p>
         </div>
 
         <div class="surface-card rounded-xl p-4">
-          <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+          <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
             <span class="lang-tr">Yama Etkisi Pozitif Komplar</span>
             <span class="lang-en">Positive Delta Comps</span>
           </p>
-          <p class="text-2xl sm:text-3xl font-bold text-[#c8aa6e] mt-1.5 mono">{{ report.live_meta.rising_comps_count }} / {{ report.live_meta.total_comps }}</p>
-          <p class="text-xs text-zinc-500 mt-1">
+          <p class="text-2xl sm:text-3xl font-bold text-[#f0c374] mt-1.5 mono">{{ report.live_meta.rising_comps_count }} / {{ report.live_meta.total_comps }}</p>
+          <p class="text-xs text-slate-400 mt-1">
             <span class="lang-tr">Net yama skoru &gt; 0 olan desteler</span>
             <span class="lang-en">Archetypes with net positive patch score</span>
           </p>
@@ -273,18 +276,18 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
             <div>
               <div class="flex items-center gap-2">
-                <span class="w-1.5 h-4 rounded-sm bg-[#c8aa6e]"></span>
-                <h4 class="text-sm font-bold text-zinc-100">
+                <span class="w-1.5 h-4 rounded-sm bg-[#f0c374]"></span>
+                <h4 class="text-sm font-bold text-white">
                   <span class="lang-tr">Elimdeki Eşyayla Ne Oynanır? (İnteraktif Eşyadan Komp Bulucu)</span>
                   <span class="lang-en">What Should I Play With My Items? (Interactive Item-to-Comp Matcher)</span>
                 </h4>
               </div>
-              <p class="text-xs text-zinc-500 mt-0.5">
+              <p class="text-xs text-slate-400 mt-0.5">
                 <span class="lang-tr">Elindeki 1 ila 3 eşyaya tıkla; o eşyaları BiS (En İyi Eşya) olarak kullanan Master+ desteleri anında filtrelensin.</span>
                 <span class="lang-en">Click 1 to 3 items you hold in-game to immediately filter Master+ compositions that use them as Best-in-Slot.</span>
               </p>
             </div>
-            <button id="clear-items-btn" onclick="clearSelectedItems()" class="hidden self-start sm:self-auto px-2.5 py-1 rounded text-xs font-semibold bg-zinc-800 text-zinc-200 hover:bg-zinc-700 transition-colors">
+            <button id="clear-items-btn" onclick="clearSelectedItems()" class="hidden self-start sm:self-auto px-2.5 py-1 rounded text-xs font-semibold bg-slate-800 text-slate-100 hover:bg-zinc-700 transition-colors">
               <span class="lang-tr">Seçimi Temizle &times;</span>
               <span class="lang-en">Clear Items &times;</span>
             </button>
@@ -294,9 +297,9 @@
             {% for mit in report.tier_lists.matcher_items %}
             <button type="button" data-item-id="{{ mit.apiName }}" onclick="toggleItemMatcher('{{ mit.apiName }}')"
               title="{{ mit.name }} / {{ mit.name_en }} (Avg: #{{ mit.avg_place }})"
-              class="matcher-item-btn group relative flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#0c0c0f] border border-[#232329] hover:border-zinc-500 transition-all text-xs">
+              class="matcher-item-btn group relative flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#0d121c] border border-[#222d42] hover:border-slate-500 transition-all text-xs">
               <img src="{{ mit.icon }}" alt="{{ mit.name }}" class="w-6 h-6 rounded-sm object-cover" onerror="this.style.display='none'" />
-              <span class="text-[11px] text-zinc-300 group-hover:text-zinc-100 max-w-[110px] truncate hidden md:inline">
+              <span class="text-[11px] text-slate-200 group-hover:text-white max-w-[110px] truncate hidden md:inline">
                 <span class="lang-tr">{{ mit.name }}</span>
                 <span class="lang-en">{{ mit.name_en }}</span>
               </span>
@@ -308,11 +311,11 @@
 
         <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
           <div>
-            <h3 class="text-base sm:text-lg font-bold text-zinc-100">
+            <h3 class="text-base sm:text-lg font-bold text-white">
               <span class="lang-tr">Set 18 Master+ Meta Kompozisyonları & En İyi Eşyalar (BiS)</span>
               <span class="lang-en">Set 18 Master+ Meta Compositions & Carry Best-in-Slot (BiS) Items</span>
             </h3>
-            <p class="text-xs text-zinc-500 mt-0.5">
+            <p class="text-xs text-slate-400 mt-0.5">
               <span class="lang-tr">Master+ ortalama bitiriş sırasına göre dizilmiştir; {{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }} CDragon yama etki puanları entegre edilmiştir.</span>
               <span class="lang-en">Ordered by Master+ average placement and overlaid with {{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }} CDragon patch delta scores.</span>
             </p>
@@ -323,23 +326,23 @@
             <div class="relative">
               <input id="comp-search-input" type="text" oninput="applyCompFilters()"
                 placeholder="Search unit, trait, item..."
-                class="bg-[#111114] border border-[#232329] focus:border-zinc-500 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 outline-none w-48 sm:w-56 transition-colors" />
+                class="bg-[#121722] border border-[#222d42] focus:border-slate-500 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-400 outline-none w-48 sm:w-56 transition-colors" />
             </div>
 
-            <div class="inline-flex flex-wrap rounded-lg bg-[#111114] p-1 border border-[#232329] text-xs gap-1" id="comp-filter-bar">
+            <div class="inline-flex flex-wrap rounded-lg bg-[#121722] p-1 border border-[#222d42] text-xs gap-1" id="comp-filter-bar">
               <button data-filter="ALL" onclick="filterComps('ALL')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold bg-zinc-200 text-zinc-950">
                 <span class="lang-tr">Tümü ({{ report.live_meta.compositions | length }})</span>
                 <span class="lang-en">All ({{ report.live_meta.compositions | length }})</span>
               </button>
-              <button data-filter="S" onclick="filterComps('S')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-amber-400 hover:bg-zinc-800/70">S</button>
-              <button data-filter="A" onclick="filterComps('A')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-zinc-300 hover:bg-zinc-800/70">A</button>
-              <button data-filter="B" onclick="filterComps('B')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-zinc-400 hover:bg-zinc-800/70">B</button>
-              <button data-filter="C" onclick="filterComps('C')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-zinc-500 hover:bg-zinc-800/70">C</button>
-              <button data-filter="YÜKSELEN" onclick="filterComps('YÜKSELEN')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-emerald-400 hover:bg-zinc-800/70">
+              <button data-filter="S" onclick="filterComps('S')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-amber-400 hover:bg-slate-800/70">S</button>
+              <button data-filter="A" onclick="filterComps('A')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-slate-200 hover:bg-slate-800/70">A</button>
+              <button data-filter="B" onclick="filterComps('B')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-slate-300 hover:bg-slate-800/70">B</button>
+              <button data-filter="C" onclick="filterComps('C')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-slate-400 hover:bg-slate-800/70">C</button>
+              <button data-filter="YÜKSELEN" onclick="filterComps('YÜKSELEN')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-emerald-400 hover:bg-slate-800/70">
                 <span class="lang-tr">&uarr; Buff</span>
                 <span class="lang-en">&uarr; Buffed</span>
               </button>
-              <button data-filter="DÜŞEN" onclick="filterComps('DÜŞEN')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-rose-400 hover:bg-zinc-800/70">
+              <button data-filter="DÜŞEN" onclick="filterComps('DÜŞEN')" class="comp-filter-btn px-2.5 py-1 rounded font-semibold text-rose-400 hover:bg-slate-800/70">
                 <span class="lang-tr">&darr; Nerf</span>
                 <span class="lang-en">&darr; Nerfed</span>
               </button>
@@ -358,46 +361,46 @@
               <!-- Left: Tier Badge + Archetype Details -->
               <div class="flex items-start sm:items-center gap-3.5 min-w-[285px]">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-base shrink-0 mono
-                  {% if comp.tier == 'S' %}bg-amber-500/10 text-[#c8aa6e] border border-[#c8aa6e]/40
-                  {% elif comp.tier == 'A' %}bg-zinc-800/90 text-zinc-100 border border-zinc-700
-                  {% elif comp.tier == 'B' %}bg-zinc-900 text-zinc-400 border border-zinc-800
-                  {% else %}bg-zinc-900/60 text-zinc-500 border border-zinc-800/80{% endif %}">
+                  {% if comp.tier == 'S' %}bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm
+                  {% elif comp.tier == 'A' %}bg-purple-500/20 text-purple-200 border border-purple-500/40 shadow-sm
+                  {% elif comp.tier == 'B' %}bg-blue-500/20 text-blue-200 border border-blue-500/40 shadow-sm
+                  {% else %}bg-slate-800 text-slate-300 border border-slate-700{% endif %}">
                   {{ comp.tier }}
                 </div>
                 <div>
                   <div class="flex flex-wrap items-center gap-2">
-                    <h4 class="text-sm sm:text-base font-bold text-zinc-100">
+                    <h4 class="text-sm sm:text-base font-bold text-white">
                       <span class="lang-tr">{{ comp.comp_name }}</span>
                       <span class="lang-en">{{ comp.comp_name_en or comp.comp_name }}</span>
                     </h4>
-                    <span class="px-2 py-0.5 text-[11px] font-medium rounded bg-[#18181c] text-zinc-300 border border-[#27272f] mono">
+                    <span class="px-2 py-0.5 text-[11px] font-medium rounded bg-[#182030] text-slate-200 border border-[#29364f] mono">
                       {{ comp.levelling }} &bull; {{ comp.unit_count }}
                       <span class="lang-tr">Birim</span><span class="lang-en">Units</span>
                     </span>
                     {% if comp.comp_delta_score != 0 %}
                     <span class="px-2 py-0.5 text-[11px] font-semibold rounded mono
-                      {% if comp.meta_status == 'YÜKSELEN' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/25
-                      {% elif comp.meta_status == 'DÜŞEN' %}bg-rose-500/10 text-rose-400 border border-rose-500/25
-                      {% else %}bg-zinc-900 text-zinc-400 border border-zinc-800{% endif %}">
+                      {% if comp.meta_status == 'YÜKSELEN' %}bg-emerald-950/70 text-emerald-300 border border-emerald-500/40
+                      {% elif comp.meta_status == 'DÜŞEN' %}bg-rose-950/70 text-rose-300 border border-rose-500/40
+                      {% else %}bg-[#182030] text-slate-300 border border-[#2b3952]{% endif %}">
                       <span class="lang-tr">Yama: {{ '%+.1f'|format(comp.comp_delta_score) }}</span>
                       <span class="lang-en">Delta: {{ '%+.1f'|format(comp.comp_delta_score) }}</span>
                     </span>
                     {% endif %}
                   </div>
 
-                  <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-zinc-500">
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-slate-400">
                     <span>
-                      <span class="lang-tr"><strong class="text-zinc-400 font-medium">{{ comp.active_traits | join(' · ') }}</strong></span>
-                      <span class="lang-en"><strong class="text-zinc-400 font-medium">{{ (comp.active_traits_en or comp.active_traits) | join(' · ') }}</strong></span>
+                      <span class="lang-tr"><strong class="text-slate-300 font-medium">{{ comp.active_traits | join(' · ') }}</strong></span>
+                      <span class="lang-en"><strong class="text-slate-300 font-medium">{{ (comp.active_traits_en or comp.active_traits) | join(' · ') }}</strong></span>
                     </span>
                     {% if comp.buffed_units or comp.buffed_traits %}
-                    <span class="text-emerald-400/90">
+                    <span class="text-emerald-300">
                       <span class="lang-tr">+ {{ (comp.buffed_units + comp.buffed_traits) | join(', ') }}</span>
                       <span class="lang-en">+ {{ ((comp.buffed_units_en or comp.buffed_units) + (comp.buffed_traits_en or comp.buffed_traits)) | join(', ') }}</span>
                     </span>
                     {% endif %}
                     {% if comp.nerfed_units or comp.nerfed_traits %}
-                    <span class="text-rose-400/90">
+                    <span class="text-rose-300">
                       <span class="lang-tr">&minus; {{ (comp.nerfed_units + comp.nerfed_traits) | join(', ') }}</span>
                       <span class="lang-en">&minus; {{ ((comp.nerfed_units_en or comp.nerfed_units) + (comp.nerfed_traits_en or comp.nerfed_traits)) | join(', ') }}</span>
                     </span>
@@ -410,7 +413,7 @@
               <div class="flex flex-wrap items-start gap-2">
                 {% for unit in comp.units %}
                 <div class="relative group flex flex-col items-center w-[52px]">
-                  <div class="relative w-11 h-11 rounded-md overflow-hidden border-2 cost-{{ unit.cost }} bg-zinc-900">
+                  <div class="relative w-11 h-11 rounded-md overflow-hidden border-2 cost-{{ unit.cost }} bg-slate-900">
                     <img src="{{ unit.icon }}" alt="{{ unit.name }}" loading="lazy"
                          onerror="this.style.display='none'"
                          class="w-full h-full object-cover" />
@@ -428,7 +431,7 @@
                     {% endif %}
                   </div>
                   {% if unit.bis_items %}
-                  <div class="flex items-center justify-center gap-0.5 -mt-1.5 z-10 bg-[#0c0c0e] px-1 py-0.5 rounded border border-zinc-700/80 shadow">
+                  <div class="flex items-center justify-center gap-0.5 -mt-1.5 z-10 bg-[#0d121c] px-1 py-0.5 rounded border border-slate-700/80 shadow">
                     {% for item in unit.bis_items[:3] %}
                     <img src="{{ item.icon }}" alt="{{ item.name }}" title="{{ item.name }} / {{ item.name_en }}"
                          onerror="this.style.display='none'"
@@ -436,7 +439,7 @@
                     {% endfor %}
                   </div>
                   {% endif %}
-                  <span class="text-[10px] text-zinc-400 mt-1 max-w-[52px] truncate text-center">
+                  <span class="text-[10px] text-slate-300 mt-1 max-w-[52px] truncate text-center">
                     <span class="lang-tr">{{ unit.name }}</span>
                     <span class="lang-en">{{ unit.name_en or unit.name }}</span>
                   </span>
@@ -445,53 +448,53 @@
               </div>
 
               <!-- Right: Master+ Telemetry Columns -->
-              <div class="grid grid-cols-4 gap-4 border-t xl:border-t-0 pt-3 xl:pt-0 border-[#1f1f24] shrink-0 min-w-[230px]">
+              <div class="grid grid-cols-4 gap-4 border-t xl:border-t-0 pt-3 xl:pt-0 border-[#222d42] shrink-0 min-w-[230px]">
                 <div class="text-right">
-                  <p class="text-[10px] uppercase tracking-wider text-zinc-500">
+                  <p class="text-[10px] uppercase tracking-wider text-slate-400">
                     <span class="lang-tr">Ort. Sıra</span><span class="lang-en">Avg Place</span>
                   </p>
-                  <p class="text-sm font-bold mono mt-0.5 {% if comp.master_stats.avg_placement <= 4.20 %}text-emerald-400{% elif comp.master_stats.avg_placement <= 4.45 %}text-zinc-100{% else %}text-rose-400{% endif %}">
+                  <p class="text-sm font-bold mono mt-0.5 {% if comp.master_stats.avg_placement <= 4.20 %}text-emerald-400{% elif comp.master_stats.avg_placement <= 4.45 %}text-white{% else %}text-rose-400{% endif %}">
                     #{{ comp.master_stats.avg_placement }}
                   </p>
                 </div>
                 <div class="text-right">
-                  <p class="text-[10px] uppercase tracking-wider text-zinc-500">Top 4</p>
-                  <p class="text-sm font-bold text-zinc-200 mono mt-0.5">{{ comp.master_stats.top4_rate }}%</p>
+                  <p class="text-[10px] uppercase tracking-wider text-slate-400">Top 4</p>
+                  <p class="text-sm font-bold text-slate-100 mono mt-0.5">{{ comp.master_stats.top4_rate }}%</p>
                 </div>
                 <div class="text-right">
-                  <p class="text-[10px] uppercase tracking-wider text-zinc-500">
+                  <p class="text-[10px] uppercase tracking-wider text-slate-400">
                     <span class="lang-tr">1.lik</span><span class="lang-en">Win %</span>
                   </p>
-                  <p class="text-sm font-bold text-[#c8aa6e] mono mt-0.5">{{ comp.master_stats.win_rate }}%</p>
+                  <p class="text-sm font-bold text-[#f0c374] mono mt-0.5">{{ comp.master_stats.win_rate }}%</p>
                 </div>
                 <div class="text-right">
-                  <p class="text-[10px] uppercase tracking-wider text-zinc-500">
+                  <p class="text-[10px] uppercase tracking-wider text-slate-400">
                     <span class="lang-tr">Örneklem</span><span class="lang-en">Sample</span>
                   </p>
-                  <p class="text-xs font-semibold text-zinc-400 mono mt-1">{{ "{:,}".format(comp.master_stats.sample_size) }}</p>
+                  <p class="text-xs font-semibold text-slate-300 mono mt-1">{{ "{:,}".format(comp.master_stats.sample_size) }}</p>
                 </div>
               </div>
 
             </div>
 
             <!-- Carry Best-in-Slot (BiS) Items Strip + Action Buttons (Board Drawer & Copy Comp) -->
-            <div class="mt-3 pt-2.5 border-t border-[#1c1c21] flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
+            <div class="mt-3 pt-2.5 border-t border-[#222d42] flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
               <div class="flex flex-wrap items-center gap-2.5">
                 {% if comp.carry_builds %}
-                <span class="text-zinc-500 font-medium text-[11px]">
+                <span class="text-slate-400 font-medium text-[11px]">
                   <span class="lang-tr">Taşıyıcı Eşyaları (BiS):</span>
                   <span class="lang-en">Carry BiS Items:</span>
                 </span>
                 {% for cb in comp.carry_builds %}
-                <div class="flex flex-wrap items-center gap-1.5 bg-[#0c0c0f] px-2.5 py-1 rounded border border-[#222228]">
+                <div class="flex flex-wrap items-center gap-1.5 bg-[#0d121c] px-2.5 py-1 rounded border border-[#222d42]">
                   <img src="{{ cb.unit_icon }}" alt="{{ cb.unit_name }}" class="w-4 h-4 rounded-sm border cost-{{ cb.unit_cost }} object-cover" onerror="this.style.display='none'" />
-                  <span class="font-semibold text-zinc-200 text-[11px]">
+                  <span class="font-semibold text-slate-100 text-[11px]">
                     <span class="lang-tr">{{ cb.unit_name }}:</span>
                     <span class="lang-en">{{ cb.unit_name_en }}:</span>
                   </span>
                   <div class="flex flex-wrap items-center gap-1">
                     {% for item in cb['items'] %}
-                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#16161b] border border-[#272730] text-zinc-300">
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#182030] border border-[#29364f] text-slate-200">
                       {% if item.icon %}
                       <img src="{{ item.icon }}" alt="{{ item.name }}" class="w-3.5 h-3.5 rounded-sm object-cover" onerror="this.style.display='none'" />
                       {% endif %}
@@ -508,8 +511,8 @@
               <!-- Action Buttons: Expand 4x7 Hex Board & 1-Click Copy Comp -->
               <div class="flex items-center gap-2 shrink-0 self-end lg:self-auto">
                 <button type="button" onclick="toggleCompDrawer('comp-drawer-{{ loop.index }}', this)"
-                  class="px-2.5 py-1 rounded bg-[#16161b] hover:bg-zinc-800 border border-[#272730] text-zinc-200 font-semibold text-[11px] transition-colors flex items-center gap-1.5">
-                  <span class="text-[#c8aa6e]">&#9638;</span>
+                  class="px-2.5 py-1 rounded bg-[#182030] hover:bg-slate-800 border border-[#29364f] text-slate-100 font-semibold text-[11px] transition-colors flex items-center gap-1.5">
+                  <span class="text-[#f0c374]">&#9638;</span>
                   <span class="lang-tr">Tahta Dizilimi &amp; Rehber</span>
                   <span class="lang-en">4&times;7 Board &amp; Guide</span>
                 </button>
@@ -518,7 +521,7 @@
                   data-team-code="{{ comp.team_planner_code }}"
                   title="TFT Team Planner Code: {{ comp.team_planner_code }}"
                   onclick="copyCompSummary(this)"
-                  class="px-2.5 py-1 rounded bg-[#0c0c0f] hover:bg-zinc-800 border border-[#232329] hover:border-[#c8aa6e]/50 text-[#c8aa6e] font-semibold text-[11px] transition-colors">
+                  class="px-2.5 py-1 rounded bg-[#0d121c] hover:bg-slate-800 border border-[#222d42] hover:border-[#f0c374]/50 text-[#f0c374] font-semibold text-[11px] transition-colors">
                   <span class="lang-tr">Takım Kodu Kopyala</span>
                   <span class="lang-en">Copy Team Code</span>
                 </button>
@@ -527,43 +530,43 @@
 
             <!-- EXPANDABLE DRAWER: 4x7 HEX BOARD POSITIONING & LEVELING GUIDE -->
             {% if comp.board_grid %}
-            <div id="comp-drawer-{{ loop.index }}" class="hidden mt-4 pt-4 border-t border-[#232329] grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div id="comp-drawer-{{ loop.index }}" class="hidden mt-4 pt-4 border-t border-[#222d42] grid grid-cols-1 lg:grid-cols-12 gap-5">
 
               <!-- Left (7 cols): 4x7 TFT Hexagonal Board Positioning Grid -->
-              <div class="lg:col-span-7 bg-[#0c0c0f] border border-[#1f1f26] rounded-xl p-4">
+              <div class="lg:col-span-7 bg-[#0d121c] border border-[#222d42] rounded-xl p-4">
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                  <span class="text-xs font-bold text-slate-100 uppercase tracking-wider">
                     <span class="lang-tr">4&times;7 Tahta Dizilimi (Üst: Ön Saf / Alt: Arka Saf)</span>
                     <span class="lang-en">4&times;7 Board Positioning (Top: Frontline / Bottom: Backline)</span>
                   </span>
-                  <span class="text-[11px] text-zinc-500 mono">28 Hex</span>
+                  <span class="text-[11px] text-slate-400 mono">28 Hex</span>
                 </div>
 
                 <div class="space-y-2 overflow-x-auto pb-1">
                   {% for row in comp.board_grid %}
                   {% set row_idx = loop.index0 %}
                   <div class="flex items-center gap-2 {% if row_idx % 2 == 1 %}pl-5 sm:pl-6{% endif %}">
-                    <span class="text-[10px] text-zinc-600 mono w-8 shrink-0">
+                    <span class="text-[10px] text-slate-400 mono w-8 shrink-0">
                       <span class="lang-tr">Sıra {{ row_idx + 1 }}</span>
                       <span class="lang-en">Row {{ row_idx + 1 }}</span>
                     </span>
                     {% for cell in row %}
                     {% if cell %}
-                    <div class="relative w-11 h-11 sm:w-12 sm:h-12 rounded-lg border-2 cost-{{ cell.cost }} bg-zinc-900 flex flex-col items-center justify-center shrink-0 shadow-md"
+                    <div class="relative w-11 h-11 sm:w-12 sm:h-12 rounded-lg border-2 cost-{{ cell.cost }} bg-slate-900 flex flex-col items-center justify-center shrink-0 shadow-md"
                          title="{{ cell.name }} / {{ cell.name_en }}">
                       <img src="{{ cell.icon }}" alt="{{ cell.name }}" class="w-full h-full object-cover rounded-[6px]" onerror="this.style.display='none'" />
                       {% if cell.is_three_star %}
                       <span class="absolute -top-1.5 -right-1 bg-amber-400 text-zinc-950 text-[8px] font-bold px-1 rounded mono">3★</span>
                       {% elif cell.is_carry %}
-                      <span class="absolute -top-1.5 -right-1 bg-[#c8aa6e] text-zinc-950 text-[8px] font-bold px-1 rounded mono">C</span>
+                      <span class="absolute -top-1.5 -right-1 bg-[#f0c374] text-zinc-950 text-[8px] font-bold px-1 rounded mono">C</span>
                       {% endif %}
-                      <span class="absolute bottom-0 inset-x-0 bg-black/80 text-[8px] text-zinc-100 text-center truncate px-0.5 rounded-b">
+                      <span class="absolute bottom-0 inset-x-0 bg-black/80 text-[8px] text-white text-center truncate px-0.5 rounded-b">
                         <span class="lang-tr">{{ cell.name }}</span>
                         <span class="lang-en">{{ cell.name_en or cell.name }}</span>
                       </span>
                     </div>
                     {% else %}
-                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-lg border border-dashed border-[#22222a] bg-[#111115]/60 shrink-0"></div>
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-lg border border-dashed border-[#222d42] bg-[#121722]/60 shrink-0"></div>
                     {% endif %}
                     {% endfor %}
                   </div>
@@ -572,20 +575,20 @@
               </div>
 
               <!-- Right (5 cols): Stage-by-Stage Leveling Schedule & Early Opener -->
-              <div class="lg:col-span-5 flex flex-col justify-between gap-4 bg-[#0c0c0f] border border-[#1f1f26] rounded-xl p-4">
+              <div class="lg:col-span-5 flex flex-col justify-between gap-4 bg-[#0d121c] border border-[#222d42] rounded-xl p-4">
                 <div>
-                  <h5 class="text-xs font-bold text-zinc-200 uppercase tracking-wider mb-2.5">
+                  <h5 class="text-xs font-bold text-slate-100 uppercase tracking-wider mb-2.5">
                     <span class="lang-tr">Aşama &amp; Seviye Basma Temposu ({{ comp.levelling }})</span>
                     <span class="lang-en">Stage Leveling &amp; Roll Schedule ({{ comp.levelling }})</span>
                   </h5>
                   <div class="space-y-1.5 text-xs">
                     {% for step in comp.level_schedule %}
-                    <div class="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded bg-[#141419] border border-[#22222a]">
+                    <div class="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded bg-[#161e2e] border border-[#222d42]">
                       <div class="flex items-center gap-2 shrink-0">
-                        <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-[#c8aa6e] font-bold mono text-[11px]">{{ step.stage }}</span>
-                        <span class="font-bold text-zinc-100 mono text-[11px]">{{ step.level }}</span>
+                        <span class="px-1.5 py-0.5 rounded bg-slate-800 text-[#f0c374] font-bold mono text-[11px]">{{ step.stage }}</span>
+                        <span class="font-bold text-white mono text-[11px]">{{ step.level }}</span>
                       </div>
-                      <span class="text-zinc-400 text-[11px] text-right">
+                      <span class="text-slate-300 text-[11px] text-right">
                         <span class="lang-tr">{{ step.note_tr }}</span>
                         <span class="lang-en">{{ step.note_en }}</span>
                       </span>
@@ -595,16 +598,16 @@
                 </div>
 
                 {% if comp.early_units %}
-                <div class="pt-3 border-t border-[#1c1c22]">
-                  <span class="text-[11px] font-semibold text-zinc-400 block mb-2">
+                <div class="pt-3 border-t border-[#222d42]">
+                  <span class="text-[11px] font-semibold text-slate-300 block mb-2">
                     <span class="lang-tr">Önerilen Aşama 2 (Lvl 4) Erken Geçiş Tahtası:</span>
                     <span class="lang-en">Recommended Stage 2 (Lvl 4) Opener Board:</span>
                   </span>
                   <div class="flex items-center gap-2.5">
                     {% for eu in comp.early_units %}
-                    <div class="flex items-center gap-1.5 bg-[#141419] px-2 py-1 rounded border border-[#23232c]">
+                    <div class="flex items-center gap-1.5 bg-[#161e2e] px-2 py-1 rounded border border-[#29364f]">
                       <img src="{{ eu.icon }}" alt="{{ eu.name }}" class="w-5 h-5 rounded-sm border cost-{{ eu.cost }} object-cover" onerror="this.style.display='none'" />
-                      <span class="text-[11px] text-zinc-200 font-medium">
+                      <span class="text-[11px] text-slate-100 font-medium">
                         <span class="lang-tr">{{ eu.name }}</span>
                         <span class="lang-en">{{ eu.name_en or eu.name }}</span>
                       </span>
@@ -615,19 +618,19 @@
                 {% endif %}
 
                 {% if comp.team_planner_code %}
-                <div class="pt-3 border-t border-[#1c1c22]">
+                <div class="pt-3 border-t border-[#222d42]">
                   <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-[11px] font-semibold text-zinc-400">
+                    <span class="text-[11px] font-semibold text-slate-300">
                       <span class="lang-tr">Oyun İçi Takım Planlayıcı Kodu (TFT İstemcisi):</span>
                       <span class="lang-en">In-Game Team Planner Code (TFT Client Import):</span>
                     </span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <code class="flex-1 bg-[#141419] border border-[#23232c] rounded px-2.5 py-1.5 text-[11px] text-[#c8aa6e] mono select-all overflow-x-auto whitespace-nowrap">{{ comp.team_planner_code }}</code>
+                    <code class="flex-1 bg-[#161e2e] border border-[#29364f] rounded px-2.5 py-1.5 text-[11px] text-[#f0c374] mono select-all overflow-x-auto whitespace-nowrap">{{ comp.team_planner_code }}</code>
                     <button type="button"
                       data-team-code="{{ comp.team_planner_code }}"
                       onclick="copyCompSummary(this)"
-                      class="px-2.5 py-1.5 rounded bg-[#18181f] hover:bg-zinc-800 border border-[#2c2c35] text-zinc-200 font-semibold text-[11px] shrink-0 transition-colors">
+                      class="px-2.5 py-1.5 rounded bg-[#182030] hover:bg-slate-800 border border-[#29364f] text-slate-100 font-semibold text-[11px] shrink-0 transition-colors">
                       <span class="lang-tr">Kodu Kopyala</span>
                       <span class="lang-en">Copy Code</span>
                     </button>
@@ -648,11 +651,11 @@
       <!-- AD SLOT 2: MID-PAGE IN-FEED BANNER (728x90 / 970x90)              -->
       <!-- ================================================================= -->
       <aside id="ad-slot-infeed-mid" aria-label="Sponsored Placement" class="ad-slot-container rounded-lg p-3 flex flex-col items-center justify-center min-h-[90px] text-center">
-        <span class="text-[10px] uppercase tracking-widest text-zinc-600 font-semibold mb-1">
+        <span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-1">
           <span class="lang-tr">Sponsor / Reklam Alanı &bull; İçerik Arası Banner (970&times;90 / 728&times;90)</span>
           <span class="lang-en">Sponsored Placement &bull; Mid-Content Banner (970&times;90 / 728&times;90)</span>
         </span>
-        <p class="text-xs text-zinc-500 max-w-lg">
+        <p class="text-xs text-slate-400 max-w-lg">
           <span class="lang-tr">Meta kompozisyonları ile CDragon yama değişiklikleri arasındaki yüksek görünürlüklü reklam alanı.</span>
           <span class="lang-en">High-visibility mid-page ad container between Meta Compositions and CDragon Patch Diffs.</span>
         </p>
@@ -662,24 +665,24 @@
       <section class="space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 class="text-base sm:text-lg font-bold text-zinc-100">
+            <h3 class="text-base sm:text-lg font-bold text-white">
               <span class="lang-tr">Set 18 Şampiyon Yama Değişiklikleri ({{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }})</span>
               <span class="lang-en">Set 18 Champion Balance Changes ({{ report.versions.previous_label }} &rarr; {{ report.versions.latest_label }})</span>
             </h3>
-            <p class="text-xs text-zinc-500 mt-0.5">
+            <p class="text-xs text-slate-400 mt-0.5">
               <span class="lang-tr">CommunityDragon JSON dosyalarından matematiksel olarak çıkarılan temel nitelik ve 1/2/3 yıldız yetenek farkları</span>
               <span class="lang-en">Base stat and 1/2/3-star ability scaling diffs extracted mathematically from CommunityDragon JSON files</span>
             </p>
           </div>
-          <div class="inline-flex rounded-lg bg-[#111114] p-1 border border-[#232329] text-xs gap-1">
+          <div class="inline-flex rounded-lg bg-[#121722] p-1 border border-[#222d42] text-xs gap-1">
             <button onclick="filterChamps('ALL')" class="px-2.5 py-1 rounded font-semibold bg-zinc-200 text-zinc-950">
               <span class="lang-tr">Tümü ({{ report.live_diff.champion_diffs | length }})</span>
               <span class="lang-en">All ({{ report.live_diff.champion_diffs | length }})</span>
             </button>
-            <button onclick="filterChamps('BUFF')" class="px-2.5 py-1 rounded font-semibold text-emerald-400 hover:bg-zinc-800/70">
+            <button onclick="filterChamps('BUFF')" class="px-2.5 py-1 rounded font-semibold text-emerald-400 hover:bg-slate-800/70">
               Buff ({{ report.live_diff.summary_counts.buffed_champions }})
             </button>
-            <button onclick="filterChamps('NERF')" class="px-2.5 py-1 rounded font-semibold text-rose-400 hover:bg-zinc-800/70">
+            <button onclick="filterChamps('NERF')" class="px-2.5 py-1 rounded font-semibold text-rose-400 hover:bg-slate-800/70">
               Nerf ({{ report.live_diff.summary_counts.nerfed_champions }})
             </button>
           </div>
@@ -690,18 +693,18 @@
           <div data-status="{{ champ.status }}" class="champ-card surface-card rounded-xl p-4">
             <div class="flex items-center justify-between gap-3 mb-3">
               <div class="flex items-center gap-3">
-                <img src="{{ champ.icon }}" alt="{{ champ.name }}" class="w-11 h-11 rounded-md border-2 cost-{{ champ.cost }} object-cover bg-zinc-900" onerror="this.style.display='none'" />
+                <img src="{{ champ.icon }}" alt="{{ champ.name }}" class="w-11 h-11 rounded-md border-2 cost-{{ champ.cost }} object-cover bg-slate-900" onerror="this.style.display='none'" />
                 <div>
                   <div class="flex items-center gap-2">
-                    <h4 class="font-bold text-zinc-100 text-sm">
+                    <h4 class="font-bold text-white text-sm">
                       <span class="lang-tr">{{ champ.name }}</span>
                       <span class="lang-en">{{ champ.name_en or champ.name }}</span>
                     </h4>
-                    <span class="text-[11px] px-1.5 py-0.5 rounded bg-[#18181c] text-zinc-400 border border-[#27272f] mono">
+                    <span class="text-[11px] px-1.5 py-0.5 rounded bg-[#182030] text-slate-300 border border-[#29364f] mono">
                       {{ champ.cost }}G
                     </span>
                   </div>
-                  <p class="text-xs text-zinc-500 mt-0.5">{{ champ.traits | join(' · ') }}</p>
+                  <p class="text-xs text-slate-400 mt-0.5">{{ champ.traits | join(' · ') }}</p>
                 </div>
               </div>
               <div class="text-right">
@@ -714,16 +717,16 @@
               </div>
             </div>
 
-            <div class="space-y-1 border-t border-[#1c1c21] pt-2.5 text-xs">
+            <div class="space-y-1 border-t border-[#222d42] pt-2.5 text-xs">
               {% for chg in champ.changes %}
-              <div class="flex items-center justify-between py-1 px-2 rounded bg-[#0c0c0f]">
-                <span class="text-zinc-400">
+              <div class="flex items-center justify-between py-1 px-2 rounded bg-[#0d121c]">
+                <span class="text-slate-300">
                   <span class="lang-tr">{{ chg.label }}</span>
                   <span class="lang-en">{{ chg.label_en or chg.label }}</span>
                 </span>
                 <div class="flex items-center gap-2 mono">
-                  <span class="text-zinc-600 line-through">{{ chg.old }}</span>
-                  <span class="text-zinc-500">&rarr;</span>
+                  <span class="text-slate-400 line-through">{{ chg.old }}</span>
+                  <span class="text-slate-400">&rarr;</span>
                   <span class="font-semibold {% if chg.type == 'BUFF' %}text-emerald-400{% else %}text-rose-400{% endif %}">{{ chg.new }}</span>
                   <span class="text-[11px] px-1.5 py-0.2 rounded {% if chg.type == 'BUFF' %}bg-emerald-500/10 text-emerald-400{% else %}bg-rose-500/10 text-rose-400{% endif %}">
                     {{ '%+.1f'|format(chg.delta_pct) }}%
@@ -740,7 +743,7 @@
       <!-- Trait Diffs Section -->
       {% if report.live_diff.trait_diffs %}
       <section class="space-y-4">
-        <h3 class="text-base sm:text-lg font-bold text-zinc-100">
+        <h3 class="text-base sm:text-lg font-bold text-white">
           <span class="lang-tr">Set 18 Sinerji / Özellik (Trait) Değişiklikleri</span>
           <span class="lang-en">Set 18 Trait Balance Changes</span>
         </h3>
@@ -748,7 +751,7 @@
           {% for tr in report.live_diff.trait_diffs %}
           <div class="surface-card rounded-xl p-4">
             <div class="flex items-center justify-between mb-2.5">
-              <span class="font-bold text-zinc-100 text-sm">
+              <span class="font-bold text-white text-sm">
                 <span class="lang-tr">{{ tr.name }}</span>
                 <span class="lang-en">{{ tr.name_en or tr.name }}</span>
               </span>
@@ -758,11 +761,11 @@
             </div>
             <div class="space-y-1 text-xs">
               {% for chg in tr.changes %}
-              <div class="flex items-center justify-between py-1 px-2 rounded bg-[#0c0c0f]">
-                <span class="text-zinc-400">{{ chg.label }}</span>
+              <div class="flex items-center justify-between py-1 px-2 rounded bg-[#0d121c]">
+                <span class="text-slate-300">{{ chg.label }}</span>
                 <div class="mono">
-                  <span class="text-zinc-600 line-through">{{ chg.old }}</span>
-                  <span class="mx-1 text-zinc-500">&rarr;</span>
+                  <span class="text-slate-400 line-through">{{ chg.old }}</span>
+                  <span class="mx-1 text-slate-400">&rarr;</span>
                   <span class="font-semibold {% if chg.type == 'BUFF' %}text-emerald-400{% else %}text-rose-400{% endif %}">{{ chg.new }}</span>
                 </div>
               </div>
@@ -785,21 +788,21 @@
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div class="flex items-center gap-2">
             <span class="w-1.5 h-4 rounded-sm bg-amber-400"></span>
-            <span class="text-xs font-semibold uppercase tracking-wider text-amber-400/90">
+            <span class="text-xs font-semibold uppercase tracking-wider text-amber-300">
               <span class="lang-tr">PBE Gelecek Yama Analizi ({{ report.versions.latest_label }} &rarr; {{ report.versions.pbe_label }})</span>
               <span class="lang-en">PBE Upcoming Patch Analysis ({{ report.versions.latest_label }} &rarr; {{ report.versions.pbe_label }})</span>
             </span>
           </div>
-          <span class="text-xs text-zinc-500">
+          <span class="text-xs text-slate-400">
             <span class="lang-tr">Canlı Master+ Desteleri Üzerine PBE Değişim Projeksiyonu</span>
             <span class="lang-en">PBE Balance Overlay on Live Master+ Archetypes</span>
           </span>
         </div>
-        <h2 class="text-lg sm:text-xl font-bold text-zinc-100 mb-2">
+        <h2 class="text-lg sm:text-xl font-bold text-white mb-2">
           <span class="lang-tr">{{ report.ai_summary.pbe_headline }}</span>
           <span class="lang-en">{{ report.ai_summary.pbe_headline_en or report.ai_summary.pbe_headline }}</span>
         </h2>
-        <p class="text-zinc-400 text-sm leading-relaxed">
+        <p class="text-slate-300 text-sm leading-relaxed">
           <span class="lang-tr">{{ report.ai_summary.pbe_analysis }}</span>
           <span class="lang-en">{{ report.ai_summary.pbe_analysis_en or report.ai_summary.pbe_analysis }}</span>
         </p>
@@ -807,7 +810,7 @@
 
       {% if report.pbe_diff.champion_diffs or report.pbe_diff.trait_diffs %}
       <section class="space-y-4">
-        <h3 class="text-base sm:text-lg font-bold text-zinc-100">
+        <h3 class="text-base sm:text-lg font-bold text-white">
           <span class="lang-tr">PBE Değişikliklerinden Etkilenen Master+ Desteleri</span>
           <span class="lang-en">Master+ Compositions Impacted by PBE Changes</span>
         </h3>
@@ -816,21 +819,21 @@
           <div class="surface-card rounded-xl p-4 flex items-center justify-between gap-4">
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold px-2 py-0.5 rounded bg-[#18181c] text-zinc-300 border border-[#27272f] mono">
+                <span class="text-xs font-semibold px-2 py-0.5 rounded bg-[#182030] text-slate-200 border border-[#29364f] mono">
                   {{ comp.levelling }} &bull; {{ comp.unit_count }} <span class="lang-tr">Birim</span><span class="lang-en">Units</span>
                 </span>
-                <span class="text-xs font-bold mono {% if comp.comp_delta_score > 0 %}text-emerald-400{% elif comp.comp_delta_score < 0 %}text-rose-400{% else %}text-zinc-400{% endif %}">
+                <span class="text-xs font-bold mono {% if comp.comp_delta_score > 0 %}text-emerald-400{% elif comp.comp_delta_score < 0 %}text-rose-400{% else %}text-slate-300{% endif %}">
                   PBE Delta: {{ '%+.1f'|format(comp.comp_delta_score) }}
                 </span>
               </div>
-              <h4 class="font-bold text-zinc-100 mt-1 text-sm">
+              <h4 class="font-bold text-white mt-1 text-sm">
                 <span class="lang-tr">{{ comp.comp_name }}</span>
                 <span class="lang-en">{{ comp.comp_name_en or comp.comp_name }}</span>
               </h4>
             </div>
             <div class="flex -space-x-2 shrink-0">
               {% for u in comp.units[:6] %}
-              <img src="{{ u.icon }}" alt="{{ u.name }}" title="{{ u.name }}" class="w-8 h-8 rounded-full border-2 border-[#111114] bg-zinc-800 object-cover" onerror="this.style.display='none'" />
+              <img src="{{ u.icon }}" alt="{{ u.name }}" title="{{ u.name }}" class="w-8 h-8 rounded-full border-2 border-[#121722] bg-slate-800 object-cover" onerror="this.style.display='none'" />
               {% endfor %}
             </div>
           </div>
@@ -839,11 +842,11 @@
       </section>
       {% else %}
       <div class="surface-card rounded-xl p-8 text-center space-y-2">
-        <p class="text-sm font-bold text-zinc-200">
+        <p class="text-sm font-bold text-slate-100">
           <span class="lang-tr">PBE Dalı Güncel Canlı Yama ({{ report.versions.latest_label }}) İle Senkronize</span>
           <span class="lang-en">PBE Branch Matches Live Patch ({{ report.versions.latest_label }})</span>
         </p>
-        <p class="text-xs text-zinc-500 max-w-xl mx-auto">
+        <p class="text-xs text-slate-400 max-w-xl mx-auto">
           <span class="lang-tr">CommunityDragon üzerindeki <code>pbe</code> dalında şu an <code>{{ report.versions.latest_label }}</code> yamasından farklı bir Set 18 değişikliği bulunmuyor. Yeni PBE yaması yüklendiğinde otomatik olarak burada listelenir.</span>
           <span class="lang-en">No Set 18 balance differences are currently present on the CommunityDragon <code>pbe</code> branch compared to live patch <code>{{ report.versions.latest_label }}</code>.</span>
         </p>
@@ -861,13 +864,13 @@
       <div class="surface-card rounded-xl p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2">
-            <span class="w-1.5 h-4 rounded-sm bg-[#c8aa6e]"></span>
-            <h2 class="text-base sm:text-lg font-bold text-zinc-100">
+            <span class="w-1.5 h-4 rounded-sm bg-[#f0c374]"></span>
+            <h2 class="text-base sm:text-lg font-bold text-white">
               <span class="lang-tr">Bölgesel Challenger Liderlik Tablosu &amp; LP Barajları</span>
               <span class="lang-en">Regional Challenger Leaderboards &amp; Promotion Cutoffs</span>
             </h2>
           </div>
-          <p class="text-xs text-zinc-500 mt-1">
+          <p class="text-xs text-slate-400 mt-1">
             <span class="lang-tr">Sunuculara göre anlık zirve oyuncuları, Challenger/GM LP barajları, son 20 maç formları ve oyun stilleri</span>
             <span class="lang-en">Live regional Challenger standings, LP promotion cutoffs, recent 20-game form, and playstyle flexibility</span>
           </p>
@@ -875,10 +878,10 @@
 
         <div class="flex flex-wrap items-center gap-2.5">
           <!-- Region Filter Buttons -->
-          <div class="inline-flex flex-wrap rounded-lg bg-[#0c0c0f] p-1 border border-[#232329] gap-1" id="lb-region-bar">
+          <div class="inline-flex flex-wrap rounded-lg bg-[#0d121c] p-1 border border-[#222d42] gap-1" id="lb-region-bar">
             {% for reg in report.leaderboards.regions %}
             <button data-region="{{ reg.id }}" onclick="switchLeaderboardRegion('{{ reg.id }}')"
-              class="lb-region-btn px-3 py-1.5 rounded text-xs font-bold mono transition-colors {% if loop.first %}bg-[#c8aa6e] text-zinc-950{% else %}text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60{% endif %}">
+              class="lb-region-btn px-3 py-1.5 rounded text-xs font-bold mono transition-colors {% if loop.first %}bg-[#f0c374] text-zinc-950{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
               {{ reg.code }}
             </button>
             {% endfor %}
@@ -887,7 +890,7 @@
           <!-- Player Search -->
           <input id="lb-search-input" type="text" oninput="filterLeaderboardPlayers()"
             placeholder="Riot ID ara..."
-            class="bg-[#0c0c0f] border border-[#232329] focus:border-zinc-500 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 outline-none w-44 sm:w-52 transition-colors" />
+            class="bg-[#0d121c] border border-[#222d42] focus:border-slate-500 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-400 outline-none w-44 sm:w-52 transition-colors" />
         </div>
       </div>
 
@@ -898,45 +901,45 @@
         <!-- Regional Cutoffs & Server KPIs -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
           <div class="surface-card rounded-xl p-4">
-            <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
               <span class="lang-tr">{{ reg.code }} Sunucu 1.si</span>
               <span class="lang-en">{{ reg.code }} Rank #1</span>
             </p>
-            <p class="text-xl sm:text-2xl font-bold text-[#c8aa6e] mt-1 mono">{{ "{:,}".format(reg.top_lp) }} LP</p>
-            <p class="text-xs text-zinc-300 font-semibold truncate mt-1">{{ reg.top_player }}</p>
+            <p class="text-xl sm:text-2xl font-bold text-[#f0c374] mt-1 mono">{{ "{:,}".format(reg.top_lp) }} LP</p>
+            <p class="text-xs text-slate-200 font-semibold truncate mt-1">{{ reg.top_player }}</p>
           </div>
 
           <div class="surface-card rounded-xl p-4">
-            <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
               <span class="lang-tr">Challenger Barajı (Cutoff)</span>
               <span class="lang-en">Challenger Cutoff</span>
             </p>
             <p class="text-xl sm:text-2xl font-bold text-amber-400 mt-1 mono">{{ "{:,}".format(reg.challenger_cutoff) }} LP</p>
-            <p class="text-xs text-zinc-500 mt-1">
+            <p class="text-xs text-slate-400 mt-1">
               <span class="lang-tr">{{ reg.challenger_slots }} Kontenjan ({{ reg.name_tr }})</span>
               <span class="lang-en">{{ reg.challenger_slots }} Slots ({{ reg.name_en }})</span>
             </p>
           </div>
 
           <div class="surface-card rounded-xl p-4">
-            <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
               <span class="lang-tr">Grandmaster Barajı (Cutoff)</span>
               <span class="lang-en">Grandmaster Cutoff</span>
             </p>
-            <p class="text-xl sm:text-2xl font-bold text-zinc-100 mt-1 mono">{{ "{:,}".format(reg.grandmaster_cutoff) }} LP</p>
-            <p class="text-xs text-zinc-500 mt-1">
+            <p class="text-xl sm:text-2xl font-bold text-white mt-1 mono">{{ "{:,}".format(reg.grandmaster_cutoff) }} LP</p>
+            <p class="text-xs text-slate-400 mt-1">
               <span class="lang-tr">{{ reg.grandmaster_slots }} Kontenjan</span>
               <span class="lang-en">{{ reg.grandmaster_slots }} Slots</span>
             </p>
           </div>
 
           <div class="surface-card rounded-xl p-4">
-            <p class="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
               <span class="lang-tr">Toplam Master+ Oyuncu</span>
               <span class="lang-en">Master+ Population</span>
             </p>
             <p class="text-xl sm:text-2xl font-bold text-emerald-400 mt-1 mono">{{ "{:,}".format(reg.master_population) }}</p>
-            <p class="text-xs text-zinc-500 mt-1">
+            <p class="text-xs text-slate-400 mt-1">
               <span class="lang-tr">Aktif Dereceli Havuzu</span>
               <span class="lang-en">Active Ranked Ladder</span>
             </p>
@@ -948,7 +951,7 @@
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="border-b border-[#232329] bg-[#0d0d10] text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">
+                <tr class="border-b border-[#222d42] bg-[#0d121c] text-xs uppercase tracking-wider text-slate-300 font-bold">
                   <th class="py-3 px-4 w-16">
                     <span class="lang-tr">Sıra</span><span class="lang-en">Rank</span>
                   </th>
@@ -975,19 +978,19 @@
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-[#1c1c22] text-xs">
+              <tbody class="divide-y divide-[#222d42] text-xs">
                 {% for p in reg.players %}
-                <tr data-player-search="{{ p.riot_id | lower }}" class="lb-player-row hover:bg-[#16161b] transition-colors">
+                <tr data-player-search="{{ p.riot_id | lower }}" class="lb-player-row hover:bg-[#182030] transition-colors">
                   <!-- Rank -->
                   <td class="py-3 px-4 mono font-bold">
                     {% if p.rank == 1 %}
-                    <span class="inline-flex items-center justify-center w-7 h-7 rounded bg-amber-500/15 text-[#c8aa6e] border border-[#c8aa6e]/50">#1</span>
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded bg-amber-500/20 text-[#f0c374] border border-[#f0c374]/60 font-extrabold shadow-sm">#1</span>
                     {% elif p.rank == 2 %}
-                    <span class="inline-flex items-center justify-center w-7 h-7 rounded bg-zinc-300/10 text-zinc-200 border border-zinc-400/40">#2</span>
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded bg-slate-300/20 text-white border border-slate-400/50 font-bold shadow-sm">#2</span>
                     {% elif p.rank == 3 %}
-                    <span class="inline-flex items-center justify-center w-7 h-7 rounded bg-amber-700/15 text-amber-500 border border-amber-700/40">#3</span>
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded bg-amber-700/25 text-amber-300 border border-amber-600/50 font-bold shadow-sm">#3</span>
                     {% else %}
-                    <span class="text-zinc-400 pl-1.5">#{{ p.rank }}</span>
+                    <span class="text-slate-300 pl-1.5 font-bold">#{{ p.rank }}</span>
                     {% endif %}
                   </td>
 
@@ -995,53 +998,53 @@
                   <td class="py-3 px-4">
                     <div class="flex items-center gap-2">
                       <a href="{{ p.profile_url }}" target="_blank" rel="noopener noreferrer"
-                         class="font-bold text-zinc-100 hover:text-[#c8aa6e] transition-colors">
-                        {{ p.game_name }}<span class="text-zinc-500 font-normal ml-0.5">{{ p.tag_line }}</span>
+                         class="font-bold text-white hover:text-[#f0c374] transition-colors">
+                        {{ p.game_name }}<span class="text-slate-400 font-normal ml-0.5">{{ p.tag_line }}</span>
                       </a>
-                      <span class="px-1.5 py-0.5 text-[10px] rounded bg-[#18181d] text-zinc-400 border border-[#272730] mono">{{ reg.code }}</span>
+                      <span class="px-1.5 py-0.5 text-[10px] rounded bg-[#182030] text-slate-300 border border-[#29364f] mono">{{ reg.code }}</span>
                     </div>
                   </td>
 
                   <!-- Tier & LP -->
                   <td class="py-3 px-4">
                     <div class="flex items-center gap-2">
-                      <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-amber-500/10 text-[#c8aa6e] border border-[#c8aa6e]/30">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-amber-500/10 text-[#f0c374] border border-[#f0c374]/30">
                         {{ p.tier }}
                       </span>
-                      <span class="font-bold text-zinc-100 mono text-sm">{{ "{:,}".format(p.lp) }} LP</span>
+                      <span class="font-bold text-white mono text-sm">{{ "{:,}".format(p.lp) }} LP</span>
                     </div>
                   </td>
 
                   <!-- Patch LP Delta -->
                   <td class="py-3 px-4 text-right mono">
-                    <span class="font-bold {% if p.patch_lp_change > 0 %}text-emerald-400{% elif p.patch_lp_change < 0 %}text-rose-400{% else %}text-zinc-400{% endif %}">
+                    <span class="font-bold {% if p.patch_lp_change > 0 %}text-emerald-400{% elif p.patch_lp_change < 0 %}text-rose-400{% else %}text-slate-300{% endif %}">
                       {{ '%+d'|format(p.patch_lp_change) }} LP
                     </span>
-                    <div class="text-[10px] text-zinc-500">{{ p.patch_games }} <span class="lang-tr">maç</span><span class="lang-en">games</span></div>
+                    <div class="text-[10px] text-slate-400">{{ p.patch_games }} <span class="lang-tr">maç</span><span class="lang-en">games</span></div>
                   </td>
 
                   <!-- Recent 20 Games LP Delta -->
                   <td class="py-3 px-4 text-right mono">
-                    <span class="font-bold {% if p.recent_lp_change > 0 %}text-emerald-400{% elif p.recent_lp_change < 0 %}text-rose-400{% else %}text-zinc-400{% endif %}">
+                    <span class="font-bold {% if p.recent_lp_change > 0 %}text-emerald-400{% elif p.recent_lp_change < 0 %}text-rose-400{% else %}text-slate-300{% endif %}">
                       {{ '%+d'|format(p.recent_lp_change) }} LP
                     </span>
-                    <div class="text-[10px] text-zinc-500">
+                    <div class="text-[10px] text-slate-400">
                       <span class="lang-tr">Son 20:</span><span class="lang-en">L20:</span> #{{ p.recent_avg_place }}
                     </div>
                   </td>
 
                   <!-- Season Average Placement -->
                   <td class="py-3 px-4 text-right mono">
-                    <span class="font-bold text-sm {% if p.avg_place <= 3.85 %}text-emerald-400{% elif p.avg_place <= 4.15 %}text-zinc-100{% else %}text-amber-400{% endif %}">
+                    <span class="font-bold text-sm {% if p.avg_place <= 3.85 %}text-emerald-400{% elif p.avg_place <= 4.15 %}text-white{% else %}text-amber-400{% endif %}">
                       #{{ p.avg_place }}
                     </span>
-                    <div class="text-[10px] text-zinc-500">{{ p.games }} <span class="lang-tr">maç</span><span class="lang-en">games</span></div>
+                    <div class="text-[10px] text-slate-400">{{ p.games }} <span class="lang-tr">maç</span><span class="lang-en">games</span></div>
                   </td>
 
                   <!-- Win Rate -->
                   <td class="py-3 px-4 text-right mono">
-                    <span class="font-bold text-[#c8aa6e]">{{ p.win_rate }}%</span>
-                    <div class="text-[10px] text-zinc-500">{{ p.wins }}W</div>
+                    <span class="font-bold text-[#f0c374]">{{ p.win_rate }}%</span>
+                    <div class="text-[10px] text-slate-400">{{ p.wins }}W</div>
                   </td>
 
                   <!-- Playstyle & Item Bias -->
@@ -1049,17 +1052,17 @@
                     <div class="flex flex-col gap-1.5 min-w-[165px]">
                       <div class="flex items-center justify-between gap-2">
                         <span class="px-2 py-0.5 rounded text-[10px] font-semibold
-                          {% if p.playstyle_code == 'FLEX' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/25
-                          {% elif p.playstyle_code == 'FORCER' %}bg-amber-500/10 text-amber-400 border border-amber-500/25
-                          {% else %}bg-zinc-800 text-zinc-300 border border-zinc-700{% endif %}">
+                          {% if p.playstyle_code == 'FLEX' %}bg-emerald-950/70 text-emerald-300 border border-emerald-500/40
+                          {% elif p.playstyle_code == 'FORCER' %}bg-amber-950/70 text-amber-300 border border-amber-500/40
+                          {% else %}bg-[#182030] text-slate-200 border border-[#2b3952]{% endif %}">
                           <span class="lang-tr">{{ p.playstyle_tr }}</span>
                           <span class="lang-en">{{ p.playstyle_en }}</span>
                         </span>
-                        <span class="text-[10px] text-zinc-500 mono">
+                        <span class="text-[10px] text-slate-400 mono">
                           T:{{ p.item_bias.tank }}% AD:{{ p.item_bias.ad }}% AP:{{ p.item_bias.ap }}%
                         </span>
                       </div>
-                      <div class="w-full h-1.5 rounded-full bg-zinc-900 overflow-hidden flex">
+                      <div class="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden flex">
                         <div style="width: {{ p.item_bias.tank }}%" class="bg-emerald-500/80" title="Tank Items: {{ p.item_bias.tank }}%"></div>
                         <div style="width: {{ p.item_bias.ad }}%" class="bg-amber-500/80" title="AD Items: {{ p.item_bias.ad }}%"></div>
                         <div style="width: {{ p.item_bias.ap }}%" class="bg-sky-500/80" title="AP Items: {{ p.item_bias.ap }}%"></div>
@@ -1086,27 +1089,27 @@
       <div class="surface-card rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2">
-            <span class="w-1.5 h-4 rounded-sm bg-[#c8aa6e]"></span>
-            <h2 class="text-base sm:text-lg font-bold text-zinc-100">
+            <span class="w-1.5 h-4 rounded-sm bg-[#f0c374]"></span>
+            <h2 class="text-base sm:text-lg font-bold text-white">
               <span class="lang-tr">Set 18 Master+ Eşya &amp; Şampiyon Tier Listesi</span>
               <span class="lang-en">Set 18 Master+ Item &amp; Champion Tier List</span>
             </h2>
           </div>
-          <p class="text-xs text-zinc-500 mt-1">
+          <p class="text-xs text-slate-400 mt-1">
             <span class="lang-tr">Erken aşamada basılabilecek en yüksek kazanma oranlı eşyalar (Slammable Items) ve yama diff puanlarıyla şampiyon sıralaması</span>
             <span class="lang-en">Highest-performing slammable items and Set 18 unit standings overlaid with CDragon patch diff scores</span>
           </p>
         </div>
 
         <!-- Sub-Tab Switcher: Items vs Champions -->
-        <div class="inline-flex rounded-lg bg-[#0c0c0f] p-1 border border-[#232329] gap-1 self-start sm:self-auto">
+        <div class="inline-flex rounded-lg bg-[#0d121c] p-1 border border-[#222d42] gap-1 self-start sm:self-auto">
           <button id="btn-sub-items" onclick="switchTierSubTab('items')"
-            class="px-3.5 py-1.5 rounded text-xs font-bold bg-[#c8aa6e] text-zinc-950 transition-colors">
+            class="px-3.5 py-1.5 rounded text-xs font-bold bg-[#f0c374] text-zinc-950 transition-colors">
             <span class="lang-tr">Eşya Tier Listesi ({{ report.tier_lists.item_tiers | length }})</span>
             <span class="lang-en">Item Tier List ({{ report.tier_lists.item_tiers | length }})</span>
           </button>
           <button id="btn-sub-units" onclick="switchTierSubTab('units')"
-            class="px-3.5 py-1.5 rounded text-xs font-bold text-zinc-400 hover:text-zinc-100 transition-colors">
+            class="px-3.5 py-1.5 rounded text-xs font-bold text-slate-300 hover:text-white transition-colors">
             <span class="lang-tr">Şampiyon Tier Listesi ({{ report.tier_lists.unit_tiers | length }})</span>
             <span class="lang-en">Champion Tier List ({{ report.tier_lists.unit_tiers | length }})</span>
           </button>
@@ -1118,7 +1121,7 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="border-b border-[#232329] bg-[#0d0d10] text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">
+              <tr class="border-b border-[#222d42] bg-[#0d121c] text-xs uppercase tracking-wider text-slate-300 font-bold">
                 <th class="py-3 px-4 w-16">Tier</th>
                 <th class="py-3 px-4">
                   <span class="lang-tr">Eşya (Item)</span><span class="lang-en">Item</span>
@@ -1137,43 +1140,43 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[#1c1c22] text-xs">
+            <tbody class="divide-y divide-[#222d42] text-xs">
               {% for it in report.tier_lists.item_tiers %}
-              <tr class="hover:bg-[#16161b] transition-colors">
+              <tr class="hover:bg-[#182030] transition-colors">
                 <td class="py-2.5 px-4 mono font-bold">
                   <span class="inline-flex items-center justify-center w-7 h-7 rounded text-xs
-                    {% if it.tier == 'S' %}bg-amber-500/15 text-[#c8aa6e] border border-[#c8aa6e]/40
-                    {% elif it.tier == 'A' %}bg-zinc-800 text-zinc-100 border border-zinc-700
-                    {% elif it.tier == 'B' %}bg-zinc-900 text-zinc-400 border border-zinc-800
-                    {% else %}bg-zinc-900/60 text-zinc-500 border border-zinc-800{% endif %}">
+                    {% if it.tier == 'S' %}bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm
+                    {% elif it.tier == 'A' %}bg-purple-500/20 text-purple-200 border border-purple-500/40 shadow-sm
+                    {% elif it.tier == 'B' %}bg-blue-500/20 text-blue-200 border border-blue-500/40 shadow-sm
+                    {% else %}bg-slate-800 text-slate-300 border border-slate-700{% endif %}">
                     {{ it.tier }}
                   </span>
                 </td>
                 <td class="py-2.5 px-4">
                   <div class="flex items-center gap-2.5">
-                    <img src="{{ it.icon }}" alt="{{ it.name }}" class="w-8 h-8 rounded border border-zinc-700 object-cover bg-zinc-900" onerror="this.style.display='none'" />
+                    <img src="{{ it.icon }}" alt="{{ it.name }}" class="w-8 h-8 rounded border border-slate-700 object-cover bg-slate-900" onerror="this.style.display='none'" />
                     <div>
-                      <span class="font-bold text-zinc-100">
+                      <span class="font-bold text-white">
                         <span class="lang-tr">{{ it.name }}</span>
                         <span class="lang-en">{{ it.name_en }}</span>
                       </span>
                       {% if it.is_emblem %}
-                      <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded bg-amber-500/10 text-[#c8aa6e] border border-[#c8aa6e]/30">Emblem</span>
+                      <span class="ml-1.5 px-1.5 py-0.5 text-[10px] rounded bg-amber-500/10 text-[#f0c374] border border-[#f0c374]/30">Emblem</span>
                       {% endif %}
                     </div>
                   </div>
                 </td>
-                <td class="py-2.5 px-4 text-right mono font-bold {% if it.avg_place <= 4.20 %}text-emerald-400{% elif it.avg_place <= 4.40 %}text-zinc-100{% else %}text-rose-400{% endif %}">
+                <td class="py-2.5 px-4 text-right mono font-bold {% if it.avg_place <= 4.20 %}text-emerald-400{% elif it.avg_place <= 4.40 %}text-white{% else %}text-rose-400{% endif %}">
                   #{{ it.avg_place }}
                 </td>
-                <td class="py-2.5 px-4 text-right mono text-zinc-300">{{ it.pick_rate }}%</td>
-                <td class="py-2.5 px-4 text-right mono text-zinc-400">{{ "{:,}".format(it.games) }}</td>
+                <td class="py-2.5 px-4 text-right mono text-slate-200">{{ it.pick_rate }}%</td>
+                <td class="py-2.5 px-4 text-right mono text-slate-300">{{ "{:,}".format(it.games) }}</td>
                 <td class="py-2.5 px-4">
                   <div class="flex items-center gap-1.5 flex-wrap">
                     {% for h in it.holders %}
-                    <div class="inline-flex items-center gap-1 bg-[#0c0c0f] px-2 py-0.5 rounded border border-[#23232c]">
+                    <div class="inline-flex items-center gap-1 bg-[#0d121c] px-2 py-0.5 rounded border border-[#29364f]">
                       <img src="{{ h.icon }}" alt="{{ h.name }}" class="w-4 h-4 rounded-sm border cost-{{ h.cost }} object-cover" onerror="this.style.display='none'" />
-                      <span class="text-[11px] text-zinc-300">
+                      <span class="text-[11px] text-slate-200">
                         <span class="lang-tr">{{ h.name }}</span>
                         <span class="lang-en">{{ h.name_en }}</span>
                       </span>
@@ -1193,7 +1196,7 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="border-b border-[#232329] bg-[#0d0d10] text-[11px] uppercase tracking-wider text-zinc-500 font-semibold">
+              <tr class="border-b border-[#222d42] bg-[#0d121c] text-xs uppercase tracking-wider text-slate-300 font-bold">
                 <th class="py-3 px-4 w-16">Tier</th>
                 <th class="py-3 px-4">
                   <span class="lang-tr">Şampiyon</span><span class="lang-en">Champion</span>
@@ -1212,30 +1215,30 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[#1c1c22] text-xs">
+            <tbody class="divide-y divide-[#222d42] text-xs">
               {% for u in report.tier_lists.unit_tiers %}
-              <tr class="hover:bg-[#16161b] transition-colors">
+              <tr class="hover:bg-[#182030] transition-colors">
                 <td class="py-2.5 px-4 mono font-bold">
                   <span class="inline-flex items-center justify-center w-7 h-7 rounded text-xs
-                    {% if u.tier == 'S' %}bg-amber-500/15 text-[#c8aa6e] border border-[#c8aa6e]/40
-                    {% elif u.tier == 'A' %}bg-zinc-800 text-zinc-100 border border-zinc-700
-                    {% elif u.tier == 'B' %}bg-zinc-900 text-zinc-400 border border-zinc-800
-                    {% else %}bg-zinc-900/60 text-zinc-500 border border-zinc-800{% endif %}">
+                    {% if u.tier == 'S' %}bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm
+                    {% elif u.tier == 'A' %}bg-purple-500/20 text-purple-200 border border-purple-500/40 shadow-sm
+                    {% elif u.tier == 'B' %}bg-blue-500/20 text-blue-200 border border-blue-500/40 shadow-sm
+                    {% else %}bg-slate-800 text-slate-300 border border-slate-700{% endif %}">
                     {{ u.tier }}
                   </span>
                 </td>
                 <td class="py-2.5 px-4">
                   <div class="flex items-center gap-2.5">
-                    <img src="{{ u.icon }}" alt="{{ u.name }}" class="w-9 h-9 rounded-md border-2 cost-{{ u.cost }} object-cover bg-zinc-900" onerror="this.style.display='none'" />
+                    <img src="{{ u.icon }}" alt="{{ u.name }}" class="w-9 h-9 rounded-md border-2 cost-{{ u.cost }} object-cover bg-slate-900" onerror="this.style.display='none'" />
                     <div>
                       <div class="flex items-center gap-1.5">
-                        <span class="font-bold text-zinc-100">
+                        <span class="font-bold text-white">
                           <span class="lang-tr">{{ u.name }}</span>
                           <span class="lang-en">{{ u.name_en }}</span>
                         </span>
-                        <span class="px-1.5 py-0.5 text-[10px] rounded bg-[#18181c] text-zinc-400 border border-[#27272f] mono">{{ u.cost }}G</span>
+                        <span class="px-1.5 py-0.5 text-[10px] rounded bg-[#182030] text-slate-300 border border-[#29364f] mono">{{ u.cost }}G</span>
                       </div>
-                      <p class="text-[11px] text-zinc-500">{{ u.traits | join(' · ') }}</p>
+                      <p class="text-[11px] text-slate-400">{{ u.traits | join(' · ') }}</p>
                     </div>
                   </div>
                 </td>
@@ -1249,21 +1252,21 @@
                     NERF ({{ '%+.1f'|format(u.patch_impact) }})
                   </span>
                   {% else %}
-                  <span class="text-zinc-600 text-[11px]">—</span>
+                  <span class="text-slate-400 text-[11px]">—</span>
                   {% endif %}
                 </td>
-                <td class="py-2.5 px-4 text-right mono font-bold {% if u.avg_place <= 4.22 %}text-emerald-400{% elif u.avg_place <= 4.42 %}text-zinc-100{% else %}text-rose-400{% endif %}">
+                <td class="py-2.5 px-4 text-right mono font-bold {% if u.avg_place <= 4.22 %}text-emerald-400{% elif u.avg_place <= 4.42 %}text-white{% else %}text-rose-400{% endif %}">
                   #{{ u.avg_place }}
                 </td>
-                <td class="py-2.5 px-4 text-right mono text-zinc-300">{{ u.pick_rate }}%</td>
+                <td class="py-2.5 px-4 text-right mono text-slate-200">{{ u.pick_rate }}%</td>
                 <td class="py-2.5 px-4">
                   <div class="flex items-center gap-1.5 flex-wrap">
                     {% for bi in u.best_items %}
-                    <div class="inline-flex items-center gap-1 bg-[#0c0c0f] px-2 py-0.5 rounded border border-[#23232c]">
+                    <div class="inline-flex items-center gap-1 bg-[#0d121c] px-2 py-0.5 rounded border border-[#29364f]">
                       {% if bi.icon %}
                       <img src="{{ bi.icon }}" alt="{{ bi.name }}" class="w-4 h-4 rounded-sm object-cover" onerror="this.style.display='none'" />
                       {% endif %}
-                      <span class="text-[11px] text-zinc-300">
+                      <span class="text-[11px] text-slate-200">
                         <span class="lang-tr">{{ bi.name }}</span>
                         <span class="lang-en">{{ bi.name_en }}</span>
                       </span>
@@ -1284,11 +1287,11 @@
     <!-- AD SLOT 3: FOOTER MULTIPLEX / LEADERBOARD (728x90)                -->
     <!-- ================================================================= -->
     <aside id="ad-slot-footer-banner" aria-label="Sponsored Placement" class="ad-slot-container rounded-lg p-3 flex flex-col items-center justify-center min-h-[85px] text-center">
-      <span class="text-[10px] uppercase tracking-widest text-zinc-600 font-semibold mb-1">
+      <span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-1">
         <span class="lang-tr">Sponsor / Reklam Alanı &bull; Alt Banner (728&times;90)</span>
         <span class="lang-en">Sponsored Placement &bull; Footer Leaderboard (728&times;90)</span>
       </span>
-      <p class="text-xs text-zinc-500">
+      <p class="text-xs text-slate-400">
         <span class="lang-tr">Sayfa sonu reklam / sponsorluk yerleşimi için ayrılmış alan.</span>
         <span class="lang-en">Reserved footer banner slot for display monetization or partner links.</span>
       </p>
@@ -1296,12 +1299,12 @@
 
   </main>
 
-  <footer class="border-t border-[#1f1f24] mt-12 py-8 text-center text-xs text-zinc-500 space-y-2">
+  <footer class="border-t border-[#222d42] mt-12 py-8 text-center text-xs text-slate-400 space-y-2">
     <p>
-      <span class="lang-tr">Master+ Maç Kümeleme, Liderlik Tablosu &amp; Eşya İstatistikleri <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer" class="text-[#c8aa6e] hover:underline font-semibold">MetaTFT.com</a> izniyle kullanılmaktadır &bull; Yama Verileri: <a href="https://communitydragon.org" target="_blank" rel="noopener noreferrer" class="text-zinc-300 hover:underline">CommunityDragon</a> &amp; Riot Games API</span>
-      <span class="lang-en">Master+ Match Clustering, Leaderboards &amp; BiS Item Telemetry courtesy of <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer" class="text-[#c8aa6e] hover:underline font-semibold">MetaTFT.com</a> &bull; Game Data via <a href="https://communitydragon.org" target="_blank" rel="noopener noreferrer" class="text-zinc-300 hover:underline">CommunityDragon</a> &amp; Riot Games API</span>
+      <span class="lang-tr">Master+ Maç Kümeleme, Liderlik Tablosu &amp; Eşya İstatistikleri <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer" class="text-[#f0c374] hover:underline font-semibold">MetaTFT.com</a> izniyle kullanılmaktadır &bull; Yama Verileri: <a href="https://communitydragon.org" target="_blank" rel="noopener noreferrer" class="text-slate-200 hover:underline">CommunityDragon</a> &amp; Riot Games API</span>
+      <span class="lang-en">Master+ Match Clustering, Leaderboards &amp; BiS Item Telemetry courtesy of <a href="https://www.metatft.com" target="_blank" rel="noopener noreferrer" class="text-[#f0c374] hover:underline font-semibold">MetaTFT.com</a> &bull; Game Data via <a href="https://communitydragon.org" target="_blank" rel="noopener noreferrer" class="text-slate-200 hover:underline">CommunityDragon</a> &amp; Riot Games API</span>
     </p>
-    <p>TFT Set 18 Meta &amp; Patch Telemetry &bull; Automated via GitHub Actions CI/CD &bull; <a href="https://github.com/Apexq/TFT-Meta-Patch-Telemetry" class="text-zinc-300 hover:text-white underline underline-offset-4">GitHub (@Apexq)</a></p>
+    <p>TFT Set 18 Meta &amp; Patch Telemetry &bull; Automated via GitHub Actions CI/CD &bull; <a href="https://github.com/Apexq/TFT-Meta-Patch-Telemetry" class="text-slate-200 hover:text-white underline underline-offset-4">GitHub (@Apexq)</a></p>
   </footer>
 
   <script>
@@ -1323,11 +1326,11 @@
         lbSearchInput.placeholder = lang === 'tr' ? 'Riot ID ara...' : 'Search Riot ID...';
       }
       if (lang === 'tr') {
-        btnTr.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors bg-zinc-200 text-zinc-950';
-        btnEn.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors text-zinc-400 hover:text-zinc-200';
+        btnTr.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors bg-slate-200 text-slate-950';
+        btnEn.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors text-slate-300 hover:text-white';
       } else {
-        btnEn.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors bg-zinc-200 text-zinc-950';
-        btnTr.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors text-zinc-400 hover:text-zinc-200';
+        btnEn.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors bg-slate-200 text-slate-950';
+        btnTr.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors text-slate-300 hover:text-white';
       }
     }
 
@@ -1350,10 +1353,10 @@
         if (!panels[k] || !buttons[k]) return;
         if (k === tab) {
           panels[k].classList.remove('hidden');
-          buttons[k].className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-zinc-100 text-zinc-950 shadow-sm flex items-center gap-1.5';
+          buttons[k].className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all bg-white text-slate-950 shadow-md flex items-center gap-1.5';
         } else {
           panels[k].classList.add('hidden');
-          buttons[k].className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5';
+          buttons[k].className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800/60 flex items-center gap-1.5';
         }
       });
     }
@@ -1366,13 +1369,13 @@
       if (sub === 'items') {
         pItems.classList.remove('hidden');
         pUnits.classList.add('hidden');
-        bItems.className = 'px-3.5 py-1.5 rounded text-xs font-bold bg-[#c8aa6e] text-zinc-950 transition-colors';
-        bUnits.className = 'px-3.5 py-1.5 rounded text-xs font-bold text-zinc-400 hover:text-zinc-100 transition-colors';
+        bItems.className = 'px-3.5 py-1.5 rounded text-xs font-bold bg-[#f0c374] text-slate-950 transition-colors shadow-sm';
+        bUnits.className = 'px-3.5 py-1.5 rounded text-xs font-bold text-slate-300 hover:text-white transition-colors';
       } else {
         pUnits.classList.remove('hidden');
         pItems.classList.add('hidden');
-        bUnits.className = 'px-3.5 py-1.5 rounded text-xs font-bold bg-[#c8aa6e] text-zinc-950 transition-colors';
-        bItems.className = 'px-3.5 py-1.5 rounded text-xs font-bold text-zinc-400 hover:text-zinc-100 transition-colors';
+        bUnits.className = 'px-3.5 py-1.5 rounded text-xs font-bold bg-[#f0c374] text-slate-950 transition-colors shadow-sm';
+        bItems.className = 'px-3.5 py-1.5 rounded text-xs font-bold text-slate-300 hover:text-white transition-colors';
       }
     }
 
@@ -1408,9 +1411,9 @@
       document.querySelectorAll('#matcher-item-bar .matcher-item-btn').forEach(btn => {
         const id = btn.getAttribute('data-item-id');
         if (selectedMatcherItems.has(id)) {
-          btn.className = 'matcher-item-btn group relative flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/15 border-2 border-[#c8aa6e] text-zinc-100 transition-all text-xs shadow';
+          btn.className = 'matcher-item-btn group relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/20 border-2 border-[#f0c374] text-white transition-all text-xs shadow-md';
         } else {
-          btn.className = 'matcher-item-btn group relative flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#0c0c0f] border border-[#232329] hover:border-zinc-500 transition-all text-xs';
+          btn.className = 'matcher-item-btn group relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0d121c] border border-slate-700/80 hover:border-slate-500 text-slate-200 hover:text-white transition-all text-xs';
         }
       });
     }
@@ -1420,9 +1423,9 @@
       if (!drawer) return;
       drawer.classList.toggle('hidden');
       if (!drawer.classList.contains('hidden')) {
-        btnEl.classList.add('border-[#c8aa6e]', 'text-[#c8aa6e]');
+        btnEl.classList.add('border-[#f0c374]', 'text-[#f0c374]');
       } else {
-        btnEl.classList.remove('border-[#c8aa6e]', 'text-[#c8aa6e]');
+        btnEl.classList.remove('border-[#f0c374]', 'text-[#f0c374]');
       }
     }
 
@@ -1445,9 +1448,9 @@
       activeLbRegion = regionId;
       document.querySelectorAll('#lb-region-bar .lb-region-btn').forEach(btn => {
         if (btn.getAttribute('data-region') === regionId) {
-          btn.className = 'lb-region-btn px-3 py-1.5 rounded text-xs font-bold mono transition-colors bg-[#c8aa6e] text-zinc-950';
+          btn.className = 'lb-region-btn px-3 py-1.5 rounded text-xs font-bold mono transition-colors bg-[#f0c374] text-slate-950 shadow-sm';
         } else {
-          btn.className = 'lb-region-btn px-3 py-1.5 rounded text-xs font-bold mono transition-colors text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60';
+          btn.className = 'lb-region-btn px-3 py-1.5 rounded text-xs font-bold mono transition-colors text-slate-300 hover:text-white hover:bg-slate-800/60';
         }
       });
       document.querySelectorAll('.lb-region-panel').forEach(panel => {
@@ -1486,9 +1489,9 @@
       activeCompFilter = filterVal;
       document.querySelectorAll('#comp-filter-bar .comp-filter-btn').forEach(btn => {
         if (btn.getAttribute('data-filter') === filterVal) {
-          btn.classList.add('bg-zinc-200', 'text-zinc-950');
+          btn.classList.add('bg-slate-200', 'text-slate-950');
         } else {
-          btn.classList.remove('bg-zinc-200', 'text-zinc-950');
+          btn.classList.remove('bg-slate-200', 'text-slate-950');
         }
       });
       applyCompFilters();

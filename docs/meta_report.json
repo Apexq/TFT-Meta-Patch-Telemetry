@@ -197,7 +197,7 @@
             "unit_name_en": "Krug",
             "unit_cost": 3,
             "unit_icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_krug/tft18_krug_square.png",
-            "avg_placement": 3.86,
+            "avg_placement": 3.87,
             "items": [
               {
                 "apiName": "DA_GargoyleStoneplate",
@@ -515,10 +515,10 @@
                   "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_adaptivehelm.png"
                 },
                 {
-                  "apiName": "DA_ProtectorsVow",
-                  "name": "Muhafızın Adağı",
-                  "name_en": "Protector's Vow",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_frozenheart.png"
+                  "apiName": "DA_AdaptiveHelm",
+                  "name": "Değişken Miğfer",
+                  "name_en": "Adaptive Helm",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_adaptivehelm.png"
                 },
                 {
                   "apiName": "DA_ProtectorsVow",
@@ -3156,6 +3156,7 @@
           "DA_SpiritVisage",
           "DA_WarmogsArmor",
           "DA_GuinsoosRageblade",
+          "DA_GargoyleStoneplate",
           "DA_HandOfJustice"
         ],
         "priority_items": [
@@ -3351,6 +3352,12 @@
             "is_three_star": false,
             "bis_items": [
               {
+                "apiName": "DA_18_EmblemBlackthorn",
+                "name": "Karadiken Amblemi",
+                "name_en": "Blackthorn Emblem",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_blackthorn.png"
+              },
+              {
                 "apiName": "DA_EdgeOfNight",
                 "name": "Gecenin Kıyısı",
                 "name_en": "Edge of Night",
@@ -3483,6 +3490,12 @@
               "is_carry": false,
               "is_three_star": false,
               "bis_items": [
+                {
+                  "apiName": "DA_18_EmblemBlackthorn",
+                  "name": "Karadiken Amblemi",
+                  "name_en": "Blackthorn Emblem",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_blackthorn.png"
+                },
                 {
                   "apiName": "DA_EdgeOfNight",
                   "name": "Gecenin Kıyısı",
@@ -7347,16 +7360,10 @@
                 "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_guardianangel.png"
               },
               {
-                "apiName": "DA_HandOfJustice",
-                "name": "Adaletin Eli",
-                "name_en": "Hand Of Justice",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_unstableconcoction.png"
-              },
-              {
-                "apiName": "DA_JeweledGauntlet",
-                "name": "Mücevherli Eldiven",
-                "name_en": "Jeweled Gauntlet",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                "apiName": "DA_RabadonsDeathcap",
+                "name": "Rabadon'un Şapkası",
+                "name_en": "Rabadon's Deathcap",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.png"
               }
             ],
             "status": "UNCHANGED",
@@ -7537,16 +7544,10 @@
                   "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_guardianangel.png"
                 },
                 {
-                  "apiName": "DA_HandOfJustice",
-                  "name": "Adaletin Eli",
-                  "name_en": "Hand Of Justice",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_unstableconcoction.png"
-                },
-                {
-                  "apiName": "DA_JeweledGauntlet",
-                  "name": "Mücevherli Eldiven",
-                  "name_en": "Jeweled Gauntlet",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                  "apiName": "DA_RabadonsDeathcap",
+                  "name": "Rabadon'un Şapkası",
+                  "name_en": "Rabadon's Deathcap",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.png"
                 }
               ],
               "status": "UNCHANGED",
@@ -8876,7 +8877,7 @@
             "unit_name_en": "Ahri",
             "unit_cost": 4,
             "unit_icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_ahri/tft18_ahri_square.png",
-            "avg_placement": 3.93,
+            "avg_placement": 3.92,
             "items": [
               {
                 "apiName": "DA_18_EmblemInvoker",
@@ -9118,10 +9119,10 @@
             "is_three_star": false,
             "bis_items": [
               {
-                "apiName": "DA_ProtectorsVow",
-                "name": "Muhafızın Adağı",
-                "name_en": "Protector's Vow",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_frozenheart.png"
+                "apiName": "DA_AdaptiveHelm",
+                "name": "Değişken Miğfer",
+                "name_en": "Adaptive Helm",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_adaptivehelm.png"
               },
               {
                 "apiName": "DA_ProtectorsVow",
@@ -9217,10 +9218,10 @@
               "is_three_star": false,
               "bis_items": [
                 {
-                  "apiName": "DA_ProtectorsVow",
-                  "name": "Muhafızın Adağı",
-                  "name_en": "Protector's Vow",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_frozenheart.png"
+                  "apiName": "DA_AdaptiveHelm",
+                  "name": "Değişken Miğfer",
+                  "name_en": "Adaptive Helm",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_adaptivehelm.png"
                 },
                 {
                   "apiName": "DA_ProtectorsVow",
@@ -9706,10 +9707,10 @@
                 "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_rapidfirecannon.png"
               },
               {
-                "apiName": "DA_SpearOfShojin",
-                "name": "Shojin'in Mızrağı",
-                "name_en": "Spear of Shojin",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_spearofshojin.png"
+                "apiName": "DA_VoidStaff",
+                "name": "Hiçlik Değneği",
+                "name_en": "Void Staff",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_voidstaff.png"
               }
             ],
             "status": "UNCHANGED",
@@ -10909,57 +10910,30 @@
               ],
               "status": "UNCHANGED",
               "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sejuani/tft18_sejuani_square.png"
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_rammus/tft18_rammus_square.png"
             },
             {
-              "apiName": "DA_18_Diana",
-              "name": "Diana",
-              "name_en": "Diana",
+              "apiName": "DA_Krug18",
+              "name": "Kayacıl",
+              "name_en": "Krug",
               "cost": 3,
               "is_carry": false,
               "is_three_star": false,
               "bis_items": [],
               "status": "UNCHANGED",
               "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_diana/tft18_diana_square.png"
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_krug/tft18_krug_square.png"
             },
+            null,
+            null
+          ],
+          [
+            null,
+            null,
             {
-              "apiName": "DA_18_Leona",
-              "name": "Leona",
-              "name_en": "Leona",
-              "cost": 1,
-              "is_carry": false,
-              "is_three_star": false,
-              "bis_items": [],
-              "status": "UNCHANGED",
-              "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_leona/tft18_leona_square.png"
-            },
-            null
-          ],
-          [
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-          ],
-          [
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-          ],
-          [
-            {
-              "apiName": "DA_18_Aphelios",
-              "name": "Aphelios",
-              "name_en": "Aphelios",
+              "apiName": "DA_18_Morgana",
+              "name": "Morgana",
+              "name_en": "Morgana",
               "cost": 4,
               "is_carry": false,
               "is_three_star": false,
@@ -10977,64 +10951,61 @@
                   "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_krakenslayer.png"
                 },
                 {
-                  "apiName": "DA_LastWhisper",
-                  "name": "Son Fısıltı",
-                  "name_en": "Last Whisper",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_lastwhisper.png"
+                  "apiName": "DA_RedBuff",
+                  "name": "Kırmızı Güçlendirme",
+                  "name_en": "Red Buff",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_rapidfirecannon.png"
+                },
+                {
+                  "apiName": "DA_VoidStaff",
+                  "name": "Hiçlik Değneği",
+                  "name_en": "Void Staff",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_voidstaff.png"
                 }
               ],
               "status": "UNCHANGED",
               "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_aphelios/tft18_aphelios_square.png"
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_morgana/tft18_morgana_square.png"
             },
             null,
             null,
             null,
+            null
+          ],
+          [
+            null,
+            null,
             null,
             {
-              "apiName": "DA_18_Varus",
-              "name": "Varus",
-              "name_en": "Varus",
-              "cost": 1,
+              "apiName": "DA_Fiddlesticks18",
+              "name": "Fiddlesticks",
+              "name_en": "Fiddlesticks",
+              "cost": 3,
               "is_carry": false,
-              "is_three_star": true,
-              "bis_items": [
-                {
-                  "apiName": "DA_18_EmblemLunar",
-                  "name": "Ay Amblemi",
-                  "name_en": "Lunar Emblem",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_lunar.png"
-                },
-                {
-                  "apiName": "DA_InfinityEdge",
-                  "name": "Ebedi Kılıç",
-                  "name_en": "Infinity Edge",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_infinityedge.png"
-                },
-                {
-                  "apiName": "DA_SpearOfShojin",
-                  "name": "Shojin'in Mızrağı",
-                  "name_en": "Spear of Shojin",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_spearofshojin.png"
-                }
-              ],
+              "is_three_star": false,
+              "bis_items": [],
               "status": "UNCHANGED",
               "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_varus/tft18_varus_square.png"
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_fiddlesticks/tft18_fiddlesticks_square.png"
             },
+            null,
+            null,
+            null
+          ],
+          [
             {
-              "apiName": "DA_18_Kayle",
-              "name": "Kayle",
-              "name_en": "Kayle",
+              "apiName": "DA_18_Teemo",
+              "name": "Teemo",
+              "name_en": "Teemo",
               "cost": 2,
               "is_carry": true,
               "is_three_star": true,
               "bis_items": [
                 {
-                  "apiName": "DA_GuinsoosRageblade",
-                  "name": "Guinsoo'nun Hiddeti",
-                  "name_en": "Guinsoo's Rageblade",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.png"
+                  "apiName": "DA_HextechGunblade",
+                  "name": "Hextech Silahkılıç",
+                  "name_en": "Hextech Gunblade",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_hextechgunblade.png"
                 },
                 {
                   "apiName": "DA_JeweledGauntlet",
@@ -11051,8 +11022,36 @@
               ],
               "status": "UNCHANGED",
               "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_kayle/tft18_kayle_square.png"
-            }
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_teemo/tft18_teemo_square.png"
+            },
+            {
+              "apiName": "DA_18_Sentry",
+              "name": "Çakıl",
+              "name_en": "Pebbles",
+              "cost": 1,
+              "is_carry": false,
+              "is_three_star": false,
+              "bis_items": [],
+              "status": "UNCHANGED",
+              "impact_score": 0.0,
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sentry/tft18_sentry_square.png"
+            },
+            {
+              "apiName": "DA_18_Veigar",
+              "name": "Veigar",
+              "name_en": "Veigar",
+              "cost": 1,
+              "is_carry": false,
+              "is_three_star": false,
+              "bis_items": [],
+              "status": "UNCHANGED",
+              "impact_score": 0.0,
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_veigar/tft18_veigar_square.png"
+            },
+            null,
+            null,
+            null,
+            null
           ]
         ],
         "level_schedule": [
@@ -11083,25 +11082,25 @@
         ],
         "early_units": [
           {
-            "apiName": "DA_18_Leona",
-            "name": "Leona",
-            "name_en": "Leona",
+            "apiName": "DA_18_Kobuko",
+            "name": "Kobuko",
+            "name_en": "Kobuko",
             "cost": 1,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_leona/tft18_leona_square.png"
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_kobuko/tft18_kobuko_square.png"
           },
           {
-            "apiName": "DA_18_Varus",
-            "name": "Varus",
-            "name_en": "Varus",
+            "apiName": "DA_18_RekSai",
+            "name": "Rek'Sai",
+            "name_en": "Rek'Sai",
             "cost": 1,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_varus/tft18_varus_square.png"
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_reksai/tft18_reksai_square.png"
           },
           {
-            "apiName": "DA_18_Kayle",
-            "name": "Kayle",
-            "name_en": "Kayle",
+            "apiName": "DA_18_Teemo",
+            "name": "Teemo",
+            "name_en": "Teemo",
             "cost": 2,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_kayle/tft18_kayle_square.png"
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_teemo/tft18_teemo_square.png"
           },
           {
             "apiName": "DA_18_Sejuani",
@@ -11184,12 +11183,6 @@
             "avg_placement": 3.87,
             "items": [
               {
-                "apiName": "DA_ArchangelsStaff",
-                "name": "Başmelek Asası",
-                "name_en": "Archangel's Staff",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_archangelsstaff.png"
-              },
-              {
                 "apiName": "DA_GuinsoosRageblade",
                 "name": "Guinsoo'nun Hiddeti",
                 "name_en": "Guinsoo's Rageblade",
@@ -11208,7 +11201,8 @@
           "DA_ArchangelsStaff",
           "DA_HextechGunblade",
           "DA_GuinsoosRageblade",
-          "DA_JeweledGauntlet",
+          "DA_RabadonsDeathcap",
+          "DA_VoidStaff",
           "DA_GargoyleStoneplate",
           "DA_WarmogsArmor",
           "DA_SpearOfShojin"
@@ -11319,10 +11313,10 @@
                 "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_bramblevest.png"
               },
               {
-                "apiName": "DA_GargoyleStoneplate",
-                "name": "Gargoyl Taşzırhı",
-                "name_en": "Gargoyle Stoneplate",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.png"
+                "apiName": "DA_ProtectorsVow",
+                "name": "Muhafızın Adağı",
+                "name_en": "Protector's Vow",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_frozenheart.png"
               },
               {
                 "apiName": "DA_WarmogsArmor",
@@ -11374,12 +11368,6 @@
             "is_carry": true,
             "is_three_star": false,
             "bis_items": [
-              {
-                "apiName": "DA_ArchangelsStaff",
-                "name": "Başmelek Asası",
-                "name_en": "Archangel's Staff",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_archangelsstaff.png"
-              },
               {
                 "apiName": "DA_GuinsoosRageblade",
                 "name": "Guinsoo'nun Hiddeti",
@@ -11503,22 +11491,22 @@
               "is_three_star": false,
               "bis_items": [
                 {
-                  "apiName": "DA_ArchangelsStaff",
-                  "name": "Başmelek Asası",
-                  "name_en": "Archangel's Staff",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_archangelsstaff.png"
-                },
-                {
                   "apiName": "DA_GuinsoosRageblade",
                   "name": "Guinsoo'nun Hiddeti",
                   "name_en": "Guinsoo's Rageblade",
                   "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.png"
                 },
                 {
-                  "apiName": "DA_JeweledGauntlet",
-                  "name": "Mücevherli Eldiven",
-                  "name_en": "Jeweled Gauntlet",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                  "apiName": "DA_RabadonsDeathcap",
+                  "name": "Rabadon'un Şapkası",
+                  "name_en": "Rabadon's Deathcap",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.png"
+                },
+                {
+                  "apiName": "DA_VoidStaff",
+                  "name": "Hiçlik Değneği",
+                  "name_en": "Void Staff",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_voidstaff.png"
                 }
               ],
               "status": "UNCHANGED",
@@ -11540,10 +11528,10 @@
                   "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_bramblevest.png"
                 },
                 {
-                  "apiName": "DA_GargoyleStoneplate",
-                  "name": "Gargoyl Taşzırhı",
-                  "name_en": "Gargoyle Stoneplate",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.png"
+                  "apiName": "DA_ProtectorsVow",
+                  "name": "Muhafızın Adağı",
+                  "name_en": "Protector's Vow",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_frozenheart.png"
                 },
                 {
                   "apiName": "DA_WarmogsArmor",
@@ -11802,8 +11790,7 @@
           "DA_GargoyleStoneplate",
           "DA_SpearOfShojin",
           "DA_WarmogsArmor",
-          "DA_RedBuff",
-          "DA_Crownguard"
+          "DA_RedBuff"
         ],
         "priority_items": [
           {
@@ -12875,31 +12862,31 @@
         "team_planner_code": "0243a3f140041443c42e3ed40b000000TFTSet18"
       },
       {
-        "cluster_id": "426005",
-        "comp_name": "İnfazcı Sett",
-        "comp_name_en": "Executioner Sett",
-        "primary_trait": "İnfazcı",
-        "primary_trait_en": "Executioner",
+        "cluster_id": "426021",
+        "comp_name": "Bombardımancı Kayle",
+        "comp_name_en": "Rapidfire Kayle",
+        "primary_trait": "Bombardımancı",
+        "primary_trait_en": "Rapidfire",
         "active_traits": [
-          "Çiçek",
-          "Dövüşçü",
           "Savunucu",
-          "Kadim Orman"
+          "Alev",
+          "Ay",
+          "Bombardımancı"
         ],
         "active_traits_en": [
-          "Blossom",
-          "Brawler",
           "Defender",
-          "Elderwood"
+          "Inferno",
+          "Lunar",
+          "Rapidfire"
         ],
         "buffed_traits": [],
         "buffed_traits_en": [],
         "nerfed_traits": [],
         "nerfed_traits_en": [],
         "unit_count": 8,
-        "levelling": "Fast 8",
-        "tier": "C",
-        "tier_rank": 4,
+        "levelling": "lvl 6",
+        "tier": "B",
+        "tier_rank": 3,
         "meta_status": "DENGELİ",
         "meta_status_en": "STABLE",
         "comp_delta_score": 0.0,
@@ -12917,10 +12904,10 @@
             "avg_placement": 4.13,
             "items": [
               {
-                "apiName": "DA_GargoyleStoneplate",
-                "name": "Gargoyl Taşzırhı",
-                "name_en": "Gargoyle Stoneplate",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.png"
+                "apiName": "DA_GuinsoosRageblade",
+                "name": "Guinsoo'nun Hiddeti",
+                "name_en": "Guinsoo's Rageblade",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.png"
               },
               {
                 "apiName": "DA_SpiritVisage",
@@ -13561,6 +13548,14 @@
         ],
         "priority_items": [
           {
+            "apiName": "DA_GuinsoosRageblade",
+            "name": "Guinsoo'nun Hiddeti",
+            "name_en": "Guinsoo's Rageblade",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.png",
+            "avg_placement": 4.37,
+            "pcnt": 116.8
+          },
+          {
             "apiName": "DA_GargoyleStoneplate",
             "name": "Gargoyl Taşzırhı",
             "name_en": "Gargoyle Stoneplate",
@@ -13624,7 +13619,112 @@
             "bis_items": [],
             "status": "UNCHANGED",
             "impact_score": 0.0,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_cassiopeia/tft18_cassiopeia_square.png"
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_leona/tft18_leona_square.png"
+          },
+          {
+            "apiName": "DA_18_Varus",
+            "name": "Varus",
+            "name_en": "Varus",
+            "cost": 1,
+            "is_carry": false,
+            "is_three_star": true,
+            "bis_items": [
+              {
+                "apiName": "DA_18_EmblemLunar",
+                "name": "Ay Amblemi",
+                "name_en": "Lunar Emblem",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_lunar.png"
+              },
+              {
+                "apiName": "DA_InfinityEdge",
+                "name": "Ebedi Kılıç",
+                "name_en": "Infinity Edge",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_infinityedge.png"
+              },
+              {
+                "apiName": "DA_SpearOfShojin",
+                "name": "Shojin'in Mızrağı",
+                "name_en": "Spear of Shojin",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_spearofshojin.png"
+              }
+            ],
+            "status": "UNCHANGED",
+            "impact_score": 0.0,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_varus/tft18_varus_square.png"
+          },
+          {
+            "apiName": "DA_18_Kayle",
+            "name": "Kayle",
+            "name_en": "Kayle",
+            "cost": 2,
+            "is_carry": true,
+            "is_three_star": true,
+            "bis_items": [
+              {
+                "apiName": "DA_GuinsoosRageblade",
+                "name": "Guinsoo'nun Hiddeti",
+                "name_en": "Guinsoo's Rageblade",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.png"
+              },
+              {
+                "apiName": "DA_JeweledGauntlet",
+                "name": "Mücevherli Eldiven",
+                "name_en": "Jeweled Gauntlet",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+              },
+              {
+                "apiName": "DA_RabadonsDeathcap",
+                "name": "Rabadon'un Şapkası",
+                "name_en": "Rabadon's Deathcap",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.png"
+              }
+            ],
+            "status": "UNCHANGED",
+            "impact_score": 0.0,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_kayle/tft18_kayle_square.png"
+          },
+          {
+            "apiName": "DA_18_Sejuani",
+            "name": "Sejuani",
+            "name_en": "Sejuani",
+            "cost": 2,
+            "is_carry": true,
+            "is_three_star": true,
+            "bis_items": [
+              {
+                "apiName": "DA_GargoyleStoneplate",
+                "name": "Gargoyl Taşzırhı",
+                "name_en": "Gargoyle Stoneplate",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.png"
+              },
+              {
+                "apiName": "DA_SpiritVisage",
+                "name": "Ruh Gömleği",
+                "name_en": "Spirit Visage",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_spiritvisagerr.png"
+              },
+              {
+                "apiName": "DA_WarmogsArmor",
+                "name": "Warmog'un Zırhı",
+                "name_en": "Warmog's Armor",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_warmogsarmor.png"
+              }
+            ],
+            "status": "UNCHANGED",
+            "impact_score": 0.0,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sejuani/tft18_sejuani_square.png"
+          },
+          {
+            "apiName": "DA_18_Shen",
+            "name": "Shen",
+            "name_en": "Shen",
+            "cost": 2,
+            "is_carry": false,
+            "is_three_star": false,
+            "bis_items": [],
+            "status": "UNCHANGED",
+            "impact_score": 0.0,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_shen/tft18_shen_square.png"
           },
           {
             "apiName": "DA_18_Diana",
@@ -13639,9 +13739,9 @@
             "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_diana/tft18_diana_square.png"
           },
           {
-            "apiName": "DA_18_Morgana",
-            "name": "Morgana",
-            "name_en": "Morgana",
+            "apiName": "DA_18_Aphelios",
+            "name": "Aphelios",
+            "name_en": "Aphelios",
             "cost": 4,
             "is_carry": true,
             "is_three_star": false,
@@ -13709,51 +13809,39 @@
             "is_three_star": false,
             "bis_items": [
               {
-                "apiName": "DA_JeweledGauntlet",
-                "name": "Mücevherli Eldiven",
-                "name_en": "Jeweled Gauntlet",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                "apiName": "DA_Deathblade",
+                "name": "Ölüm Kılıcı",
+                "name_en": "Deathblade",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_deathblade.png"
               },
               {
-                "apiName": "DA_NashorsTooth",
-                "name": "Nashor'un Dişi",
-                "name_en": "Nashor's Tooth",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_leviathan.png"
+                "apiName": "DA_KrakensFury",
+                "name": "Kraken'in Öfkesi",
+                "name_en": "Kraken's Fury",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_krakenslayer.png"
               },
               {
-                "apiName": "DA_SpearOfShojin",
-                "name": "Shojin'in Mızrağı",
-                "name_en": "Spear of Shojin",
-                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_spearofshojin.png"
+                "apiName": "DA_LastWhisper",
+                "name": "Son Fısıltı",
+                "name_en": "Last Whisper",
+                "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_lastwhisper.png"
               }
             ],
             "status": "UNCHANGED",
             "impact_score": 0.0,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_alune/hud/tft18_alune_square.png"
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_aphelios/tft18_aphelios_square.png"
           },
           {
-            "apiName": "DA_18_ElderDragon",
-            "name": "Kadim Ejderha",
-            "name_en": "Elder Dragon",
-            "cost": 5,
+            "apiName": "DA_Amumu18",
+            "name": "Amumu",
+            "name_en": "Amumu",
+            "cost": 4,
             "is_carry": false,
             "is_three_star": false,
             "bis_items": [],
             "status": "UNCHANGED",
             "impact_score": 0.0,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_elderdragon/hud/tft18_elderdragon_square.png"
-          },
-          {
-            "apiName": "DA_Taric18",
-            "name": "Taric",
-            "name_en": "Taric",
-            "cost": 5,
-            "is_carry": false,
-            "is_three_star": false,
-            "bis_items": [],
-            "status": "BUFF",
-            "impact_score": 17.6,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_taric/tft18_taric_square.png"
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_amumu/tft18_amumu_square.png"
           }
         ],
         "master_stats": {
@@ -13768,16 +13856,16 @@
           [
             null,
             {
-              "apiName": "DA_18_Elise",
-              "name": "Elise",
-              "name_en": "Elise",
+              "apiName": "DA_18_Shen",
+              "name": "Shen",
+              "name_en": "Shen",
               "cost": 2,
               "is_carry": false,
               "is_three_star": false,
               "bis_items": [],
               "status": "UNCHANGED",
               "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_elise/tft18_elise_square.png"
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_shen/tft18_shen_square.png"
             },
             {
               "apiName": "DA_Sentinel18",
@@ -13794,10 +13882,10 @@
                   "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.png"
                 },
                 {
-                  "apiName": "DA_ProtectorsVow",
-                  "name": "Muhafızın Adağı",
-                  "name_en": "Protector's Vow",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_frozenheart.png"
+                  "apiName": "DA_SpiritVisage",
+                  "name": "Ruh Gömleği",
+                  "name_en": "Spirit Visage",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_spiritvisagerr.png"
                 },
                 {
                   "apiName": "DA_WarmogsArmor",
@@ -13808,7 +13896,7 @@
               ],
               "status": "UNCHANGED",
               "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sentinel/tft18_sentinel_square.png"
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sejuani/tft18_sejuani_square.png"
             },
             {
               "apiName": "DA_Taric18",
@@ -13834,82 +13922,70 @@
               "impact_score": 0.0,
               "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_diana/tft18_diana_square.png"
             },
+            {
+              "apiName": "DA_18_Leona",
+              "name": "Leona",
+              "name_en": "Leona",
+              "cost": 1,
+              "is_carry": false,
+              "is_three_star": false,
+              "bis_items": [],
+              "status": "UNCHANGED",
+              "impact_score": 0.0,
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_leona/tft18_leona_square.png"
+            },
+            null
+          ],
+          [
+            null,
+            null,
+            null,
+            null,
+            null,
             null,
             null
           ],
           [
             null,
             null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          [
             {
-              "apiName": "DA_18_Morgana",
-              "name": "Morgana",
-              "name_en": "Morgana",
+              "apiName": "DA_18_Aphelios",
+              "name": "Aphelios",
+              "name_en": "Aphelios",
               "cost": 4,
-              "is_carry": true,
+              "is_carry": false,
               "is_three_star": false,
               "bis_items": [
                 {
-                  "apiName": "DA_AdaptiveHelm",
-                  "name": "Değişken Miğfer",
-                  "name_en": "Adaptive Helm",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_adaptivehelm.png"
+                  "apiName": "DA_Deathblade",
+                  "name": "Ölüm Kılıcı",
+                  "name_en": "Deathblade",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_deathblade.png"
                 },
                 {
-                  "apiName": "DA_Morellonomicon",
-                  "name": "Morellonomikon",
-                  "name_en": "Morellonomicon",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_morellonomicon.png"
+                  "apiName": "DA_KrakensFury",
+                  "name": "Kraken'in Öfkesi",
+                  "name_en": "Kraken's Fury",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_krakenslayer.png"
                 },
                 {
-                  "apiName": "DA_VoidStaff",
-                  "name": "Hiçlik Değneği",
-                  "name_en": "Void Staff",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_voidstaff.png"
+                  "apiName": "DA_LastWhisper",
+                  "name": "Son Fısıltı",
+                  "name_en": "Last Whisper",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_lastwhisper.png"
                 }
               ],
               "status": "UNCHANGED",
               "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_morgana/tft18_morgana_square.png"
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_aphelios/tft18_aphelios_square.png"
             },
-            null,
-            {
-              "apiName": "DA_18_ElderDragon",
-              "name": "Kadim Ejderha",
-              "name_en": "Elder Dragon",
-              "cost": 5,
-              "is_carry": false,
-              "is_three_star": false,
-              "bis_items": [],
-              "status": "UNCHANGED",
-              "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_elderdragon/hud/tft18_elderdragon_square.png"
-            },
-            null,
-            null
-          ],
-          [
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-          ],
-          [
-            {
-              "apiName": "DA_18_Cassiopeia",
-              "name": "Cassiopeia",
-              "name_en": "Cassiopeia",
-              "cost": 3,
-              "is_carry": false,
-              "is_three_star": false,
-              "bis_items": [],
-              "status": "UNCHANGED",
-              "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_cassiopeia/tft18_cassiopeia_square.png"
-            },
-            null,
             null,
             null,
             null,
@@ -13923,16 +13999,16 @@
               "is_three_star": false,
               "bis_items": [
                 {
-                  "apiName": "DA_JeweledGauntlet",
-                  "name": "Mücevherli Eldiven",
-                  "name_en": "Jeweled Gauntlet",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                  "apiName": "DA_18_EmblemLunar",
+                  "name": "Ay Amblemi",
+                  "name_en": "Lunar Emblem",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/particles/tft/item_icons/traits/spatula/set18/tft18_emblem_lunar.png"
                 },
                 {
-                  "apiName": "DA_NashorsTooth",
-                  "name": "Nashor'un Dişi",
-                  "name_en": "Nashor's Tooth",
-                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_leviathan.png"
+                  "apiName": "DA_InfinityEdge",
+                  "name": "Ebedi Kılıç",
+                  "name_en": "Infinity Edge",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_infinityedge.png"
                 },
                 {
                   "apiName": "DA_SpearOfShojin",
@@ -13943,7 +14019,38 @@
               ],
               "status": "UNCHANGED",
               "impact_score": 0.0,
-              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_alune/hud/tft18_alune_square.png"
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_varus/tft18_varus_square.png"
+            },
+            {
+              "apiName": "DA_18_Kayle",
+              "name": "Kayle",
+              "name_en": "Kayle",
+              "cost": 2,
+              "is_carry": true,
+              "is_three_star": true,
+              "bis_items": [
+                {
+                  "apiName": "DA_GuinsoosRageblade",
+                  "name": "Guinsoo'nun Hiddeti",
+                  "name_en": "Guinsoo's Rageblade",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.png"
+                },
+                {
+                  "apiName": "DA_JeweledGauntlet",
+                  "name": "Mücevherli Eldiven",
+                  "name_en": "Jeweled Gauntlet",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                },
+                {
+                  "apiName": "DA_RabadonsDeathcap",
+                  "name": "Rabadon'un Şapkası",
+                  "name_en": "Rabadon's Deathcap",
+                  "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.png"
+                }
+              ],
+              "status": "UNCHANGED",
+              "impact_score": 0.0,
+              "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_kayle/tft18_kayle_square.png"
             }
           ]
         ],
@@ -13951,56 +14058,56 @@
           {
             "stage": "2-1",
             "level": "Lvl 4",
-            "note_tr": "Güçlü erken tahta + maksimum faiz",
-            "note_en": "Strong opener + maximum gold interest"
+            "note_tr": "Ekonomi odaklı başlangıç yap",
+            "note_en": "Play for economy and item components"
           },
           {
             "stage": "3-2",
             "level": "Lvl 6",
-            "note_tr": "Can koruyacak erken eşyaları bas",
-            "note_en": "Slam flexible items to preserve HP"
+            "note_tr": "Lvl 6'ya çık ve 2G taşıyıcıları 3★ için rolla",
+            "note_en": "Level to 6 and slowroll for 3★ 2-costs"
           },
           {
             "stage": "4-2",
-            "level": "Lvl 8",
-            "note_tr": "Az altın harcayarak geçiş tahtası kur",
-            "note_en": "Stabilize lightly without emptying gold"
+            "level": "Lvl 7",
+            "note_tr": "3★ bulunduğunda Lvl 7'ye geç",
+            "note_en": "Push Lvl 7 once primary carry is 3★"
           },
           {
-            "stage": "5-2",
-            "level": "Lvl 9",
-            "note_tr": "Lvl 9'a çık ve 5G efsaneleri 2★ yap",
-            "note_en": "Reach Lvl 9 and roll for 2★ 5-cost carries"
+            "stage": "5-1",
+            "level": "Lvl 8",
+            "note_tr": "Ana sinerjiyi tamamla",
+            "note_en": "Cap board with final trait breakpoint"
           }
         ],
         "early_units": [
           {
-            "apiName": "DA_18_Elise",
-            "name": "Elise",
-            "name_en": "Elise",
+            "apiName": "DA_18_Leona",
+            "name": "Leona",
+            "name_en": "Leona",
+            "cost": 1,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_leona/tft18_leona_square.png"
+          },
+          {
+            "apiName": "DA_18_Varus",
+            "name": "Varus",
+            "name_en": "Varus",
+            "cost": 1,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_varus/tft18_varus_square.png"
+          },
+          {
+            "apiName": "DA_18_Kayle",
+            "name": "Kayle",
+            "name_en": "Kayle",
             "cost": 2,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_elise/tft18_elise_square.png"
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_kayle/tft18_kayle_square.png"
           },
           {
-            "apiName": "DA_18_Cassiopeia",
-            "name": "Cassiopeia",
-            "name_en": "Cassiopeia",
-            "cost": 3,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_cassiopeia/tft18_cassiopeia_square.png"
-          },
-          {
-            "apiName": "DA_18_Diana",
-            "name": "Diana",
-            "name_en": "Diana",
-            "cost": 3,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_diana/tft18_diana_square.png"
-          },
-          {
-            "apiName": "DA_18_Morgana",
-            "name": "Morgana",
-            "name_en": "Morgana",
-            "cost": 4,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_morgana/tft18_morgana_square.png"
+            "apiName": "DA_18_Sejuani",
+            "name": "Sejuani",
+            "name_en": "Sejuani",
+            "cost": 2,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sejuani/tft18_sejuani_square.png"
           }
         ],
         "team_planner_code": "023fd3f63fa4184283ec3fc430000000TFTSet18"
@@ -14921,12 +15028,6 @@
             "is_three_star": false,
             "bis_items": [
               {
-                "apiName": "DA_EdgeOfNight",
-                "name": "Gecenin Kıyısı",
-                "name_en": "Edge of Night",
-                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_guardianangel.png"
-              },
-              {
                 "apiName": "DA_InfinityEdge",
                 "name": "Ebedi Kılıç",
                 "name_en": "Infinity Edge",
@@ -14937,6 +15038,12 @@
                 "name": "Shojin'in Mızrağı",
                 "name_en": "Spear of Shojin",
                 "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_spearofshojin.png"
+              },
+              {
+                "apiName": "DA_SteraksGage",
+                "name": "Sterak'ın Güvencesi",
+                "name_en": "Sterak's Gage",
+                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_steraksgage.png"
               }
             ],
             "status": "UNCHANGED",
@@ -14994,12 +15101,6 @@
               "is_three_star": false,
               "bis_items": [
                 {
-                  "apiName": "DA_EdgeOfNight",
-                  "name": "Gecenin Kıyısı",
-                  "name_en": "Edge of Night",
-                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_guardianangel.png"
-                },
-                {
                   "apiName": "DA_InfinityEdge",
                   "name": "Ebedi Kılıç",
                   "name_en": "Infinity Edge",
@@ -15010,6 +15111,12 @@
                   "name": "Shojin'in Mızrağı",
                   "name_en": "Spear of Shojin",
                   "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_spearofshojin.png"
+                },
+                {
+                  "apiName": "DA_SteraksGage",
+                  "name": "Sterak'ın Güvencesi",
+                  "name_en": "Sterak's Gage",
+                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_steraksgage.png"
                 }
               ],
               "status": "UNCHANGED",
@@ -23386,12 +23493,14 @@
         "primary_trait": "Manabaz",
         "primary_trait_en": "Invoker",
         "active_traits": [
+          "Karadiken",
           "Savunucu",
           "Manabaz",
           "Sihirkâr",
           "Zıpırgil"
         ],
         "active_traits_en": [
+          "Blackthorn",
           "Defender",
           "Invoker",
           "Spellweaver",
@@ -24775,16 +24884,10 @@
                 "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_guardianangel.png"
               },
               {
-                "apiName": "DA_HandOfJustice",
-                "name": "Adaletin Eli",
-                "name_en": "Hand Of Justice",
-                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_unstableconcoction.png"
-              },
-              {
-                "apiName": "DA_JeweledGauntlet",
-                "name": "Mücevherli Eldiven",
-                "name_en": "Jeweled Gauntlet",
-                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                "apiName": "DA_RabadonsDeathcap",
+                "name": "Rabadon'un Şapkası",
+                "name_en": "Rabadon's Deathcap",
+                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.png"
               }
             ],
             "status": "UNCHANGED",
@@ -24966,16 +25069,10 @@
                   "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_guardianangel.png"
                 },
                 {
-                  "apiName": "DA_HandOfJustice",
-                  "name": "Adaletin Eli",
-                  "name_en": "Hand Of Justice",
-                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_unstableconcoction.png"
-                },
-                {
-                  "apiName": "DA_JeweledGauntlet",
-                  "name": "Mücevherli Eldiven",
-                  "name_en": "Jeweled Gauntlet",
-                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                  "apiName": "DA_RabadonsDeathcap",
+                  "name": "Rabadon'un Şapkası",
+                  "name_en": "Rabadon's Deathcap",
+                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.png"
                 }
               ],
               "status": "UNCHANGED",
@@ -27445,22 +27542,22 @@
             "avg_placement": 3.87,
             "items": [
               {
-                "apiName": "DA_ArchangelsStaff",
-                "name": "Başmelek Asası",
-                "name_en": "Archangel's Staff",
-                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_archangelsstaff.png"
-              },
-              {
                 "apiName": "DA_GuinsoosRageblade",
                 "name": "Guinsoo'nun Hiddeti",
                 "name_en": "Guinsoo's Rageblade",
                 "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.png"
               },
               {
-                "apiName": "DA_JeweledGauntlet",
-                "name": "Mücevherli Eldiven",
-                "name_en": "Jeweled Gauntlet",
-                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                "apiName": "DA_RabadonsDeathcap",
+                "name": "Rabadon'un Şapkası",
+                "name_en": "Rabadon's Deathcap",
+                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.png"
+              },
+              {
+                "apiName": "DA_VoidStaff",
+                "name": "Hiçlik Değneği",
+                "name_en": "Void Staff",
+                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_voidstaff.png"
               }
             ]
           }
@@ -27469,7 +27566,8 @@
           "DA_ArchangelsStaff",
           "DA_HextechGunblade",
           "DA_GuinsoosRageblade",
-          "DA_JeweledGauntlet",
+          "DA_RabadonsDeathcap",
+          "DA_VoidStaff",
           "DA_GargoyleStoneplate",
           "DA_WarmogsArmor",
           "DA_SpearOfShojin"
@@ -27580,10 +27678,10 @@
                 "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_bramblevest.png"
               },
               {
-                "apiName": "DA_GargoyleStoneplate",
-                "name": "Gargoyl Taşzırhı",
-                "name_en": "Gargoyle Stoneplate",
-                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.png"
+                "apiName": "DA_ProtectorsVow",
+                "name": "Muhafızın Adağı",
+                "name_en": "Protector's Vow",
+                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_frozenheart.png"
               },
               {
                 "apiName": "DA_WarmogsArmor",
@@ -27636,22 +27734,22 @@
             "is_three_star": false,
             "bis_items": [
               {
-                "apiName": "DA_ArchangelsStaff",
-                "name": "Başmelek Asası",
-                "name_en": "Archangel's Staff",
-                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_archangelsstaff.png"
-              },
-              {
                 "apiName": "DA_GuinsoosRageblade",
                 "name": "Guinsoo'nun Hiddeti",
                 "name_en": "Guinsoo's Rageblade",
                 "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.png"
               },
               {
-                "apiName": "DA_JeweledGauntlet",
-                "name": "Mücevherli Eldiven",
-                "name_en": "Jeweled Gauntlet",
-                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                "apiName": "DA_RabadonsDeathcap",
+                "name": "Rabadon'un Şapkası",
+                "name_en": "Rabadon's Deathcap",
+                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.png"
+              },
+              {
+                "apiName": "DA_VoidStaff",
+                "name": "Hiçlik Değneği",
+                "name_en": "Void Staff",
+                "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_voidstaff.png"
               }
             ],
             "status": "UNCHANGED",
@@ -27764,22 +27862,22 @@
               "is_three_star": false,
               "bis_items": [
                 {
-                  "apiName": "DA_ArchangelsStaff",
-                  "name": "Başmelek Asası",
-                  "name_en": "Archangel's Staff",
-                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_archangelsstaff.png"
-                },
-                {
                   "apiName": "DA_GuinsoosRageblade",
                   "name": "Guinsoo'nun Hiddeti",
                   "name_en": "Guinsoo's Rageblade",
                   "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.png"
                 },
                 {
-                  "apiName": "DA_JeweledGauntlet",
-                  "name": "Mücevherli Eldiven",
-                  "name_en": "Jeweled Gauntlet",
-                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+                  "apiName": "DA_RabadonsDeathcap",
+                  "name": "Rabadon'un Şapkası",
+                  "name_en": "Rabadon's Deathcap",
+                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_rabadonsdeathcap.png"
+                },
+                {
+                  "apiName": "DA_VoidStaff",
+                  "name": "Hiçlik Değneği",
+                  "name_en": "Void Staff",
+                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_voidstaff.png"
                 }
               ],
               "status": "UNCHANGED",
@@ -27801,10 +27899,10 @@
                   "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_bramblevest.png"
                 },
                 {
-                  "apiName": "DA_GargoyleStoneplate",
-                  "name": "Gargoyl Taşzırhı",
-                  "name_en": "Gargoyle Stoneplate",
-                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.png"
+                  "apiName": "DA_ProtectorsVow",
+                  "name": "Muhafızın Adağı",
+                  "name_en": "Protector's Vow",
+                  "icon": "https://raw.communitydragon.org/pbe/game/assets/maps/tft/icons/items/hexcore/tft_item_frozenheart.png"
                 },
                 {
                   "apiName": "DA_WarmogsArmor",
@@ -28596,11 +28694,61 @@
             "playstyle_en": "High Flex",
             "playstyle_code": "FLEX",
             "item_bias": {
-              "tank": 46,
-              "ad": 19,
-              "ap": 35
+              "tank": 39,
+              "ad": 28,
+              "ap": 33
             },
-            "profile_url": "https://www.metatft.com/player/tr1/V0%20CYBURNN-EEE"
+            "profile_url": "https://www.metatft.com/player/tr1/Babe%20is%20mine-333"
+          },
+          {
+            "rank": 24,
+            "riot_id": "mortDOGU#TR1",
+            "game_name": "mortDOGU",
+            "tag_line": "#TR1",
+            "tier": "CHALLENGER",
+            "lp": 859,
+            "games": 415,
+            "wins": 71,
+            "win_rate": 17.1,
+            "avg_place": 4.09,
+            "recent_avg_place": 3.7,
+            "recent_lp_change": 141,
+            "patch_lp_change": 222,
+            "patch_games": 25,
+            "playstyle_tr": "Esnek (Flex)",
+            "playstyle_en": "High Flex",
+            "playstyle_code": "FLEX",
+            "item_bias": {
+              "tank": 40,
+              "ad": 27,
+              "ap": 33
+            },
+            "profile_url": "https://www.metatft.com/player/tr1/mortDOGU-TR1"
+          },
+          {
+            "rank": 25,
+            "riot_id": "Maegi#TR1",
+            "game_name": "Maegi",
+            "tag_line": "#TR1",
+            "tier": "CHALLENGER",
+            "lp": 856,
+            "games": 143,
+            "wins": 39,
+            "win_rate": 27.3,
+            "avg_place": 3.29,
+            "recent_avg_place": 2.7,
+            "recent_lp_change": 421,
+            "patch_lp_change": 429,
+            "patch_games": 17,
+            "playstyle_tr": "Dengeli",
+            "playstyle_en": "Balanced",
+            "playstyle_code": "BALANCED",
+            "item_bias": {
+              "tank": 39,
+              "ad": 35,
+              "ap": 26
+            },
+            "profile_url": "https://www.metatft.com/player/tr1/Maegi-TR1"
           }
         ]
       },
@@ -28623,22 +28771,22 @@
             "game_name": "whyyoumadpro",
             "tag_line": "#EUW",
             "tier": "CHALLENGER",
-            "lp": 1867,
-            "games": 370,
-            "wins": 76,
-            "win_rate": 20.5,
-            "avg_place": 3.49,
-            "recent_avg_place": 2.6,
-            "recent_lp_change": 154,
-            "patch_lp_change": 154,
-            "patch_games": 20,
-            "playstyle_tr": "Esnek (Flex)",
-            "playstyle_en": "High Flex",
-            "playstyle_code": "FLEX",
+            "lp": 1894,
+            "games": 371,
+            "wins": 77,
+            "win_rate": 20.8,
+            "avg_place": 3.48,
+            "recent_avg_place": 2.35,
+            "recent_lp_change": 230,
+            "patch_lp_change": 27,
+            "patch_games": 1,
+            "playstyle_tr": "Dengeli",
+            "playstyle_en": "Balanced",
+            "playstyle_code": "BALANCED",
             "item_bias": {
-              "tank": 38,
+              "tank": 37,
               "ad": 26,
-              "ap": 36
+              "ap": 37
             },
             "profile_url": "https://www.metatft.com/player/euw1/whyyoumadpro-EUW"
           },
@@ -28798,15 +28946,15 @@
             "game_name": "AL3XEM",
             "tag_line": "#GGEZ",
             "tier": "CHALLENGER",
-            "lp": 1543,
-            "games": 598,
+            "lp": 1502,
+            "games": 599,
             "wins": 114,
-            "win_rate": 19.1,
+            "win_rate": 19.0,
             "avg_place": 3.75,
             "recent_avg_place": 3.35,
-            "recent_lp_change": 47,
-            "patch_lp_change": 47,
-            "patch_games": 20,
+            "recent_lp_change": 44,
+            "patch_lp_change": -41,
+            "patch_games": 1,
             "playstyle_tr": "Esnek (Flex)",
             "playstyle_en": "High Flex",
             "playstyle_code": "FLEX",
@@ -29384,6 +29532,31 @@
           },
           {
             "rank": 6,
+            "riot_id": "IronBog#999",
+            "game_name": "IronBog",
+            "tag_line": "#999",
+            "tier": "CHALLENGER",
+            "lp": 1663,
+            "games": 467,
+            "wins": 110,
+            "win_rate": 23.6,
+            "avg_place": 3.66,
+            "recent_avg_place": 3.25,
+            "recent_lp_change": 21,
+            "patch_lp_change": -92,
+            "patch_games": 15,
+            "playstyle_tr": "Dengeli",
+            "playstyle_en": "Balanced",
+            "playstyle_code": "BALANCED",
+            "item_bias": {
+              "tank": 40,
+              "ad": 26,
+              "ap": 34
+            },
+            "profile_url": "https://www.metatft.com/player/na1/IronBog-999"
+          },
+          {
+            "rank": 7,
             "riot_id": "wyft#na123",
             "game_name": "wyft",
             "tag_line": "#na123",
@@ -29408,7 +29581,7 @@
             "profile_url": "https://www.metatft.com/player/na1/wyft-na123"
           },
           {
-            "rank": 7,
+            "rank": 8,
             "riot_id": "YBY1#YBY2",
             "game_name": "YBY1",
             "tag_line": "#YBY2",
@@ -29433,7 +29606,7 @@
             "profile_url": "https://www.metatft.com/player/na1/YBY1-YBY2"
           },
           {
-            "rank": 8,
+            "rank": 9,
             "riot_id": "vclf#kayle",
             "game_name": "vclf",
             "tag_line": "#kayle",
@@ -29458,7 +29631,7 @@
             "profile_url": "https://www.metatft.com/player/na1/vclf-kayle"
           },
           {
-            "rank": 9,
+            "rank": 10,
             "riot_id": "ROC JazLatte#latte",
             "game_name": "ROC JazLatte",
             "tag_line": "#latte",
@@ -29483,7 +29656,7 @@
             "profile_url": "https://www.metatft.com/player/na1/ROC%20JazLatte-latte"
           },
           {
-            "rank": 10,
+            "rank": 11,
             "riot_id": "VIT prestivent#123",
             "game_name": "VIT prestivent",
             "tag_line": "#123",
@@ -29538,22 +29711,22 @@
             "game_name": "title",
             "tag_line": "#1951",
             "tier": "CHALLENGER",
-            "lp": 1556,
-            "games": 352,
-            "wins": 84,
-            "win_rate": 23.9,
-            "avg_place": 3.76,
-            "recent_avg_place": 3.25,
-            "recent_lp_change": 169,
-            "patch_lp_change": 88,
-            "patch_games": 5,
+            "lp": 1569,
+            "games": 357,
+            "wins": 86,
+            "win_rate": 24.1,
+            "avg_place": 3.75,
+            "recent_avg_place": 2.9,
+            "recent_lp_change": 193,
+            "patch_lp_change": 101,
+            "patch_games": 10,
             "playstyle_tr": "Esnek (Flex)",
             "playstyle_en": "High Flex",
             "playstyle_code": "FLEX",
             "item_bias": {
               "tank": 35,
-              "ad": 33,
-              "ap": 32
+              "ad": 28,
+              "ap": 37
             },
             "profile_url": "https://www.metatft.com/player/na1/title-1951"
           },
@@ -30153,24 +30326,24 @@
             "game_name": "pad0",
             "tag_line": "#파 도",
             "tier": "CHALLENGER",
-            "lp": 1521,
-            "games": 349,
-            "wins": 56,
-            "win_rate": 16.0,
+            "lp": 1533,
+            "games": 766,
+            "wins": 124,
+            "win_rate": 16.2,
             "avg_place": 3.93,
-            "recent_avg_place": 3.4,
-            "recent_lp_change": 137,
-            "patch_lp_change": 44,
-            "patch_games": 2,
+            "recent_avg_place": 4.05,
+            "recent_lp_change": -171,
+            "patch_lp_change": -171,
+            "patch_games": 20,
             "playstyle_tr": "Esnek (Flex)",
             "playstyle_en": "High Flex",
             "playstyle_code": "FLEX",
             "item_bias": {
-              "tank": 32,
-              "ad": 35,
-              "ap": 33
+              "tank": 36,
+              "ad": 29,
+              "ap": 35
             },
-            "profile_url": "https://www.metatft.com/player/kr/pad0-%ED%8C%8C%20%EB%8F%84"
+            "profile_url": "https://www.metatft.com/player/kr/%EB%82%9C%EB%AA%B0%EB%9D%BC-KR1"
           },
           {
             "rank": 12,
@@ -30228,27 +30401,27 @@
             "game_name": "Stily",
             "tag_line": "#KR1",
             "tier": "CHALLENGER",
-            "lp": 1492,
-            "games": 732,
-            "wins": 120,
-            "win_rate": 16.4,
-            "avg_place": 4.11,
-            "recent_avg_place": 3.85,
-            "recent_lp_change": -43,
-            "patch_lp_change": -30,
+            "lp": 1519,
+            "games": 352,
+            "wins": 57,
+            "win_rate": 16.2,
+            "avg_place": 3.93,
+            "recent_avg_place": 3.35,
+            "recent_lp_change": 121,
+            "patch_lp_change": 42,
             "patch_games": 5,
             "playstyle_tr": "Esnek (Flex)",
             "playstyle_en": "High Flex",
             "playstyle_code": "FLEX",
             "item_bias": {
-              "tank": 42,
-              "ad": 28,
-              "ap": 30
+              "tank": 34,
+              "ad": 33,
+              "ap": 33
             },
-            "profile_url": "https://www.metatft.com/player/kr/Stily-KR1"
+            "profile_url": "https://www.metatft.com/player/kr/pad0-%ED%8C%8C%20%EB%8F%84"
           },
           {
-            "rank": 15,
+            "rank": 13,
             "riot_id": "호빵맨지환이#KR1",
             "game_name": "호빵맨지환이",
             "tag_line": "#KR1",
@@ -30618,7 +30791,7 @@
             "game_name": "Matissso",
             "tag_line": "#EUNE",
             "tier": "CHALLENGER",
-            "lp": 1488,
+            "lp": 1498,
             "games": 381,
             "wins": 63,
             "win_rate": 16.5,
@@ -30636,6 +30809,31 @@
               "ap": 35
             },
             "profile_url": "https://www.metatft.com/player/eun1/Matissso-EUNE"
+          },
+          {
+            "rank": 4,
+            "riot_id": "Sacred Norris#Hehe",
+            "game_name": "Sacred Norris",
+            "tag_line": "#Hehe",
+            "tier": "CHALLENGER",
+            "lp": 1495,
+            "games": 778,
+            "wins": 169,
+            "win_rate": 21.7,
+            "avg_place": 3.61,
+            "recent_avg_place": 4.1,
+            "recent_lp_change": -262,
+            "patch_lp_change": -140,
+            "patch_games": 6,
+            "playstyle_tr": "Esnek (Flex)",
+            "playstyle_en": "High Flex",
+            "playstyle_code": "FLEX",
+            "item_bias": {
+              "tank": 40,
+              "ad": 27,
+              "ap": 33
+            },
+            "profile_url": "https://www.metatft.com/player/eun1/Sacred%20Norris-Hehe"
           },
           {
             "rank": 5,
@@ -30713,7 +30911,7 @@
             "profile_url": "https://www.metatft.com/player/eun1/penka77-EUNE"
           },
           {
-            "rank": 8,
+            "rank": 7,
             "riot_id": "Barbalofono#Πέπσι",
             "game_name": "Barbalofono",
             "tag_line": "#Πέπσι",
@@ -30927,6 +31125,56 @@
             "recent_lp_change": 82,
             "patch_lp_change": -63,
             "patch_games": 13,
+            "playstyle_tr": "Dengeli",
+            "playstyle_en": "Balanced",
+            "playstyle_code": "BALANCED",
+            "item_bias": {
+              "tank": 37,
+              "ad": 35,
+              "ap": 28
+            },
+            "profile_url": "https://www.metatft.com/player/eun1/P%C5%99%C3%ADli%C5%A1T%C4%9Bsn%C3%A9Slipy-AUU"
+          },
+          {
+            "rank": 16,
+            "riot_id": "JanDuszes#EUNE",
+            "game_name": "JanDuszes",
+            "tag_line": "#EUNE",
+            "tier": "CHALLENGER",
+            "lp": 1233,
+            "games": 480,
+            "wins": 107,
+            "win_rate": 22.3,
+            "avg_place": 3.7,
+            "recent_avg_place": 3.9,
+            "recent_lp_change": -76,
+            "patch_lp_change": -24,
+            "patch_games": 23,
+            "playstyle_tr": "Esnek (Flex)",
+            "playstyle_en": "High Flex",
+            "playstyle_code": "FLEX",
+            "item_bias": {
+              "tank": 41,
+              "ad": 28,
+              "ap": 31
+            },
+            "profile_url": "https://www.metatft.com/player/eun1/JanDuszes-EUNE"
+          },
+          {
+            "rank": 17,
+            "riot_id": "shacharziv#EUNE",
+            "game_name": "shacharziv",
+            "tag_line": "#EUNE",
+            "tier": "CHALLENGER",
+            "lp": 1222,
+            "games": 275,
+            "wins": 54,
+            "win_rate": 19.6,
+            "avg_place": 3.81,
+            "recent_avg_place": 4.05,
+            "recent_lp_change": -34,
+            "patch_lp_change": -79,
+            "patch_games": 16,
             "playstyle_tr": "Dengeli",
             "playstyle_en": "Balanced",
             "playstyle_code": "BALANCED",
@@ -31625,7 +31873,7 @@
               "ad": 29,
               "ap": 30
             },
-            "profile_url": "https://www.metatft.com/player/vn2/crocodile%20tears-ppy"
+            "profile_url": "https://www.metatft.com/player/vn2/iCeEmperoz-minG"
           },
           {
             "rank": 19,
@@ -31819,6 +32067,31 @@
         "players": [
           {
             "rank": 1,
+            "riot_id": "LeuzZoka#TFT",
+            "game_name": "LeuzZoka",
+            "tag_line": "#TFT",
+            "tier": "CHALLENGER",
+            "lp": 1542,
+            "games": 524,
+            "wins": 124,
+            "win_rate": 23.7,
+            "avg_place": 3.48,
+            "recent_avg_place": 2.9,
+            "recent_lp_change": 115,
+            "patch_lp_change": 157,
+            "patch_games": 22,
+            "playstyle_tr": "Esnek (Flex)",
+            "playstyle_en": "High Flex",
+            "playstyle_code": "FLEX",
+            "item_bias": {
+              "tank": 36,
+              "ad": 21,
+              "ap": 43
+            },
+            "profile_url": "https://www.metatft.com/player/br1/LeuzZoka-TFT"
+          },
+          {
+            "rank": 2,
             "riot_id": "Mecmeno#AMOR",
             "game_name": "Mecmeno",
             "tag_line": "#AMOR",
@@ -31843,7 +32116,7 @@
             "profile_url": "https://www.metatft.com/player/br1/Mecmeno-AMOR"
           },
           {
-            "rank": 2,
+            "rank": 3,
             "riot_id": "RYT Luffy#missy",
             "game_name": "RYT Luffy",
             "tag_line": "#missy",
@@ -31940,7 +32213,7 @@
               "ad": 24,
               "ap": 35
             },
-            "profile_url": "https://www.metatft.com/player/br1/Liao-PUNCH"
+            "profile_url": "https://www.metatft.com/player/br1/FOUR%20vakio-br1"
           },
           {
             "rank": 6,
@@ -32194,9 +32467,9 @@
           },
           {
             "rank": 16,
-            "riot_id": "koke#four",
-            "game_name": "koke",
-            "tag_line": "#four",
+            "riot_id": "Yetti#000",
+            "game_name": "Yetti",
+            "tag_line": "#000",
             "tier": "CHALLENGER",
             "lp": 1126,
             "games": 638,
@@ -32215,7 +32488,7 @@
               "ad": 28,
               "ap": 38
             },
-            "profile_url": "https://www.metatft.com/player/br1/koke-four"
+            "profile_url": "https://www.metatft.com/player/br1/Yetti-000"
           },
           {
             "rank": 17,
@@ -32946,7 +33219,7 @@
         "name_en": "Adaptive Helm",
         "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_adaptivehelm.png",
         "tier": "S",
-        "avg_place": 3.96,
+        "avg_place": 3.97,
         "pick_rate": 25.3,
         "games": 301806,
         "is_emblem": false,
@@ -33041,18 +33314,18 @@
             "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_morgana/tft18_morgana_square.png"
           },
           {
-            "apiName": "DA_18_Sivir",
-            "name": "Sivir",
-            "name_en": "Sivir",
-            "cost": 4,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sivir/tft18_sivir_square.png"
-          },
-          {
             "apiName": "DA_18_Ashe",
             "name": "Ashe",
             "name_en": "Ashe",
             "cost": 5,
             "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_ashe/tft18_ashe_square.png"
+          },
+          {
+            "apiName": "DA_18_Sivir",
+            "name": "Sivir",
+            "name_en": "Sivir",
+            "cost": 4,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sivir/tft18_sivir_square.png"
           },
           {
             "apiName": "DA_18_Ezreal",
@@ -33207,18 +33480,18 @@
             "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_kennen/tft18_kennen_square.png"
           },
           {
-            "apiName": "DA_Taric18",
-            "name": "Taric",
-            "name_en": "Taric",
-            "cost": 5,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_taric/tft18_taric_square.png"
-          },
-          {
             "apiName": "DA_18_ElderDragon",
             "name": "Kadim Ejderha",
             "name_en": "Elder Dragon",
             "cost": 5,
             "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_elderdragon/hud/tft18_elderdragon_square.png"
+          },
+          {
+            "apiName": "DA_Taric18",
+            "name": "Taric",
+            "name_en": "Taric",
+            "cost": 5,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_taric/tft18_taric_square.png"
           },
           {
             "apiName": "DA_Sentinel18",
@@ -33394,6 +33667,47 @@
         ]
       },
       {
+        "apiName": "DA_AdaptiveHelm",
+        "name": "Değişken Miğfer",
+        "name_en": "Adaptive Helm",
+        "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_adaptivehelm.png",
+        "tier": "S",
+        "avg_place": 3.97,
+        "pick_rate": 25.3,
+        "games": 315065,
+        "is_emblem": false,
+        "holders": [
+          {
+            "apiName": "DA_Sentinel18",
+            "name": "Gözcü",
+            "name_en": "Sentinel",
+            "cost": 4,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sentinel/tft18_sentinel_square.png"
+          },
+          {
+            "apiName": "DA_18_Lillia",
+            "name": "Lillia",
+            "name_en": "Lillia",
+            "cost": 4,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_lillia/tft18_lillia_square.png"
+          },
+          {
+            "apiName": "DA_18_Alune",
+            "name": "Alune",
+            "name_en": "Alune",
+            "cost": 5,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_alune/hud/tft18_alune_square.png"
+          },
+          {
+            "apiName": "DA_18_Morgana",
+            "name": "Morgana",
+            "name_en": "Morgana",
+            "cost": 4,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_morgana/tft18_morgana_square.png"
+          }
+        ]
+      },
+      {
         "apiName": "DA_BrambleVest",
         "name": "Dikenli Yelek",
         "name_en": "Bramble Vest",
@@ -33431,6 +33745,47 @@
             "name_en": "Sett",
             "cost": 4,
             "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sett/tft18_sett_square.png"
+          }
+        ]
+      },
+      {
+        "apiName": "DA_RabadonsDeathcap_Radiant",
+        "name": "Işıltılı Rabadon'un Şapkası",
+        "name_en": "Radiant Rabadon's Deathcap",
+        "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft5_item_rabadonsdeathcapradiant.png",
+        "tier": "S",
+        "avg_place": 4.0,
+        "pick_rate": 0.8,
+        "games": 10171,
+        "is_emblem": false,
+        "holders": [
+          {
+            "apiName": "DA_18_Ahri",
+            "name": "Ahri",
+            "name_en": "Ahri",
+            "cost": 4,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_ahri/tft18_ahri_square.png"
+          },
+          {
+            "apiName": "DA_18_Alune",
+            "name": "Alune",
+            "name_en": "Alune",
+            "cost": 5,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_alune/hud/tft18_alune_square.png"
+          },
+          {
+            "apiName": "DA_18_Morgana",
+            "name": "Morgana",
+            "name_en": "Morgana",
+            "cost": 4,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_morgana/tft18_morgana_square.png"
+          },
+          {
+            "apiName": "DA_Karma18",
+            "name": "Karma",
+            "name_en": "Karma",
+            "cost": 1,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_karma/tft18_karma_square.png"
           }
         ]
       },
@@ -33487,18 +33842,18 @@
         "is_emblem": false,
         "holders": [
           {
-            "apiName": "DA_Amumu18",
-            "name": "Amumu",
-            "name_en": "Amumu",
-            "cost": 4,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_amumu/tft18_amumu_square.png"
-          },
-          {
             "apiName": "DA_Sentinel18",
             "name": "Gözcü",
             "name_en": "Sentinel",
             "cost": 4,
             "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sentinel/tft18_sentinel_square.png"
+          },
+          {
+            "apiName": "DA_Amumu18",
+            "name": "Amumu",
+            "name_en": "Amumu",
+            "cost": 4,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_amumu/tft18_amumu_square.png"
           },
           {
             "apiName": "DA_18_Maokai",
@@ -33508,11 +33863,11 @@
             "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_maokai/tft18_maokai_square.png"
           },
           {
-            "apiName": "DA_18_Hecarim",
-            "name": "Hecarim",
-            "name_en": "Hecarim",
+            "apiName": "DA_Vi18",
+            "name": "Vi",
+            "name_en": "Vi",
             "cost": 3,
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_hecarim/tft18_hecarim_square.png"
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_vi/tft18_vi_square.png"
           }
         ]
       },
@@ -34337,6 +34692,47 @@
         ]
       },
       {
+        "apiName": "DA_Artifact_EternalPact",
+        "name": "Ebedi Anlaşma",
+        "name_en": "Eternal Pact",
+        "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft16_artifact_eternalpact.png",
+        "tier": "S",
+        "avg_place": 4.15,
+        "pick_rate": 1.1,
+        "games": 13509,
+        "is_emblem": false,
+        "holders": [
+          {
+            "apiName": "DA_18_Veigar",
+            "name": "Veigar",
+            "name_en": "Veigar",
+            "cost": 1,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_veigar/tft18_veigar_square.png"
+          },
+          {
+            "apiName": "DA_18_Alune",
+            "name": "Alune",
+            "name_en": "Alune",
+            "cost": 5,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_alune/hud/tft18_alune_square.png"
+          },
+          {
+            "apiName": "DA_18_Ahri",
+            "name": "Ahri",
+            "name_en": "Ahri",
+            "cost": 4,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_ahri/tft18_ahri_square.png"
+          },
+          {
+            "apiName": "DA_Karma18",
+            "name": "Karma",
+            "name_en": "Karma",
+            "cost": 1,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_karma/tft18_karma_square.png"
+          }
+        ]
+      },
+      {
         "apiName": "DA_Morellonomicon",
         "name": "Morellonomikon",
         "name_en": "Morellonomicon",
@@ -34632,6 +35028,47 @@
         "avg_place": 4.2,
         "pick_rate": 9.8,
         "games": 116908,
+        "is_emblem": false,
+        "holders": [
+          {
+            "apiName": "DA_18_Rengar",
+            "name": "Rengar",
+            "name_en": "Rengar",
+            "cost": 3,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_rengar/tft18_rengar_square.png"
+          },
+          {
+            "apiName": "DA_18_MasterYi_AD",
+            "name": "Master Yi",
+            "name_en": "Master Yi",
+            "cost": 3,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_masteryi/tft18_masteryi_square.png"
+          },
+          {
+            "apiName": "DA_18_Elise",
+            "name": "Elise",
+            "name_en": "Elise",
+            "cost": 2,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_elise/tft18_elise_square.png"
+          },
+          {
+            "apiName": "DA_CrimsonRaptor18",
+            "name": "Anne Gaga",
+            "name_en": "Mama Beak",
+            "cost": 3,
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_raptor/tft18_crimsonraptor_teamplanner_splash.png"
+          }
+        ]
+      },
+      {
+        "apiName": "DA_TitansResolve",
+        "name": "Titanın Azmi",
+        "name_en": "Titan's Resolve",
+        "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_titansresolve.png",
+        "tier": "A",
+        "avg_place": 4.2,
+        "pick_rate": 9.8,
+        "games": 122282,
         "is_emblem": false,
         "holders": [
           {
@@ -35140,10 +35577,10 @@
             "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
           },
           {
-            "apiName": "DA_RedBuff",
-            "name": "Kırmızı Güçlendirme",
-            "name_en": "Red Buff",
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_rapidfirecannon.png"
+            "apiName": "DA_HextechGunblade",
+            "name": "Hextech Silahkılıç",
+            "name_en": "Hextech Gunblade",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_hextechgunblade.png"
           }
         ]
       },
@@ -35557,15 +35994,15 @@
         ]
       },
       {
-        "apiName": "DA_18_Zyra",
-        "name": "Zyra",
-        "name_en": "Zyra",
+        "apiName": "DA_18_Sett",
+        "name": "Sett",
+        "name_en": "Sett",
         "cost": 4,
         "traits": [
-          "Dikenli Leydi",
-          "Efendi"
+          "Çiçek",
+          "Dövüşçü"
         ],
-        "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_zyra/tft18_zyra_square.png",
+        "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_sett/tft18_sett_square.png",
         "tier": "B",
         "avg_place": 4.44,
         "pick_rate": 11.9,
@@ -35574,22 +36011,22 @@
         "patch_impact": 0.0,
         "best_items": [
           {
-            "apiName": "DA_VoidStaff",
-            "name": "Hiçlik Değneği",
-            "name_en": "Void Staff",
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_voidstaff.png"
+            "apiName": "DA_GargoyleStoneplate",
+            "name": "Gargoyl Taşzırhı",
+            "name_en": "Gargoyle Stoneplate",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.png"
           },
           {
-            "apiName": "DA_SpearOfShojin",
-            "name": "Shojin'in Mızrağı",
-            "name_en": "Spear of Shojin",
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_spearofshojin.png"
+            "apiName": "DA_WarmogsArmor",
+            "name": "Warmog'un Zırhı",
+            "name_en": "Warmog's Armor",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_warmogsarmor.png"
           },
           {
-            "apiName": "DA_ArchangelsStaff",
-            "name": "Başmelek Asası",
-            "name_en": "Archangel's Staff",
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_archangelsstaff.png"
+            "apiName": "DA_SpiritVisage",
+            "name": "Ruh Gömleği",
+            "name_en": "Spirit Visage",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_spiritvisagerr.png"
           }
         ]
       },
@@ -35611,22 +36048,22 @@
         "patch_impact": 0.0,
         "best_items": [
           {
-            "apiName": "DA_JeweledGauntlet",
-            "name": "Mücevherli Eldiven",
-            "name_en": "Jeweled Gauntlet",
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_jeweledgauntlet.png"
+            "apiName": "DA_GuinsoosRageblade",
+            "name": "Guinsoo'nun Hiddeti",
+            "name_en": "Guinsoo's Rageblade",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_guinsoosrageblade.png"
           },
           {
-            "apiName": "DA_SpearOfShojin",
-            "name": "Shojin'in Mızrağı",
-            "name_en": "Spear of Shojin",
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_spearofshojin.png"
+            "apiName": "DA_EdgeOfNight",
+            "name": "Gecenin Kıyısı",
+            "name_en": "Edge of Night",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_guardianangel.png"
           },
           {
-            "apiName": "DA_StrikersFlail",
-            "name": "Hücum Gürzü",
-            "name_en": "Striker's Flail",
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_powergauntlet.png"
+            "apiName": "DA_TitansResolve",
+            "name": "Titanın Azmi",
+            "name_en": "Titan's Resolve",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_titansresolve.png"
           }
         ]
       },
@@ -36509,16 +36946,16 @@
             "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.png"
           },
           {
-            "apiName": "DA_ThiefsGloves",
-            "name": "Hırsız Eldiveni",
-            "name_en": "Thief's Gloves",
-            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_thiefsgloves.png"
-          },
-          {
             "apiName": "DA_WarmogsArmor",
             "name": "Warmog'un Zırhı",
             "name_en": "Warmog's Armor",
             "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_warmogsarmor.png"
+          },
+          {
+            "apiName": "DA_ThiefsGloves",
+            "name": "Hırsız Eldiveni",
+            "name_en": "Thief's Gloves",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_thiefsgloves.png"
           }
         ]
       },
@@ -36631,6 +37068,43 @@
             "name": "Titanın Azmi",
             "name_en": "Titan's Resolve",
             "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_titansresolve.png"
+          }
+        ]
+      },
+      {
+        "apiName": "DA_18_Hecarim",
+        "name": "Hecarim",
+        "name_en": "Hecarim",
+        "cost": 3,
+        "traits": [
+          "Kadim Orman",
+          "Öncü"
+        ],
+        "icon": "https://raw.communitydragon.org/16.22/game/assets/characters/tft18_hecarim/tft18_hecarim_square.png",
+        "tier": "C",
+        "avg_place": 4.67,
+        "pick_rate": 18.1,
+        "games": 225952,
+        "patch_status": "UNCHANGED",
+        "patch_impact": 0.0,
+        "best_items": [
+          {
+            "apiName": "DA_GargoyleStoneplate",
+            "name": "Gargoyl Taşzırhı",
+            "name_en": "Gargoyle Stoneplate",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_gargoylestoneplate.png"
+          },
+          {
+            "apiName": "DA_WarmogsArmor",
+            "name": "Warmog'un Zırhı",
+            "name_en": "Warmog's Armor",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_warmogsarmor.png"
+          },
+          {
+            "apiName": "DA_SpiritVisage",
+            "name": "Ruh Gömleği",
+            "name_en": "Spirit Visage",
+            "icon": "https://raw.communitydragon.org/16.22/game/assets/maps/tft/icons/items/hexcore/tft_item_spiritvisagerr.png"
           }
         ]
       },
