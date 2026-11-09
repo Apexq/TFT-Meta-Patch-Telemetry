@@ -178,6 +178,20 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         riot_telemetry=riot_telemetry,
     )
 
+    augments_data = riot_analyzer.fetch_augment_tier_list(
+        set18_data=latest_data,
+        icon_version=versions["latest_cdragon"],
+        meta_compositions=live_meta.get("compositions", []),
+    )
+    print(f"[Augments] Extracted {augments_data.get('total_augments', 0)} Set 18 augments (S:{augments_data.get('tier_counts', {}).get('S', 0)}, A:{augments_data.get('tier_counts', {}).get('A', 0)})")
+
+    mechanics_data = riot_analyzer.fetch_set18_mechanics_telemetry(
+        set18_data=latest_data,
+        icon_version=versions["latest_cdragon"],
+        meta_compositions=live_meta.get("compositions", []),
+    )
+    print(f"[Set 18 Mechanics] Encounters={mechanics_data.get('total_encounters', 0)} | Curated Charms={len(mechanics_data.get('charms', []))}")
+
     synthesizer = MetaSynthesizer()
     ai_summary = synthesizer.generate_turkish_meta_summary(
         live_diff=live_diff,
@@ -199,6 +213,8 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         "pbe_meta": pbe_meta,
         "leaderboards": leaderboards,
         "tier_lists": tier_lists,
+        "augments": augments_data,
+        "mechanics": mechanics_data,
         "chat": {
             # Public URL of the Cloudflare Worker AI Coach (not a secret). Empty = widget shows "coming soon".
             "endpoint": os.environ.get("CHAT_WORKER_URL", "https://tft-ai-coach.besirsecilmis.workers.dev").strip(),

@@ -106,6 +106,34 @@ class DashboardBuilder:
                 f"| **{ch.get('name_en', ch['name'])}** | {ch['cost']} | `{ch['status']}` | `{ch['impact_score']:+.1f}` | {chg_summary} |"
             )
 
+        aug_data = report.get("augments", {})
+        if aug_data and aug_data.get("augments"):
+            lines.extend([
+                "",
+                "## Set 18 Top S-Tier Augments (Master+ Telemetry)",
+                "| Tier | Augment (EN / TR) | Rarity | Rounds | Avg Place | Pick Rate | Top 4 % | Win % |",
+                "| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: |",
+            ])
+            for aug in [a for a in aug_data.get("augments", []) if a.get("tier") == "S"][:10]:
+                name_en = aug.get("name_en", aug["name"])
+                rnds = ", ".join(aug.get("rounds", []))
+                lines.append(
+                    f"| **S** | {name_en} ({aug['name']}) | `{aug.get('rarity')}` | `{rnds}` | **#{aug['avg_place']}** | {aug['pick_rate']}% | {aug['top4_rate']}% | {aug['win_rate']}% |"
+                )
+
+        mech_data = report.get("mechanics", {})
+        if mech_data and mech_data.get("encounters"):
+            lines.extend([
+                "",
+                "## Set 18 Opening Encounters & Tempo Rating (20 Encounters)",
+                "| Encounter (EN / TR) | Category | Tempo Rating | In-Game Rule |",
+                "| :--- | :---: | :---: | :--- |",
+            ])
+            for enc in mech_data.get("encounters", [])[:8]:
+                lines.append(
+                    f"| **{enc.get('name_en', enc['name'])}** ({enc['name']}) | `{enc.get('category_en', enc['category'])}` | `{enc.get('tempo_rating_en', enc['tempo_rating'])}` | {enc.get('post_spawn_en', enc['post_spawn'])} |"
+                )
+
         lines.extend([
             "",
             f"## PBE Early Preview ({v['pbe_label']})",

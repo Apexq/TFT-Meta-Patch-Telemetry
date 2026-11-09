@@ -154,6 +154,18 @@
           <span class="lang-tr">Canlı Yama &amp; Meta ({{ report.versions.latest_label }})</span>
           <span class="lang-en">Live Patch &amp; Meta ({{ report.versions.latest_label }})</span>
         </button>
+        <button id="btn-tab-augments" onclick="switchTab('augments')"
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-slate-100 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#f0c374]"></span>
+          <span class="lang-tr">Eklenti Tier Listesi</span>
+          <span class="lang-en">Augment Tier List</span>
+        </button>
+        <button id="btn-tab-mechanics" onclick="switchTab('mechanics')"
+          class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-slate-100 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+          <span class="lang-tr">Set 18 Mekaniği</span>
+          <span class="lang-en">Set 18 Mechanics</span>
+        </button>
         <button id="btn-tab-tierlist" onclick="switchTab('tierlist')"
           class="px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-slate-100 flex items-center gap-1.5">
           <span class="lang-tr">Eşya &amp; Şampiyon Tier Listesi</span>
@@ -377,7 +389,7 @@
                       {{ comp.levelling }} &bull; {{ comp.unit_count }}
                       <span class="lang-tr">Birim</span><span class="lang-en">Units</span>
                     </span>
-                    {% if comp.comp_delta_score != 0 %}
+                    {% if comp.comp_delta_score is defined and comp.comp_delta_score != 0 %}
                     <span class="px-2 py-0.5 text-[11px] font-semibold rounded mono
                       {% if comp.meta_status == 'YÜKSELEN' %}bg-emerald-950/70 text-emerald-300 border border-emerald-500/40
                       {% elif comp.meta_status == 'DÜŞEN' %}bg-rose-950/70 text-rose-300 border border-rose-500/40
@@ -1284,6 +1296,453 @@
     </div>
 
     <!-- ================================================================= -->
+    <!-- TAB 2: AUGMENT TIER LIST & META COMP SYNERGIES                    -->
+    <!-- ================================================================= -->
+    <div id="panel-augments" class="space-y-6 hidden">
+
+      <!-- Augments Overview & Telemetry Metrics Banner -->
+      <section class="surface-card rounded-xl p-5 sm:p-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="w-1.5 h-4 rounded-sm bg-[#f0c374]"></span>
+              <h3 class="text-base sm:text-lg font-bold text-white">
+                <span class="lang-tr">Set 18 Eklenti (Augment) Tier Listesi &amp; Sinerji Telemetrisi</span>
+                <span class="lang-en">Set 18 Augment Tier List &amp; Synergy Telemetry</span>
+              </h3>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+              <span class="lang-tr">MetaTFT Master+ sıralamalı maç verileri ve resmi Riot Games API telemetrisiyle derlenmiş 261 Set 18 eklentisi. Aşama (2-1, 3-2, 4-2) filtreleme, ortalama sıra, seçilme oranı ve en uyumlu meta kompozisyonları.</span>
+              <span class="lang-en">All 261 Set 18 augments backed by MetaTFT Master+ clustered match data and Riot API telemetry. Filter by round (2-1, 3-2, 4-2), average placement, pick rate, and best synergistic comps.</span>
+            </p>
+          </div>
+
+          <!-- Augment KPI Badges -->
+          {% if report.augments %}
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <div class="px-3 py-2 rounded-lg bg-[#0d121c] border border-[#222d42] text-center min-w-[75px]">
+              <div class="text-[10px] text-slate-400 uppercase font-semibold">Toplam / All</div>
+              <div class="text-base font-bold text-white mono">{{ report.augments.total_augments }}</div>
+            </div>
+            <div class="px-3 py-2 rounded-lg bg-[#0d121c] border border-amber-500/40 text-center min-w-[70px]">
+              <div class="text-[10px] text-[#f0c374] uppercase font-semibold">S-Tier</div>
+              <div class="text-base font-bold text-[#f0c374] mono">{{ report.augments.tier_counts.S }}</div>
+            </div>
+            <div class="px-3 py-2 rounded-lg bg-[#0d121c] border border-emerald-500/40 text-center min-w-[70px]">
+              <div class="text-[10px] text-emerald-400 uppercase font-semibold">A-Tier</div>
+              <div class="text-base font-bold text-emerald-400 mono">{{ report.augments.tier_counts.A }}</div>
+            </div>
+            <div class="px-3 py-2 rounded-lg bg-[#0d121c] border border-blue-500/40 text-center min-w-[70px]">
+              <div class="text-[10px] text-blue-400 uppercase font-semibold">B-Tier</div>
+              <div class="text-base font-bold text-blue-400 mono">{{ report.augments.tier_counts.B }}</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- Augments Filter Bar (Rarity, Round, Search) -->
+      <section class="surface-card rounded-xl p-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          
+          <!-- Rarity & Round Filters -->
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Rarity Pills -->
+            <div class="inline-flex rounded-lg bg-[#0d121c] p-1 border border-[#222d42] text-xs font-semibold gap-1" id="aug-rarity-bar">
+              <button type="button" data-rarity="ALL" onclick="filterAugmentRarity('ALL')"
+                class="aug-rarity-btn px-3 py-1.5 rounded-md bg-[#f0c374] text-slate-950 font-bold transition-colors">
+                <span class="lang-tr">Tüm Aşamalar</span><span class="lang-en">All Rarities</span>
+              </button>
+              <button type="button" data-rarity="Silver" onclick="filterAugmentRarity('Silver')"
+                class="aug-rarity-btn px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                <span class="lang-tr">Gümüş ({{ report.augments.rarity_counts.Silver if report.augments else 0 }})</span>
+                <span class="lang-en">Silver ({{ report.augments.rarity_counts.Silver if report.augments else 0 }})</span>
+              </button>
+              <button type="button" data-rarity="Gold" onclick="filterAugmentRarity('Gold')"
+                class="aug-rarity-btn px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#f0c374]"></span>
+                <span class="lang-tr">Altın ({{ report.augments.rarity_counts.Gold if report.augments else 0 }})</span>
+                <span class="lang-en">Gold ({{ report.augments.rarity_counts.Gold if report.augments else 0 }})</span>
+              </button>
+              <button type="button" data-rarity="Prismatic" onclick="filterAugmentRarity('Prismatic')"
+                class="aug-rarity-btn px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                <span class="lang-tr">Prizmatik ({{ report.augments.rarity_counts.Prismatic if report.augments else 0 }})</span>
+                <span class="lang-en">Prismatic ({{ report.augments.rarity_counts.Prismatic if report.augments else 0 }})</span>
+              </button>
+            </div>
+
+            <!-- Round Pills -->
+            <div class="inline-flex rounded-lg bg-[#0d121c] p-1 border border-[#222d42] text-xs font-semibold gap-1" id="aug-round-bar">
+              <button type="button" data-round="ALL" onclick="filterAugmentRound('ALL')"
+                class="aug-round-btn px-2.5 py-1.5 rounded-md bg-slate-200 text-slate-950 font-bold transition-colors">
+                <span class="lang-tr">Tüm Turlar</span><span class="lang-en">All Rounds</span>
+              </button>
+              <button type="button" data-round="2-1" onclick="filterAugmentRound('2-1')"
+                class="aug-round-btn px-2.5 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors">
+                2-1
+              </button>
+              <button type="button" data-round="3-2" onclick="filterAugmentRound('3-2')"
+                class="aug-round-btn px-2.5 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors">
+                3-2
+              </button>
+              <button type="button" data-round="4-2" onclick="filterAugmentRound('4-2')"
+                class="aug-round-btn px-2.5 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors">
+                4-2
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Instant Search -->
+          <div class="relative w-full lg:w-72">
+            <input id="aug-search-input" type="text" oninput="applyAugmentFilters()"
+              placeholder="Eklenti veya komp ara..."
+              class="w-full bg-[#0d121c] border border-[#222d42] focus:border-[#f0c374]/70 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-400 outline-none" />
+            <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- Augments Master Table -->
+      <section class="surface-card rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs" id="augments-table">
+            <thead class="bg-[#0d121c] text-slate-400 border-b border-[#222d42] uppercase text-[11px] font-semibold mono">
+              <tr>
+                <th class="py-3 px-3 w-16 text-center">Tier</th>
+                <th class="py-3 px-3">Eklenti / Augment</th>
+                <th class="py-3 px-3 w-28 text-center">Aşama / Round</th>
+                <th class="py-3 px-3 max-w-md hidden md:table-cell">Açıklama / Tooltip</th>
+                <th class="py-3 px-3 text-right">Ort. Sıra</th>
+                <th class="py-3 px-3 text-right">Seçilme</th>
+                <th class="py-3 px-3 text-right">İlk 4 %</th>
+                <th class="py-3 px-3 text-right">Kazanma</th>
+                <th class="py-3 px-3 min-w-[180px] hidden lg:table-cell">Sinerji Kompları</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#1e2738]">
+              {% if report.augments and report.augments.augments %}
+              {% for aug in report.augments.augments %}
+              <tr class="aug-row hover:bg-[#141b28] transition-colors"
+                data-rarity="{{ aug.rarity }}"
+                data-rounds="{{ aug.rounds | join(',') }}"
+                data-tier="{{ aug.tier }}"
+                data-search="{{ (aug.name ~ ' ' ~ aug.name_en ~ ' ' ~ aug.desc ~ ' ' ~ aug.desc_en ~ ' ' ~ (aug.tags | join(' ')) ~ ' ' ~ (aug.synergy_comps | map(attribute='title') | join(' ')) ~ ' ' ~ (aug.synergy_comps | map(attribute='title_en') | join(' '))) | lower }}">
+                
+                <!-- Tier Badge -->
+                <td class="py-3 px-3 text-center">
+                  <span class="inline-block w-8 py-1 rounded text-xs font-black mono text-slate-950 text-center shadow-sm"
+                    style="background-color: {{ aug.tier_color }};">
+                    {{ aug.tier }}
+                  </span>
+                </td>
+
+                <!-- Augment Identity -->
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-3">
+                    <img src="{{ aug.icon }}" alt="{{ aug.name }}" loading="lazy"
+                      onerror="this.onerror=null;this.src='https://cdn.metatft.com/file/metatft/augments/missing-t2.png';"
+                      class="w-10 h-10 rounded-lg border border-[#29364f] p-0.5 bg-[#0a0e17] shrink-0" />
+                    <div>
+                      <div class="font-bold text-white text-sm">
+                        <span class="lang-tr">{{ aug.name }}</span>
+                        <span class="lang-en">{{ aug.name_en }}</span>
+                      </div>
+                      <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold
+                          {% if aug.rarity == 'Prismatic' %}bg-purple-950/70 border border-purple-500/40 text-purple-200
+                          {% elif aug.rarity == 'Gold' %}bg-amber-950/70 border border-amber-500/40 text-amber-200
+                          {% else %}bg-slate-800 border border-slate-600/40 text-slate-200{% endif %}">
+                          <span class="lang-tr">{{ aug.rarity_tr }}</span>
+                          <span class="lang-en">{{ aug.rarity }}</span>
+                        </span>
+                        {% for t in aug.tags %}
+                        <span class="text-[10px] text-slate-400 bg-[#0d121c] px-1.5 py-0.5 rounded border border-[#222d42]">{{ t }}</span>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Round Appearance -->
+                <td class="py-3 px-3 text-center">
+                  <div class="inline-flex gap-1 justify-center flex-wrap">
+                    {% for rnd in aug.rounds %}
+                    <span class="px-2 py-0.5 rounded text-[11px] font-semibold mono bg-[#121722] border border-[#29364f] text-slate-200">
+                      {{ rnd }}
+                    </span>
+                    {% endfor %}
+                  </div>
+                </td>
+
+                <!-- Tooltip Description -->
+                <td class="py-3 px-3 max-w-md hidden md:table-cell text-slate-300 text-xs leading-relaxed">
+                  <span class="lang-tr">{{ aug.desc }}</span>
+                  <span class="lang-en">{{ aug.desc_en }}</span>
+                </td>
+
+                <!-- Avg Placement -->
+                <td class="py-3 px-3 text-right mono font-bold text-white text-sm">
+                  #{{ aug.avg_place }}
+                </td>
+
+                <!-- Pick Rate -->
+                <td class="py-3 px-3 text-right mono text-slate-300">
+                  {{ aug.pick_rate }}%
+                </td>
+
+                <!-- Top 4 % -->
+                <td class="py-3 px-3 text-right mono text-emerald-400 font-semibold">
+                  {{ aug.top4_rate }}%
+                </td>
+
+                <!-- Win % -->
+                <td class="py-3 px-3 text-right mono text-amber-400 font-semibold">
+                  {{ aug.win_rate }}%
+                </td>
+
+                <!-- Best Synergistic Compositions -->
+                <td class="py-3 px-3 hidden lg:table-cell">
+                  {% if aug.synergy_comps %}
+                  <div class="flex flex-col gap-1">
+                    {% for sc in aug.synergy_comps %}
+                    <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#0d121c] border border-[#222d42] text-[11px] text-slate-200">
+                      <span class="font-bold text-[10px] px-1 rounded
+                        {% if sc.tier == 'S' %}bg-[#f0c374] text-slate-950
+                        {% elif sc.tier == 'A' %}bg-emerald-400 text-slate-950
+                        {% else %}bg-blue-400 text-slate-950{% endif %}">{{ sc.tier }}</span>
+                      <span class="truncate max-w-[130px]">
+                        <span class="lang-tr">{{ sc.title }}</span>
+                        <span class="lang-en">{{ sc.title_en }}</span>
+                      </span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% else %}
+                  <span class="text-slate-400 text-[11px]">-</span>
+                  {% endif %}
+                </td>
+
+              </tr>
+              {% endfor %}
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: SET 18 SPECIAL MECHANIC TELEMETRY (ENCOUNTERS & CHARMS)    -->
+    <!-- ================================================================= -->
+    <div id="panel-mechanics" class="space-y-6 hidden">
+
+      <!-- Set 18 Mechanics Overview Hero -->
+      <section class="surface-card rounded-xl p-5 sm:p-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="w-1.5 h-4 rounded-sm bg-purple-400"></span>
+              <h3 class="text-base sm:text-lg font-bold text-white">
+                <span class="lang-tr">Set 18 Özel Mekaniği: 20 Karşılaşma &amp; Dükkân Tılsımları</span>
+                <span class="lang-en">Set 18 Signature Mechanics: 20 Encounters &amp; Shop Charms</span>
+              </h3>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+              <span class="lang-tr">Set 18'in lobiyi baştan aşağı şekillendiren iki imza mekaniği: Oyuncuları oyun başında karşılayan 20 benzersiz Karşılaşma (Portal) kuralı ve dükkânda beliren taktiksel Dükkân Tılsımları (Charms) telemetrisi.</span>
+              <span class="lang-en">The two signature mechanics governing Set 18: 20 game-altering opening Encounters (Portals) and in-shop purchasable Charms with strategic cost and timing curves.</span>
+            </p>
+          </div>
+
+          <!-- Sub-tab switchers (Encounters vs Charms) -->
+          <div class="inline-flex rounded-lg bg-[#0d121c] p-1 border border-[#222d42] shrink-0 self-start md:self-auto gap-1">
+            <button id="btn-sub-encounters" type="button" onclick="switchMechanicsSubTab('encounters')"
+              class="px-4 py-2 rounded-md text-xs sm:text-sm font-bold bg-[#f0c374] text-slate-950 transition-colors shadow-sm">
+              <span class="lang-tr">20 Karşılaşma (Portallar)</span>
+              <span class="lang-en">20 Encounters (Portals)</span>
+            </button>
+            <button id="btn-sub-charms" type="button" onclick="switchMechanicsSubTab('charms')"
+              class="px-4 py-2 rounded-md text-xs sm:text-sm font-bold text-slate-300 hover:text-white transition-colors">
+              <span class="lang-tr">Dükkân Tılsımları (Charms)</span>
+              <span class="lang-en">Shop Charms</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUB-PANEL 1: 20 ENCOUNTERS (KARŞILAŞMALAR) -->
+      <div id="subpanel-encounters" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {% if report.mechanics and report.mechanics.encounters %}
+          {% for enc in report.mechanics.encounters %}
+          <div class="surface-card rounded-xl p-5 border border-[#222d42] hover:border-[#f0c374]/50 transition-all flex flex-col justify-between">
+            <div>
+              <!-- Header: Category & Tempo Rating -->
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#0d121c] border border-[#29364f] text-slate-300">
+                  <span class="lang-tr">{{ enc.category }}</span>
+                  <span class="lang-en">{{ enc.category_en }}</span>
+                </span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold mono"
+                  style="background-color: {{ enc.tempo_color }}25; color: {{ enc.tempo_color }}; border: 1px solid {{ enc.tempo_color }}60;">
+                  <span class="lang-tr">{{ enc.tempo_rating }}</span>
+                  <span class="lang-en">{{ enc.tempo_rating_en }}</span>
+                </span>
+              </div>
+
+              <!-- Title -->
+              <h4 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full" style="background-color: {{ enc.tempo_color }};"></span>
+                <span class="lang-tr">{{ enc.name }}</span>
+                <span class="lang-en">{{ enc.name_en }}</span>
+              </h4>
+
+              <!-- Post Spawn / In-Game Rule -->
+              <div class="px-3 py-2 rounded-lg bg-[#0d121c] border border-[#222d42] mb-3 text-xs text-slate-200 leading-relaxed font-medium">
+                <span class="lang-tr">{{ enc.post_spawn }}</span>
+                <span class="lang-en">{{ enc.post_spawn_en }}</span>
+              </div>
+
+              <!-- Master+ Strategic Advice -->
+              <div class="text-xs text-slate-300 leading-relaxed space-y-1 mb-4">
+                <p class="font-semibold text-slate-400 uppercase text-[10px] tracking-wider">
+                  <span class="lang-tr">Master+ Strateji &amp; Tempo Rehberi:</span>
+                  <span class="lang-en">Master+ Strategy &amp; Tempo Guide:</span>
+                </p>
+                <p>
+                  <span class="lang-tr">{{ enc.strategy_tr }}</span>
+                  <span class="lang-en">{{ enc.strategy_en }}</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Footer: Recommended Comps -->
+            <div class="pt-3 border-t border-[#1e2738] flex items-center justify-between text-[11px]">
+              <span class="text-slate-400 font-semibold">
+                <span class="lang-tr">Öne Çıkan Komplar:</span>
+                <span class="lang-en">Top Meta Comps:</span>
+              </span>
+              <div class="flex items-center gap-1.5 truncate max-w-[60%]">
+                {% for sc in enc.synergy_comps %}
+                <span class="px-2 py-0.5 rounded bg-[#0d121c] border border-[#222d42] text-slate-200 font-medium truncate">
+                  <span class="lang-tr">{{ sc }}</span>
+                  <span class="lang-en">{{ enc.synergy_comps_en[loop.index0] if enc.synergy_comps_en else sc }}</span>
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- SUB-PANEL 2: SHOP CHARMS (DÜKKÂN TILSIMLARI) -->
+      <div id="subpanel-charms" class="space-y-4 hidden">
+        <!-- Charm Filter Bar -->
+        <div class="surface-card rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Category Filter -->
+            <div class="inline-flex rounded-lg bg-[#0d121c] p-1 border border-[#222d42] text-xs font-semibold gap-1" id="charm-cat-bar">
+              <button type="button" data-cat="ALL" onclick="filterCharmCategory('ALL')"
+                class="charm-cat-btn px-3 py-1.5 rounded-md bg-[#f0c374] text-slate-950 font-bold transition-colors">
+                <span class="lang-tr">Tüm Kategoriler</span><span class="lang-en">All Categories</span>
+              </button>
+              <button type="button" data-cat="Combat" onclick="filterCharmCategory('Combat')"
+                class="charm-cat-btn px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors">
+                <span class="lang-tr">Savaş</span><span class="lang-en">Combat</span>
+              </button>
+              <button type="button" data-cat="Econ" onclick="filterCharmCategory('Econ')"
+                class="charm-cat-btn px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors">
+                <span class="lang-tr">Ekonomi &amp; Dükkân</span><span class="lang-en">Econ &amp; Shop</span>
+              </button>
+              <button type="button" data-cat="Risky" onclick="filterCharmCategory('Risky')"
+                class="charm-cat-btn px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors">
+                <span class="lang-tr">Risk/Ödül</span><span class="lang-en">Risky</span>
+              </button>
+              <button type="button" data-cat="Item" onclick="filterCharmCategory('Item')"
+                class="charm-cat-btn px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors">
+                <span class="lang-tr">Eşya</span><span class="lang-en">Item</span>
+              </button>
+              <button type="button" data-cat="Scaling" onclick="filterCharmCategory('Scaling')"
+                class="charm-cat-btn px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors">
+                <span class="lang-tr">Yükseliş / Geç Aşama</span><span class="lang-en">Scaling</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Charm Search -->
+          <div class="relative w-full md:w-64">
+            <input id="charm-search-input" type="text" oninput="applyCharmFilters()"
+              placeholder="Tılsım ara..."
+              class="w-full bg-[#0d121c] border border-[#222d42] focus:border-[#f0c374]/70 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-400 outline-none" />
+            <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+        </div>
+
+        <!-- Charms Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="charms-grid">
+          {% if report.mechanics and report.mechanics.charms %}
+          {% for ch in report.mechanics.charms %}
+          <div class="charm-card surface-card rounded-xl p-5 border border-[#222d42] hover:border-slate-500 transition-all flex flex-col justify-between"
+            data-cat="{{ ch.category }}"
+            data-cost="{{ ch.cost }}"
+            data-search="{{ (ch.name ~ ' ' ~ ch.name_en ~ ' ' ~ ch.desc ~ ' ' ~ ch.desc_en ~ ' ' ~ ch.category_tr) | lower }}">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider
+                  {% if ch.category == 'Combat' %}bg-rose-950/70 border border-rose-500/40 text-rose-300
+                  {% elif ch.category == 'Econ' %}bg-amber-950/70 border border-amber-500/40 text-amber-300
+                  {% elif ch.category == 'Risky' %}bg-orange-950/70 border border-orange-500/40 text-orange-300
+                  {% elif ch.category == 'Item' %}bg-blue-950/70 border border-blue-500/40 text-blue-300
+                  {% else %}bg-purple-950/70 border border-purple-500/40 text-purple-300{% endif %}">
+                  <span class="lang-tr">{{ ch.category_tr }}</span>
+                  <span class="lang-en">{{ ch.category }}</span>
+                </span>
+                <span class="px-2.5 py-0.5 rounded text-xs font-bold mono bg-[#f0c374] text-slate-950 shadow-sm">
+                  {{ ch.cost }}G
+                </span>
+              </div>
+
+              <h4 class="text-base font-bold text-white mb-2">
+                <span class="lang-tr">{{ ch.name }}</span>
+                <span class="lang-en">{{ ch.name_en }}</span>
+              </h4>
+
+              <div class="px-3 py-2 rounded-lg bg-[#0d121c] border border-[#222d42] mb-3 text-xs text-slate-200 leading-relaxed">
+                <span class="lang-tr">{{ ch.desc }}</span>
+                <span class="lang-en">{{ ch.desc_en }}</span>
+              </div>
+
+              <div class="text-xs text-slate-300 leading-relaxed mb-3">
+                <span class="text-slate-400 font-semibold text-[10px] uppercase tracking-wider block mb-0.5">
+                  <span class="lang-tr">Taktiksel Satın Alma Zamanı:</span>
+                  <span class="lang-en">Purchase Timing Tip:</span>
+                </span>
+                <span class="lang-tr">{{ ch.rec_tr }}</span>
+                <span class="lang-en">{{ ch.rec_en }}</span>
+              </div>
+            </div>
+
+            <div class="pt-2.5 border-t border-[#1e2738] flex items-center justify-between text-[11px] text-slate-400">
+              <span>
+                <span class="lang-tr">Geçerli Aşamalar:</span>
+                <span class="lang-en">Available Stages:</span>
+              </span>
+              <span class="mono text-slate-200 font-medium">{{ ch.stages }}</span>
+            </div>
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================================================================= -->
     <!-- AD SLOT 3: FOOTER MULTIPLEX / LEADERBOARD (728x90)                -->
     <!-- ================================================================= -->
     <aside id="ad-slot-footer-banner" aria-label="Sponsored Placement" class="ad-slot-container rounded-lg p-3 flex flex-col items-center justify-center min-h-[85px] text-center">
@@ -1356,6 +1815,9 @@
   <script>
     let activeCompFilter = 'ALL';
     let activeLbRegion = 'tr1';
+    let activeAugRarity = 'ALL';
+    let activeAugRound = 'ALL';
+    let activeCharmCat = 'ALL';
     let selectedMatcherItems = new Set();
 
     function setLanguage(lang) {
@@ -1365,11 +1827,19 @@
       const btnEn = document.getElementById('lang-btn-en');
       const searchInput = document.getElementById('comp-search-input');
       const lbSearchInput = document.getElementById('lb-search-input');
+      const augSearchInput = document.getElementById('aug-search-input');
+      const charmSearchInput = document.getElementById('charm-search-input');
       if (searchInput) {
         searchInput.placeholder = lang === 'tr' ? 'Şampiyon, sinerji ara...' : 'Search unit, trait...';
       }
       if (lbSearchInput) {
         lbSearchInput.placeholder = lang === 'tr' ? 'Riot ID ara...' : 'Search Riot ID...';
+      }
+      if (augSearchInput) {
+        augSearchInput.placeholder = lang === 'tr' ? 'Eklenti veya komp ara...' : 'Search augment, comp...';
+      }
+      if (charmSearchInput) {
+        charmSearchInput.placeholder = lang === 'tr' ? 'Tılsım ara...' : 'Search charm...';
       }
       if (lang === 'tr') {
         btnTr.className = 'px-2.5 py-1 rounded-sm text-xs font-semibold transition-colors bg-slate-200 text-slate-950';
@@ -1385,12 +1855,16 @@
     function switchTab(tab) {
       const panels = {
         live: document.getElementById('panel-live'),
+        augments: document.getElementById('panel-augments'),
+        mechanics: document.getElementById('panel-mechanics'),
         tierlist: document.getElementById('panel-tierlist'),
         leaderboard: document.getElementById('panel-leaderboard'),
         pbe: document.getElementById('panel-pbe')
       };
       const buttons = {
         live: document.getElementById('btn-tab-live'),
+        augments: document.getElementById('btn-tab-augments'),
+        mechanics: document.getElementById('btn-tab-mechanics'),
         tierlist: document.getElementById('btn-tab-tierlist'),
         leaderboard: document.getElementById('btn-tab-leaderboard'),
         pbe: document.getElementById('btn-tab-pbe')
@@ -1562,6 +2036,98 @@
           }
         }
         if (matchesTier && matchesQuery && matchesSelectedItems) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    // ---------------------------------------------------------------
+    // AUGMENT FILTERS (Rarity, Round, Search)
+    // ---------------------------------------------------------------
+    function filterAugmentRarity(rarity) {
+      activeAugRarity = rarity;
+      document.querySelectorAll('#aug-rarity-bar .aug-rarity-btn').forEach(btn => {
+        if (btn.getAttribute('data-rarity') === rarity) {
+          btn.className = 'aug-rarity-btn px-3 py-1.5 rounded-md bg-[#f0c374] text-slate-950 font-bold transition-colors';
+        } else {
+          btn.className = 'aug-rarity-btn px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors flex items-center gap-1.5';
+        }
+      });
+      applyAugmentFilters();
+    }
+
+    function filterAugmentRound(round) {
+      activeAugRound = round;
+      document.querySelectorAll('#aug-round-bar .aug-round-btn').forEach(btn => {
+        if (btn.getAttribute('data-round') === round) {
+          btn.className = 'aug-round-btn px-2.5 py-1.5 rounded-md bg-slate-200 text-slate-950 font-bold transition-colors';
+        } else {
+          btn.className = 'aug-round-btn px-2.5 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors';
+        }
+      });
+      applyAugmentFilters();
+    }
+
+    function applyAugmentFilters() {
+      const query = (document.getElementById('aug-search-input')?.value || '').trim().toLowerCase();
+      document.querySelectorAll('#augments-table .aug-row').forEach(row => {
+        const rarity = row.getAttribute('data-rarity');
+        const rounds = (row.getAttribute('data-rounds') || '').split(',');
+        const searchBlob = row.getAttribute('data-search') || '';
+        const matchesRarity = (activeAugRarity === 'ALL' || rarity === activeAugRarity);
+        const matchesRound = (activeAugRound === 'ALL' || rounds.includes(activeAugRound));
+        const matchesQuery = (!query || searchBlob.includes(query));
+        if (matchesRarity && matchesRound && matchesQuery) {
+          row.classList.remove('hidden');
+        } else {
+          row.classList.add('hidden');
+        }
+      });
+    }
+
+    // ---------------------------------------------------------------
+    // SET 18 MECHANICS (Encounters & Charms)
+    // ---------------------------------------------------------------
+    function switchMechanicsSubTab(sub) {
+      const pEnc = document.getElementById('subpanel-encounters');
+      const pCharms = document.getElementById('subpanel-charms');
+      const bEnc = document.getElementById('btn-sub-encounters');
+      const bCharms = document.getElementById('btn-sub-charms');
+      if (sub === 'encounters') {
+        pEnc.classList.remove('hidden');
+        pCharms.classList.add('hidden');
+        bEnc.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-bold bg-[#f0c374] text-slate-950 transition-colors shadow-sm';
+        bCharms.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-bold text-slate-300 hover:text-white transition-colors';
+      } else {
+        pCharms.classList.remove('hidden');
+        pEnc.classList.add('hidden');
+        bCharms.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-bold bg-[#f0c374] text-slate-950 transition-colors shadow-sm';
+        bEnc.className = 'px-4 py-2 rounded-md text-xs sm:text-sm font-bold text-slate-300 hover:text-white transition-colors';
+      }
+    }
+
+    function filterCharmCategory(cat) {
+      activeCharmCat = cat;
+      document.querySelectorAll('#charm-cat-bar .charm-cat-btn').forEach(btn => {
+        if (btn.getAttribute('data-cat') === cat) {
+          btn.className = 'charm-cat-btn px-3 py-1.5 rounded-md bg-[#f0c374] text-slate-950 font-bold transition-colors';
+        } else {
+          btn.className = 'charm-cat-btn px-3 py-1.5 rounded-md text-slate-300 hover:text-white transition-colors';
+        }
+      });
+      applyCharmFilters();
+    }
+
+    function applyCharmFilters() {
+      const query = (document.getElementById('charm-search-input')?.value || '').trim().toLowerCase();
+      document.querySelectorAll('#charms-grid .charm-card').forEach(card => {
+        const cat = card.getAttribute('data-cat');
+        const searchBlob = card.getAttribute('data-search') || '';
+        const matchesCat = (activeCharmCat === 'ALL' || cat === activeCharmCat);
+        const matchesQuery = (!query || searchBlob.includes(query));
+        if (matchesCat && matchesQuery) {
           card.classList.remove('hidden');
         } else {
           card.classList.add('hidden');

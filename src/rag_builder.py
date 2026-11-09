@@ -82,6 +82,8 @@ class RAGBuilder:
         chunks: List[Dict[str, Any]] = []
         chunks.append(self._overview_chunk())
         chunks.extend(self._comp_chunks())
+        chunks.extend(self._augment_chunks())
+        chunks.extend(self._mechanic_chunks())
         chunks.extend(self._unit_tier_chunks())
         chunks.extend(self._item_tier_chunks())
         chunks.extend(self._champion_diff_chunks())
@@ -96,7 +98,12 @@ class RAGBuilder:
         lm = r.get("live_meta", {})
         counts = r.get("live_diff", {}).get("summary_counts", {})
         comps = lm.get("compositions", [])
-        top = [c.get("comp_name_en") or c.get("comp_name") for c in comps if c.get("tier") == "S"][:6]
+        top_candidates = [
+            str(c.get("comp_name_en") or c.get("comp_name") or c.get("title_en") or c.get("title") or "")
+            for c in comps
+            if c.get("tier") == "S"
+        ]
+        top = [t for t in top_candidates if t][:6]
         text = (
             f"TFT Set 18 live patch {v.get('latest_label')} (previous {v.get('previous_label')}, "
             f"PBE {v.get('pbe_label')}, game version {v.get('ddragon_version')}). "
@@ -164,6 +171,82 @@ class RAGBuilder:
                     c.get("active_traits"), c.get("active_traits_en"),
                     [u.get("name") for u in units], [u.get("name_en") for u in units],
                     item_names, c.get("levelling"), f"{c.get('tier')} tier",
+                ),
+                "text": text,
+            })
+        return out
+
+    def _augment_chunks(self) -> List[Dict[str, Any]]:
+        out = []
+        aug_list = self.report.get("augments", {}).get("augments", [])
+        for a in aug_list:
+            name_en = a.get("name_en") or a.get("name")
+            name_tr = a.get("name")
+            rarity = a.get("rarity")
+            rounds = ", ".join(a.get("rounds", []))
+            synergies = ", ".join(s.get("title_en") or s.get("title", "") for s in a.get("synergy_comps", []))
+            text = (
+                f"[Augment] {name_en} (TR: {name_tr}), {rarity} tier augment (Stages: {rounds}). "
+                f"Master+ Tier {a.get('tier')} — Avg placement #{a.get('avg_place')}, Pick rate {a.get('pick_rate')}%, "
+                f"Top 4%: {a.get('top4_rate')}%, Win rate: {a.get('win_rate')}%. "
+                f"Description: {a.get('desc_en')} (TR: {a.get('desc')}). "
+                f"Best synergistic compositions: {synergies or '-'}."
+            )
+            out.append({
+                "id": f"augment:{a.get('apiName')}",
+                "type": "augment",
+                "title": f"{name_en} ({a.get('tier')} tier {rarity} augment)",
+                "keywords": _keywords(
+                    "augment", "eklenti", name_en, name_tr, rarity, a.get("rarity_tr"),
+                    a.get("rounds"), a.get("tags"), f"{a.get('tier')} tier",
+                    [s.get("title") for s in a.get("synergy_comps", [])],
+                    [s.get("title_en") for s in a.get("synergy_comps", [])],
+                ),
+                "text": text,
+            })
+        return out
+
+    def _mechanic_chunks(self) -> List[Dict[str, Any]]:
+        out = []
+        mech = self.report.get("mechanics", {})
+        for enc in mech.get("encounters", []):
+            name_en = enc.get("name_en") or enc.get("name")
+            name_tr = enc.get("name")
+            text = (
+                f"[Set 18 Encounter] {name_en} (TR: {name_tr}). Category: {enc.get('category_en')} (TR: {enc.get('category')}). "
+                f"Tempo: {enc.get('tempo_rating_en')} ({enc.get('tempo_rating')}). "
+                f"Rule: {enc.get('post_spawn_en')} (TR: {enc.get('post_spawn')}). "
+                f"Strategy: {enc.get('strategy_en')} (TR: {enc.get('strategy_tr')}). "
+                f"Top comps under this encounter: {', '.join(enc.get('synergy_comps_en', []))}."
+            )
+            out.append({
+                "id": f"encounter:{enc.get('apiName')}",
+                "type": "encounter",
+                "title": f"Encounter: {name_en} ({enc.get('category_en')})",
+                "keywords": _keywords(
+                    "encounter", "karsilasma", "portal", name_en, name_tr,
+                    enc.get("category"), enc.get("category_en"),
+                    enc.get("tempo_rating"), enc.get("tempo_rating_en")
+                ),
+                "text": text,
+            })
+
+        for ch in mech.get("charms", []):
+            name_en = ch.get("name_en") or ch.get("name")
+            name_tr = ch.get("name")
+            text = (
+                f"[Set 18 Charm] {name_en} (TR: {name_tr}) — Cost: {ch.get('cost')}G, Tier {ch.get('tier')}, "
+                f"Category: {ch.get('category')} ({ch.get('category_tr')}), Stages: {ch.get('stages')}. "
+                f"Effect: {ch.get('desc_en')} (TR: {ch.get('desc')}). "
+                f"Recommendation: {ch.get('rec_en')} (TR: {ch.get('rec_tr')})."
+            )
+            out.append({
+                "id": f"charm:{ch.get('apiName')}",
+                "type": "charm",
+                "title": f"Charm: {name_en} ({ch.get('cost')}G)",
+                "keywords": _keywords(
+                    "charm", "tilsim", name_en, name_tr, ch.get("category"),
+                    ch.get("category_tr"), f"{ch.get('cost')}g", ch.get("stages")
                 ),
                 "text": text,
             })
@@ -329,6 +412,9 @@ class RAGBuilder:
         sections = [
             ("overview", "Patch Overview"),
             ("composition", "Master+ Meta Compositions"),
+            ("augment", "Augment Tier List (Master+ Telemetry)"),
+            ("encounter", "Set 18 Encounters & Portals"),
+            ("charm", "Set 18 In-Shop Charms & Economy"),
             ("patch_change", f"Patch Changes ({v.get('previous_label')} -> {v.get('latest_label')})"),
             ("champion", "Champion Tier List"),
             ("item", "Item Tier List"),
