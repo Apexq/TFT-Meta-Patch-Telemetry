@@ -28,12 +28,13 @@ Bu belge, **`v2-chat-platform`** dalında geliştirilecek **Django Chat-First TF
 
 ---
 
-### 🔹 TASK 2: Telemetri & RAG Veritabanı Senkronizasyon Motoru (`apps.telemetry`)
-* **Hedef:** Mevcut [`src/`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/src) veri motorunu Django veritabanına bağlamak ve görsel kart (Generative UI Card) yüklerini indekslemek.
-* **Yapılacaklar:**
-  1. `python manage.py sync_tft_meta` yönetim komutunun yazılması: Mevcut `data/meta_report.json` ve `docs/api/rag_context.json` verisini (veya `--fetch` ile canlı CDragon/MetaTFT verisini) okuyup `PatchSnapshot` ve 440+ `RAGChunk` kaydı olarak veritabanına yazması.
-  2. Her `RAGChunk` kaydına sohbet içinde görsel kart çizdirmek için gereken `ui_card_payload` (şampiyon ikonları, BiS eşyalar, 4x7 tahta dizilimi, Team Planner kodu, Eklenti S/A/B/C rozetleri) JSON verisinin bağlanması.
-  3. `apps/telemetry/services.py` içinde Türkçe/İngilizce normalize anahtar kelime ve aşama (`2-1`, `3-2`, `4-2`) destekli hızlı RAG arama (`retrieve_chunks_and_cards`) servisinin yazılması.
+### 🔹 TASK 2: Telemetri & RAG Veritabanı Senkronizasyon Motoru (`apps.telemetry`) [TAMAMLANDI]
+* **Durum:** ✅ Tamamlandı.
+* **Gerçekleştirilenler:**
+  - `python manage.py sync_tft_meta` komutu yazıldı: `docs/meta_report.json` ve `docs/api/rag_context.json` verilerini (veya `--force-fetch` ile canlı hattı) okuyup `PatchSnapshot` ve 440 `RAGChunk` kaydını veritabanına aktardı.
+  - Generative UI kart yükleri (`ui_card_payload`) her parçacığa bağlandı: 24 kompozisyon için şampiyon ikonları, BiS eşyaları, 4x7 tahta dizilimi, seviye basma temposu ve oyun içi `Team Planner` kodu; Eklentiler (Riot uyumlu S/A/B/C), Karşılaşmalar (Portallar) ve Dükkân Tılsımları (Charms).
+  - `apps.telemetry.services.TelemetryRAGService` geliştirildi: Bellek içi önbellekleme (Cache), Türkçe normalizasyon ve Generative UI kart eşleştirme servisi hazırlandı.
+  - `tests/test_sync_telemetry.py` entegrasyon testleri yazıldı ve 15 testin tamamı başarıyla geçti.
 
 ---
 
