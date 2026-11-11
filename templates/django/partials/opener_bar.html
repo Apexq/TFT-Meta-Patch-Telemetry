@@ -1,0 +1,59 @@
+<!-- OPENER & ITEM PIVOT BUILDER BAR (Task 5) -->
+<div id="opener-builder-drawer" class="hidden mb-3 bg-[#0d121c] border border-[#222d42] rounded-xl p-3 sm:p-3.5 shadow-lg">
+  <div class="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-[#1c2536]">
+    <div class="flex items-center gap-2">
+      <span class="text-base">🎲</span>
+      <div>
+        <h4 class="font-bold text-white text-xs sm:text-sm">
+          <span class="lang-tr">Elimdeki Eşyayla Ne Oynanır? (Aşama 2-1 &rarr; 4-2 Pivot Rehberi)</span>
+          <span class="lang-en">What to Play With My Items? (Stage 2-1 &rarr; 4-2 Pivot Guide)</span>
+        </h4>
+        <p class="text-[10px] sm:text-[11px] text-slate-400">
+          <span class="lang-tr">Elindeki 1 ila 3 eşyayı seç. AI Koç o eşyaları en verimli kullanan Master+ tahtasını ve erken oyun geçiş planını çıkarsın.</span>
+          <span class="lang-en">Select 1 to 3 items you hold. The AI Coach will map the best Master+ transition board and 4-2 pivot path.</span>
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button type="button" id="clear-opener-btn" onclick="clearSelectedOpenerItems()"
+        class="hidden px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors">
+        <span class="lang-tr">Temizle &times;</span><span class="lang-en">Clear &times;</span>
+      </button>
+      <button type="button" onclick="toggleOpenerDrawer()" class="text-slate-400 hover:text-white text-xs font-bold p-1">
+        &times;
+      </button>
+    </div>
+  </div>
+
+  <!-- 18 Matcher Items Grid -->
+  <div class="flex flex-wrap items-center gap-1.5" id="opener-items-strip">
+    {% for it in matcher_items %}
+    <button type="button"
+      data-item-name="{{ it.name }}"
+      data-item-api="{{ it.apiName }}"
+      onclick="toggleOpenerItem(this)"
+      title="{{ it.name }} / {{ it.name_en }}"
+      class="opener-item-btn flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#121722] hover:bg-[#1a2334] border border-[#222d42] text-[11px] font-medium text-slate-300 hover:text-white transition-all group">
+      <img src="{{ it.icon }}" alt="{{ it.name }}" class="w-5 h-5 rounded-sm object-cover" onerror="this.style.display='none'">
+      <span class="hidden md:inline max-w-[100px] truncate">
+        <span class="lang-tr">{{ it.name }}</span>
+        <span class="lang-en">{{ it.name_en }}</span>
+      </span>
+    </button>
+    {% endfor %}
+  </div>
+
+  <!-- Selected Items & Quick Action Pill -->
+  <div id="opener-action-bar" class="hidden mt-3 pt-2.5 border-t border-[#1c2536] flex items-center justify-between">
+    <div class="flex items-center gap-1.5">
+      <span class="text-[11px] text-slate-400 font-semibold">Seçili Eşyalar:</span>
+      <div id="opener-selected-tags" class="flex flex-wrap items-center gap-1"></div>
+    </div>
+    <button type="button" onclick="submitOpenerQuery()"
+      class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-[#f0c374] hover:from-amber-600 hover:to-[#e5b35c] text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all">
+      <span>🚀</span>
+      <span class="lang-tr">Geçiş Planını Çıkar</span>
+      <span class="lang-en">Generate Pivot Plan</span>
+    </button>
+  </div>
+</div>

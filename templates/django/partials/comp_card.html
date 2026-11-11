@@ -66,6 +66,31 @@
   </div>
   {% endif %}
 
+  <!-- Stage Leveling & Roll Schedule (Task 5 Pivot Curve) -->
+  {% if card.level_schedule %}
+  <div class="mt-2.5 pt-2 border-t border-[#1c2536]">
+    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1">
+      <span>📈</span>
+      <span class="lang-tr">Aşama &amp; Seviye Basma Temposu ({{ card.levelling }})</span>
+      <span class="lang-en">Stage Leveling &amp; Roll Curve ({{ card.levelling }})</span>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[10px]">
+      {% for step in card.level_schedule %}
+      <div class="flex items-center justify-between gap-1 py-1 px-2 rounded bg-[#0a0e17] border border-[#1e2738]">
+        <div class="flex items-center gap-1.5 shrink-0">
+          <span class="px-1 py-0.2 rounded bg-slate-800 text-[#f0c374] font-bold mono">{{ step.stage }}</span>
+          <span class="font-bold text-white mono">{{ step.level }}</span>
+        </div>
+        <span class="text-slate-300 text-right truncate">
+          <span class="lang-tr">{{ step.note_tr }}</span>
+          <span class="lang-en">{{ step.note_en }}</span>
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
   <!-- 4x7 Hex Board Layout Toggle Button -->
   {% if card.board_grid %}
   <div class="mt-2.5 pt-2 border-t border-[#1c2536] flex justify-end">

@@ -65,11 +65,13 @@ Bu belge, **`v2-chat-platform`** dalında geliştirilecek **Django Chat-First TF
 
 ---
 
-### 🔹 TASK 5: "Elimdekilerle Ne Oynarım?" (Opener & Pivot Builder) Aracı
-* **Hedef:** Oyuncunun 2-1'de elindeki eşya bileşenlerini ve bulduğu ilk şampiyonları seçerek AI Koç'tan adım adım **Erken Oyun -> 4-2 Pivot Haritası** alması.
-* **Yapılacaklar:**
-  1. Sohbet kutusunun üstüne açılır/kapanır **"Elimdeki Eşyalar & Başlangıç Seçici"** (`partials/opener_bar.html`) eklenmesi.
-  2. Seçilen eşyaları BiS olarak kullanan en yüksek dereceli Master+ kompozisyonların otomatik filtrelenip AI Koç'a özel bir `OPENER_BUILDER` istemiyle gönderilmesi.
+### 🔹 TASK 5: "Elimdekilerle Ne Oynarım?" (Opener & Pivot Builder) Aracı [TAMAMLANDI]
+* **Durum:** ✅ Tamamlandı.
+* **Gerçekleştirilenler:**
+  - `templates/django/partials/opener_bar.html`: Sohbet kutusunun üzerine açılır/kapanır 18 popüler birleştirilebilir eşya seçici çubuğu eklendi.
+  - Kullanıcı 1 ila 3 eşya seçtiğinde hızlı etiketler ve **"🚀 Geçiş Planını Çıkar"** butonu tetiklendi; sorgu doğrudan `selected_items` ile LLM ve telemetri motoruna aktarıldı.
+  - `templates/django/partials/comp_card.html`: Kompozisyon kartının içine **Aşama & Seviye Basma Temposu (2-1, 2-5, 3-2, 4-2 seviye eğrisi)** rehberi entegre edildi.
+  - `tests/test_opener_builder.py` testleri yazıldı ve 21 testin tamamı başarıyla geçti.
 
 ---
 

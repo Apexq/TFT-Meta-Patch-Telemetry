@@ -171,7 +171,16 @@
   <!-- Bottom Message Input Dock -->
   <footer class="p-3 sm:p-4 bg-[#0c1018] border-t border-[#1e2738] z-10 shrink-0">
     <div class="max-w-3xl mx-auto relative">
+      <!-- Opener & Item Pivot Builder Bar -->
+      {% include "partials/opener_bar.html" with matcher_items=matcher_items %}
+
       <form id="chat-form" onsubmit="handleChatSubmit(event)" class="flex items-center gap-2 bg-[#121722] border border-[#222d42] focus-within:border-[#f0c374]/80 rounded-2xl p-1.5 transition-all shadow-inner">
+        <!-- Item Opener Drawer Toggle Button -->
+        <button type="button" onclick="toggleOpenerDrawer()" title="Elimdeki Eşyayla Ne Oynanır? (Opener Seçici)"
+          class="p-2 rounded-xl text-slate-400 hover:text-[#f0c374] hover:bg-slate-800/60 transition-colors shrink-0 flex items-center gap-1">
+          <span class="text-base leading-none">🎲</span>
+        </button>
+
         <!-- Voice Input Microphone Button -->
         <button type="button" id="voice-btn" onclick="toggleVoiceInput()" title="Sesli Soru Sor (Mikrofon)"
           class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors shrink-0">
@@ -199,6 +208,73 @@
 <script>
   let currentCoachMode = 'META_COACH';
   let currentSessionId = '{{ current_session.id|default:"" }}';
+  let selectedOpenerItems = [];
+
+  function toggleOpenerDrawer() {
+    const drawer = document.getElementById('opener-builder-drawer');
+    drawer.classList.toggle('hidden');
+  }
+
+  function toggleOpenerItem(btn) {
+    const itemName = btn.getAttribute('data-item-name');
+    const itemApi = btn.getAttribute('data-item-api');
+    const idx = selectedOpenerItems.findIndex(i => i.api === itemApi);
+
+    if (idx > -1) {
+      selectedOpenerItems.splice(idx, 1);
+      btn.classList.remove('bg-amber-500/20', 'border-[#f0c374]', 'text-[#f0c374]');
+      btn.classList.add('bg-[#121722]', 'border-[#222d42]', 'text-slate-300');
+    } else {
+      if (selectedOpenerItems.length >= 3) {
+        alert("En fazla 3 eşya seçebilirsiniz.");
+        return;
+      }
+      selectedOpenerItems.push({ name: itemName, api: itemApi });
+      btn.classList.remove('bg-[#121722]', 'border-[#222d42]', 'text-slate-300');
+      btn.classList.add('bg-amber-500/20', 'border-[#f0c374]', 'text-[#f0c374]');
+    }
+
+    renderOpenerTags();
+  }
+
+  function renderOpenerTags() {
+    const bar = document.getElementById('opener-action-bar');
+    const tags = document.getElementById('opener-selected-tags');
+    const clearBtn = document.getElementById('clear-opener-btn');
+
+    if (selectedOpenerItems.length === 0) {
+      bar.classList.add('hidden');
+      clearBtn.classList.add('hidden');
+      return;
+    }
+
+    bar.classList.remove('hidden');
+    clearBtn.classList.remove('hidden');
+    tags.innerHTML = selectedOpenerItems.map(i => `
+      <span class="px-2 py-0.5 rounded bg-[#182030] border border-[#f0c374]/40 text-[#f0c374] text-[10px] font-bold">
+        ${i.name}
+      </span>
+    `).join('');
+  }
+
+  function clearSelectedOpenerItems() {
+    selectedOpenerItems = [];
+    document.querySelectorAll('.opener-item-btn').forEach(b => {
+      b.classList.remove('bg-amber-500/20', 'border-[#f0c374]', 'text-[#f0c374]');
+      b.classList.add('bg-[#121722]', 'border-[#222d42]', 'text-slate-300');
+    });
+    renderOpenerTags();
+  }
+
+  function submitOpenerQuery() {
+    if (selectedOpenerItems.length === 0) return;
+    const names = selectedOpenerItems.map(i => i.name).join(', ');
+    const query = `Elimde ${names} var. Erken aşamadan (2-1) seviye 8'e (4-2) kadar hangi tahtayla oynamalı ve hangi taşıyıcıya pivot etmeliyim?`;
+    document.getElementById('chat-input').value = query;
+    setCoachMode('OPENER_BUILDER', 'Elimdekilerle Ne Oynarım?');
+    handleChatSubmit(new Event('submit'));
+    toggleOpenerDrawer();
+  }
 
   function setCoachMode(mode, label) {
     currentCoachMode = mode;
@@ -243,13 +319,14 @@
     stream.scrollTop = stream.scrollHeight;
 
     // Dispatches to chat endpoint
+    const itemApis = selectedOpenerItems.map(i => i.api);
     fetch("{% url 'chat:send_message' %}", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-CSRFToken": "{{ csrf_token }}"
       },
-      body: JSON.stringify({ query: query, mode: currentCoachMode, session_id: currentSessionId })
+      body: JSON.stringify({ query: query, mode: currentCoachMode, session_id: currentSessionId, selected_items: itemApis })
     }).then(res => res.json()).then(data => {
       loadingBubble.remove();
       currentSessionId = data.session_id;

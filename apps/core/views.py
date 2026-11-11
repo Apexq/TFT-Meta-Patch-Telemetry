@@ -15,6 +15,8 @@ def chat_home_view(request):
     Main Chat-First homepage view for TFT Set 18 AI Coach.
     """
     active_snapshot = PatchSnapshot.objects.filter(is_active=True).first()
+    report = active_snapshot.full_report_json if active_snapshot else {}
+    matcher_items = report.get("tier_lists", {}).get("matcher_items", [])
     
     # Session handling (Guest or Authenticated User)
     session_key = request.session.session_key
@@ -36,6 +38,7 @@ def chat_home_view(request):
 
     context = {
         "active_snapshot": active_snapshot,
+        "matcher_items": matcher_items,
         "chat_sessions": chat_sessions,
         "user_display": user_display,
         "quota_left": quota_left,
