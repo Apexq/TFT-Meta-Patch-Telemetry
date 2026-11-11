@@ -81,24 +81,33 @@ class TelemetryRAGService:
         if not chunks:
             return {"chunks": [], "ui_cards": [], "cited_chunk_ids": []}
 
+        STOPWORDS = {"en", "ve", "ile", "bir", "de", "da", "bu", "ne", "mi", "mu", "var", "miyiz", "icin", "nasil", "hangisi", "hangileri", "the", "and", "or", "in", "of", "to", "a", "is"}
+        meaningful_tokens = [w for w in q_tokens if w not in STOPWORDS]
+        if not meaningful_tokens:
+            meaningful_tokens = q_tokens
+
         scored = []
         for ch in chunks:
             score = 0.0
             kw_text = ch["keywords_normalized"]
             content = ch["content_text"].lower()
 
-            for tok in q_tokens:
-                if tok in kw_text:
-                    score += 5.0
+            for tok in meaningful_tokens:
+                # Direct match or root match
+                if tok in kw_text or (len(tok) >= 4 and tok[:4] in kw_text):
+                    score += 6.0
                 elif tok in content:
-                    score += 1.5
+                    score += 2.0
 
-        # Comp / Hero / Unit generic query boosters
-        if any(w in norm_query for w in ("comp", "komp", "hero", "sampiyon", "birim", "tahta", "erken", "level", "2 le", "2le")):
-            if ch["chunk_type"] == "composition":
-                score += 10.0
-            elif ch["chunk_type"] == "champion":
-                score += 4.0
+            # Comp / Hero / Unit generic query boosters
+            if any(w in norm_query for w in ("comp", "komp", "hero", "sampiyon", "birim", "tahta", "erken", "level", "2 le", "2le", "desteler")):
+                if ch["chunk_type"] == "composition":
+                    score += 10.0
+                elif ch["chunk_type"] == "champion":
+                    score += 4.0
+
+            # Item component query booster
+            if selected_items and ch["chunk_type"] == "composition":
                 payload = ch.get("ui_card_payload") or {}
                 comp_items = payload.get("comp_item_ids", [])
                 for it in selected_items:
