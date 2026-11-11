@@ -37,16 +37,16 @@ Across 307,424 real Challenger, Grandmaster, and Master matches, 'Riftbeast Bram
 ## Set 18 Top S-Tier Augments (Master+ Telemetry)
 | Tier | Augment (EN / TR) | Rarity | Rounds | Avg Place | Pick Rate | Top 4 % | Win % |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **S** | Epic Rolldown (Destansı Yenileme) | `Gold` | `3-2` | **#4.02** | 7.6% | 62.1% | 16.6% |
-| **S** | Hold the Line (Safları Koru) | `Prismatic` | `3-2, 4-2` | **#4.04** | 8.2% | 62.8% | 17.2% |
-| **S** | Explosive Growth (Ani Büyüme) | `Gold` | `3-2` | **#4.05** | 8.9% | 63.6% | 17.9% |
-| **S** | Item Extraction (Eşya Çıkarma) | `Gold` | `2-1, 3-2` | **#4.05** | 8.8% | 63.5% | 17.8% |
-| **S** | Rolling For Days (Durmadan Yenile) | `Silver` | `3-2, 4-2` | **#4.06** | 9.1% | 63.9% | 18.1% |
-| **S** | Prismatic Ticket (Prizmatik Bilet) | `Prismatic` | `2-1, 3-2` | **#4.07** | 9.4% | 64.2% | 18.4% |
-| **S** | Bronze For Life II (Bronzdan Şaşma II) | `Prismatic` | `3-2, 4-2` | **#4.08** | 10.0% | 64.8% | 19.0% |
-| **S** | The Trait Tree (Özellik Ağacı) | `Prismatic` | `2-1` | **#4.09** | 10.3% | 65.2% | 19.3% |
-| **S** | Baron's Lair (Baron'un İni) | `Prismatic` | `3-2, 4-2` | **#4.1** | 10.9% | 65.9% | 19.9% |
-| **S** | Flexible (Esnek) | `Prismatic` | `2-1` | **#4.1** | 8.3% | 62.9% | 17.3% |
+| **S** | Item Extraction (Eşya Çıkarma) | `Gold` | `2-1, 3-2` | **#4.03** | 7.9% | 62.5% | 16.9% |
+| **S** | Prismatic Ticket (Prizmatik Bilet) | `Prismatic` | `2-1, 3-2` | **#4.04** | 8.4% | 63.0% | 17.4% |
+| **S** | Baron's Lair (Baron'un İni) | `Prismatic` | `3-2, 4-2` | **#4.05** | 8.8% | 63.5% | 17.8% |
+| **S** | Magic Roll (Büyülü Zarlar) | `Gold` | `3-2` | **#4.05** | 8.8% | 63.5% | 17.8% |
+| **S** | Spreading Roots (Yayılan Kökler) | `Gold` | `2-1` | **#4.05** | 8.5% | 63.2% | 17.5% |
+| **S** | The Trait Tree+ (Özellik Ağacı+) | `Prismatic` | `3-2` | **#4.05** | 8.7% | 63.4% | 17.7% |
+| **S** | Hold the Line (Safları Koru) | `Prismatic` | `3-2, 4-2` | **#4.06** | 8.9% | 63.6% | 17.9% |
+| **S** | Explosive Growth (Ani Büyüme) | `Gold` | `3-2` | **#4.08** | 10.1% | 65.0% | 19.1% |
+| **S** | Bronze For Life II (Bronzdan Şaşma II) | `Prismatic` | `3-2, 4-2` | **#4.09** | 10.4% | 65.4% | 19.4% |
+| **S** | Flexible (Esnek) | `Prismatic` | `2-1` | **#4.1** | 8.2% | 62.8% | 17.1% |
 
 ## Set 18 Opening Encounters & Tempo Rating (20 Encounters)
 | Encounter (EN / TR) | Category | Tempo Rating | In-Game Rule |
@@ -65,4 +65,4 @@ Across 307,424 real Challenger, Grandmaster, and Master matches, 'Riftbeast Bram
 
 No numeric Set 18 differences currently exist between CommunityDragon's PBE branch and live patch 18.6. When the next PBE cycle deploys, impact projections on existing Master+ compositions will be computed automatically.
 
-*Generated at: 2026-11-11 14:23 UTC | Target Mutator: `TFTSet18`*
+*Generated at: 2026-11-11 14:25 UTC | Target Mutator: `TFTSet18`*
