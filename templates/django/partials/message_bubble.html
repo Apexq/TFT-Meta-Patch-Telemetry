@@ -1,0 +1,38 @@
+{% if message.role == 'user' %}
+<!-- USER BUBBLE -->
+<div class="flex justify-end">
+  <div class="max-w-xl bg-gradient-to-r from-amber-500/20 to-[#f0c374]/20 border border-[#f0c374]/40 rounded-2xl rounded-tr-sm p-3.5 text-xs sm:text-sm text-white shadow-sm leading-relaxed">
+    {{ message.content_markdown|linebreaksbr }}
+  </div>
+</div>
+{% else %}
+<!-- ASSISTANT BUBBLE + GENERATIVE UI CARDS -->
+<div class="flex justify-start">
+  <div class="max-w-2xl bg-[#0d121c] border border-[#222d42] rounded-2xl rounded-tl-sm p-4 text-xs sm:text-sm text-slate-100 shadow-md">
+    <!-- AI Text Response -->
+    <div class="prose prose-invert prose-xs sm:prose-sm leading-relaxed text-slate-200">
+      {{ message.content_markdown|linebreaksbr }}
+    </div>
+
+    <!-- Generative UI Cards (Comps, BiS, 4x7 Board) -->
+    {% if message.ui_cards_json %}
+      {% include "partials/comp_card.html" with cards=message.ui_cards_json %}
+    {% endif %}
+
+    <!-- Footer: Model Badge, Latency & Feedback Vote -->
+    <div class="mt-3 pt-2.5 border-t border-[#1c2536] flex items-center justify-between text-[10px] text-slate-400">
+      <div class="flex items-center gap-2 mono">
+        <span class="text-[#f0c374] font-semibold">{{ message.model_used|default:"gemini-2.5-flash" }}</span>
+        {% if message.latency_ms %}
+        <span>&bull;</span>
+        <span>{{ message.latency_ms }}ms</span>
+        {% endif %}
+      </div>
+      <div class="flex items-center gap-1.5" id="feedback-{{ message.id }}">
+        <button type="button" onclick="voteFeedback({{ message.id }}, 1, this)" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors" title="Faydalı Yanıt">👍</button>
+        <button type="button" onclick="voteFeedback({{ message.id }}, -1, this)" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors" title="Hatalı / Yetersiz">👎</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}

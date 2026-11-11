@@ -51,13 +51,17 @@ Bu belge, **`v2-chat-platform`** dalında geliştirilecek **Django Chat-First TF
 
 ---
 
-### 🔹 TASK 4: AI Koç Sohbet Motoru ve Görsel Kompozisyon Kartları (`apps.chat`)
-* **Hedef:** Kullanıcı soru sorduğunda hem Gemini LLM koçluk yanıtını hem de altında **interaktif görsel TFT kartlarını** (`comp_card.html`, `augment_card.html`) gerçek zamanlı döndürmek.
-* **Yapılacaklar:**
-  1. `apps/chat/llm_service.py`: Gemini API (`gemini-2.5-flash` / `gemini-3.5-flash`) entegrasyonu + API anahtarı olmadığında veya hata durumunda yerel RAG verisinden çalışan akıllı kural tabanlı yedek koç motoru.
-  2. `apps/chat/card_builder.py`: Yanıtta geçen kompozisyonları, şampiyonları ve eklentileri tespit edip mesajın altına görsel kartları ekleyen servis.
-  3. `templates/django/partials/comp_card.html`: Sohbet balonunun içinde **Şampiyon İkonları + BiS Eşyalar + Açılır 4x7 Hex Tahta Dizilimi + Tek Tıkla Team Planner Kodu Kopyalama** kartı.
-  4. Mesaj beğenme/beğenmeme (`+1 / -1` feedback) ve IP/Kullanıcı hız sınırlama (`RateLimitLog`) entegrasyonu.
+### 🔹 TASK 4: AI Koç Sohbet Motoru ve Görsel Kompozisyon Kartları (`apps.chat`) [TAMAMLANDI]
+* **Durum:** ✅ Tamamlandı.
+* **Gerçekleştirilenler:**
+  - `apps.chat.llm_service.AICoachLLMService`: Google Gemini REST API (`gemini-2.5-flash`) ve API anahtarı olmadığında veya çevrimdışıyken çalışan akıllı deterministik Master+ telemetri motoru geliştirildi.
+  - `apps.chat.views.send_message_view`: Kullanıcı sorusunu alıp `ChatSession` ve `ChatMessage` olarak kaydeden, eşleşen RAG parçacıklarını ve Generative UI kartlarını döndüren ana uç nokta yazıldı.
+  - `templates/django/partials/comp_card.html` & `partials/message_bubble.html`:
+    - Sohbet balonunun altında **Şampiyon İkonları**, **Yıldız Seviyeleri (3★)**, **Taşıyıcı BiS Eşyaları**.
+    - **Tek Tıkla Oyun İçi Team Planner Kodu Kopyalama** butonu (clipboard).
+    - **Açılır 4x7 Altıgen (Hex) Tahta Dizilimi** (Ön saf / Arka saf yerleşimi).
+    - **Model etiketi, milisaniye yanıt süresi (`latency_ms`) ve 👍 / 👎 beğeni oylama sistemi** (`/chat/feedback/<id>/`).
+  - `tests/test_chat_engine.py` birim testleri yazıldı ve 19 testin tamamı başarıyla geçti.
 
 ---
 

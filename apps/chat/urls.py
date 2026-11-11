@@ -1,13 +1,9 @@
 from django.urls import path
-from django.http import JsonResponse
-
-
-def chat_ping_view(request):
-    return JsonResponse({"status": "ready", "module": "chat"})
-
+from .views import send_message_view, message_feedback_view
 
 app_name = "chat"
 
 urlpatterns = [
-    path("ping/", chat_ping_view, name="ping"),
+    path("send/", send_message_view, name="send_message"),
+    path("feedback/<int:message_id>/", message_feedback_view, name="feedback"),
 ]
