@@ -133,23 +133,28 @@ class TelemetryRAGService:
         scored.sort(key=lambda x: x[0], reverse=True)
         top_results = [item[1] for item in scored[:top_k]]
 
-        # If zero matches found, include overview chunk + top S-tier compositions
+        # Intent check: Is user asking a simple existence / greeting question?
+        is_simple_query = any(w in norm_query for w in ("var mi", "var mı", "mevcut mu", "selam", "merhaba", "gunaydin", "iyi gunler"))
+        is_comp_query = any(w in norm_query for w in ("comp", "komp", "tahta", "board", "dizilim", "tier", "meta", "build", "nasil oynan", "nasıl oynan", "rehber", "oner", "öner", "eklenti", "augment"))
+
+        # If zero matches found, give high-level overview chunk to context (NO fake cards)
         if not top_results:
             top_results = [c for c in chunks if c["chunk_type"] == "overview"][:1]
-            top_results.extend([c for c in chunks if c["chunk_type"] == "composition"][:3])
 
         ui_cards = []
-        seen_card_keys = set()
-        for c in top_results:
-            payload = c.get("ui_card_payload")
-            if payload and payload.get("card_type"):
-                card_key = f"{payload.get('card_type')}:{payload.get('comp_name') or payload.get('title') or c['chunk_id']}"
-                if card_key not in seen_card_keys:
-                    seen_card_keys.add(card_key)
-                    ui_cards.append(payload)
+        # Only attach interactive UI cards if the query matched actual relevant chunks AND is not a simple yes/no query
+        if scored and (is_comp_query or not is_simple_query):
+            seen_card_keys = set()
+            for c in top_results:
+                payload = c.get("ui_card_payload")
+                if payload and payload.get("card_type"):
+                    card_key = f"{payload.get('card_type')}:{payload.get('comp_name') or payload.get('title') or c['chunk_id']}"
+                    if card_key not in seen_card_keys:
+                        seen_card_keys.add(card_key)
+                        ui_cards.append(payload)
 
         return {
             "chunks": top_results,
-            "ui_cards": ui_cards[:3],  # limit to top 3 cards to keep chat clean
-            "cited_chunk_ids": [c["chunk_id"] for c in top_results],
+            "ui_cards": ui_cards[:2],  # keep cards focused and clean
+            "cited_chunk_ids": [c["chunk_id"] for c in top_results if c.get("chunk_id")],
         }
