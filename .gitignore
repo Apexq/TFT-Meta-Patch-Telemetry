@@ -28,5 +28,9 @@ Thumbs.db
 .coverage
 htmlcov/
 
+# Local SQLite databases & staticfiles
+*.sqlite3
+staticfiles/
+
 .wrangler/
 worker/.wrangler/
