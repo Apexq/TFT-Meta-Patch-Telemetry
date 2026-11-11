@@ -1,75 +1,53 @@
-# TFT Set 18 Meta & Patch Telemetry — Kodlama Standartları ve Kurallar (RULES.md)
+# TFT Set 18 AI Coach Platform — Kodlama, Güvenlik ve Riot Uyumluluk Kuralları (RULES.md)
 
-Bu belge, mevcut kod tabanının kararlılığını, veri doğruluğunu ve CI/CD işleyişini korumak için yapılacak tüm geliştirmelerde uyulması zorunlu teknik kuralları tanımlar.
-
----
-
-## 1. Kapsam ve Oyun Verisi Kuralları
-
-1. **Kesin Set 18 (`TFTSet18`) Odaklanması:**
-   * Tüm veri çekme ve filtreleme işlemleri [`src/__init__.py`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/src/__init__.py) içindeki `TARGET_MUTATOR = "TFTSet18"` ve `TARGET_SET_NUMBER = 18` sabitlerine bağlı kalmalıdır.
-   * Oynanabilir olmayan kukla/NPC birimleri dışlamak için şampiyon filtrelemesinde `traits and 1 <= cost <= 6` koşulu ([`src/cdragon_client.py`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/src/cdragon_client.py)) korunmalıdır.
-2. **İkon ve Varlık Çözümleme:**
-   * Ham `.tex` veya `.dds` oyun içi dosya yolları doğrudan şablona gönderilmemeli; her zaman `CDragonClient.resolve_icon_url()` veya `RiotTFTAnalyzer.resolve_augment_icon()` üzerinden geçerli `.png` URL'lerine dönüştürülmelidir.
-   * Kırık görsel oluşmaması için şablondaki `<img>` etiketlerinde yedek (`onerror`) mekanizması korunmalıdır.
-3. **Açıklama (Tooltip) Temizliği:**
-   * Riot/MetaTFT verilerinden gelen `<TFTCurveTable row="..."/>` ve HTML/XML etiketleri ham halde arayüze veya RAG dosyalarına basılmamalı; `_clean_curve_tooltip()` fonksiyonu ile gerçek sayısal değerlere çözümlenmelidir.
+Bu belge, **`v2-chat-platform`** dalında geliştirilecek Django uygulaması ve mevcut [`src/`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/src) veri motorunda uyulması zorunlu teknik kuralları ve Riot Games politikalarını tanımlar.
 
 ---
 
-## 2. Çift Dilli (TR / EN) Tam Uyum Kuralı
+## 1. Riot Games Geliştirici Politikaları ve Production API Kuralları (KRİTİK)
 
-1. **Veri Katmanı:**
-   * `full_report` içine eklenen her metin alanı hem Türkçe (varsayılan anahtar: `name`, `title`, `desc`, `status_tr`, `strategy_tr`) hem İngilizce (`name_en`, `title_en`, `desc_en`, `status_en`, `strategy_en`) karşılığıyla üretilmelidir.
-2. **Şablon Katmanı ([`templates/index.html.j2`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/templates/index.html.j2)):**
-   * Kullanıcıya görünen her metin `<span class="lang-tr">...</span>` ve `<span class="lang-en">...</span>` bloklarıyla sarmalanmalıdır.
-   * Arama çubuğu `placeholder` metinleri ve dinamik kopyalama bildirimleri `setLanguage(lang)` fonksiyonu içinde her iki dil için tanımlanmalıdır.
-3. **RAG ve AI Koç Katmanı:**
-   * [`src/rag_builder.py`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/src/rag_builder.py) içindeki `_keywords()` çağrılarına hem Türkçe hem İngilizce terimler gönderilmeli; Türkçe karakter normalizasyonu (`_normalize`: `İ->i`, `I->ı->i`, diakritik temizliği) bozulmamalıdır.
-
----
-
-## 3. Hata Toleransı ve Kesintisiz Çalışma (Graceful Degradation)
-
-1. **Sıfır Gizli Anahtarla Çalışabilme:**
-   * Pipeline, `RIOT_API_KEY`, `GITHUB_TOKEN` veya `DISCORD_WEBHOOK_URL` ortam değişkenleri tanımlı olmadığında da **asla çökmemeli** (`exit code 0` ile tamamlanmalı) ve kural tabanlı yedek mekanizmalarını (`_build_bilingual_rule_based_report`, deterministik Team Planner hex yedekleri vb.) devreye sokmalıdır.
-2. **Ağ İstekleri ve Zaman Aşımı:**
-   * Tüm dış HTTP isteklerinde (`urllib.request.urlopen`) açık bir `timeout` değeri belirtilmeli ve dış API kesintileri `try / except` bloklarıyla yakalanarak uyarı logu basılıp güvenli varsayılan değerlerle devam edilmelidir.
-3. **Jinja2 Şablon Güvenliği:**
-   * Şablon içinde opsiyonel veya eksik olabilecek sözlük alanlarına erişirken `UndefinedError` hatasını önlemek için `{% if ... is defined %}` veya `or` varsayılan değerleri kullanılmalıdır.
+1. **Eklenti (Augment) Sayısal İstatistik Yasağı:**
+   * Riot Games kuralları gereği hiçbir sayfada, sohbet yanıtında, görsel kartta veya API çıktısında eklentilere (Augments) ait sayısal **Ortalama Sıra (`avg_place`)**, **Kazanma Oranı (`win_rate`)**, **İlk 4 Oranı (`top4_rate`)** veya **Seçilme Yüzdesi (`pick_rate`)** **kesinlikle gösterilemez**.
+   * Eklentiler yalnızca küratörlü harf kademeleri (`S / A / B / C Tier`), aşama bilgisi (`2-1`, `3-2`, `4-2`), açıklama, taktiksel rol etiketleri (`Econ`, `Combat`, `Items`) ve önerilen sinerji kompozisyonlarıyla sunulmalıdır.
+2. **Oyun İçi Otopilot Yasağı ("No Real-Time In-Game Decision Making"):**
+   * Platform oyun esnasında ekranı canlı okuyan bir overlay veya anlık hamle dikte eden bir bot olarak konumlandırılamaz.
+   * Tüm oyuncu maç analizleri (`apps.riot_sync`), yalnızca **tamamlanmış maçlar (`tft-match-v1`)** üzerinden **Maç Sonu Koçluk (Post-Game Reflection)** amacıyla yapılmalıdır.
+3. **Yasal Uyarı (Legal Jibber Jabber) ve Doğrulama Dosyası:**
+   * Sitenin alt bilgisinde (footer) Riot Games'in resmi *"isn't endorsed by Riot Games..."* yasal metni her zaman görünür olmalıdır.
+   * [`docs/riot.txt`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/docs/riot.txt) ve Django üzerindeki `/riot.txt` uç noktası (`55016fcd-fe08-40f7-bf33-18a2dbc82a60`) asla silinmemeli ve değiştirilmemelidir.
 
 ---
 
-## 4. Arayüz (UI) ve Tasarım Standartları
+## 2. Django Mimari ve Kodlama Standartları
 
-1. **Yüksek Kontrastlı Koyu Tema:**
-   * Arka plan `#0a0e17`, kart yüzeyleri `#121722` / `#0d121c`, kenarlıklar `#222d42` / `#29364f` ve vurgu rengi Hextech altını (`#f0c374`) olarak korunmalıdır.
-   * Okunabilirliği düşüren soluk gri sınıflar (`text-zinc-500`, `text-zinc-600`) **kullanılmamalı**; ikincil metinlerde en az `text-slate-400` veya `text-slate-300`, ana metinlerde `text-white` / `text-slate-100` tercih edilmelidir.
-2. **Sıfır Derleme (Zero-Build) Statik Çıktı:**
-   * Dashboard, harici bir Node.js/Webpack derleme adımına ihtiyaç duymadan doğrudan Jinja2 ile tekil `docs/index.html` dosyası olarak üretilmeye devam etmelidir.
-
----
-
-## 5. Güvenlik, GitOps ve Platform Kuralları
-
-1. **Gizli Anahtar Hijyeni:**
-   * `.env` dosyası, API anahtarları (`RIOT_API_KEY`, `GEMINI_API_KEY`) veya `.cache/` içeriği hiçbir koşulda Git geçmişine eklenmemelidir.
-   * Cloudflare Worker gizli anahtarları [`worker/wrangler.toml`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/worker/wrangler.toml) içine düz metin olarak yazılmamalı, yalnızca `npx.cmd wrangler secret put GEMINI_API_KEY` ile tanımlanmalıdır.
-2. **Satır Sonu (Line Ending) Standardı:**
-   * Windows ortamında dosya düzenlerken çift satır boşluğu (CRLF bozulması) oluşmaması için dosyalar UTF-8 ve `\n` (LF) satır sonlarıyla kaydedilmelidir.
-3. **Sonsuz Döngü Koruması (CI/CD):**
-   * [`.github/workflows/tft-meta-pipeline.yml`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/.github/workflows/tft-meta-pipeline.yml) içindeki otomatik bot commit mesajlarında `[skip ci]` ibaresi ve `on.push.paths-ignore` listesi (`docs/**`, `data/state.json`) kesinlikle korunmalıdır.
+1. **`src/` Veri Motoru ile Sıfır Kod Tekrarı (DRY):**
+   * CDragon veri çekme, matematiksel diff hesaplama, Team Planner kodu üretme ve RAG parçacığı oluşturma mantığı Django içinde yeniden yazılmamalı; doğrudan [`src/`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/src) paketinden import edilmelidir.
+2. **İnce Görünüm, Kalın Servis Katmanı (Thin Views, Fat Services):**
+   * `views.py` dosyaları yalnızca HTTP/HTMX isteklerini karşılamalı ve şablon döndürmelidir.
+   * İş mantığı (Riot API çağrıları, RAG skorlama, LLM istemi oluşturma, görsel kart eşleştirme, kota düşme) `services.py`, `llm_service.py`, `card_builder.py` ve `analyzer.py` modüllerinde yer almalıdır.
+3. **Misafir + Üye Hibrit Çalışma:**
+   * Siteye ilk kez giren bir kullanıcı **üye olmadan da** ana sayfadaki Chatbot'u (günlük misafir kotası dahilinde, `session_key` ile) hemen kullanabilmeli; geçmiş sohbetleri sol menüde tutulmalıdır. Kullanıcı kayıt olduğunda misafir oturumundaki sohbetler otomatik olarak yeni hesabına aktarılmalıdır.
+4. **Hata Toleransı ve Yedekli AI Yanıtı:**
+   * Gemini API veya Riot API zaman aşımına uğradığında ya da anahtar tanımlı olmadığında sohbet ekranı asla `500 Internal Server Error` vermemeli; `RAGChunk` veritabanındaki yerel telemetri üzerinden deterministik bir koçluk yanıtı ve görsel kompozisyon kartı döndürmelidir.
 
 ---
 
-## 6. Test ve Doğrulama Zorunluluğu
+## 3. Arayüz (UI), Generative UI ve Çift Dil (TR / EN) Kuralları
 
-Kod tabanında yapılan her değişiklikten sonra commit atılmadan önce aşağıdaki doğrulama adımları eksiksiz çalıştırılmalıdır:
+1. **Görsel Kart Zenginliği (Generative UI):**
+   * AI Koç bir kompozisyondan bahsettiğinde yalnızca metin yazmamalı; `card_builder.py` üzerinden o kompozisyonun **şampiyon ikonlarını, yıldızlarını, BiS eşyalarını, 4x7 tahta dizilimini ve tek tıkla Team Planner Kodu Kopyalama butonunu** içeren `partials/comp_card.html` bileşenini mesajın altına eklemelidir.
+2. **Yüksek Kontrastlı Hextech Koyu Tema:**
+   * Zemin rengi `#0a0e17`, yüzeyler `#121722` / `#0d121c`, kenarlıklar `#222d42` ve vurgu rengi `#f0c374` (Hextech Altını) olarak korunmalıdır. Soluk gri metinler (`text-zinc-500`) kullanılmamalıdır.
+3. **Çift Dilli (TR / EN) Tam Destek:**
+   * Hem arayüz hem de AI Koç yanıtları kullanıcının seçtiği dile (`tr` veya `en`) göre çalışmalıdır.
 
-```powershell
-# 1. Tüm birim testlerinin geçtiğini doğrula
-python -m pytest tests/ -v
+---
 
-# 2. Tam veri hattını çalıştırarak docs/ çıktılarını ve RAG dosyalarını yeniden üret
-python -m src.main --force
-```
+## 4. Güvenlik, Ortam Değişkenleri ve Git Kuralları
+
+1. **`main` Dalı Koruması:**
+   * Riot Production API Key incelemesi süresince `main` dalındaki statik GitHub Pages yapısı bozulmamalı; tüm Django geliştirmeleri `v2-chat-platform` dalında yapılmalıdır.
+2. **Gizli Anahtarlar ve `.env`:**
+   * `DJANGO_SECRET_KEY`, `GEMINI_API_KEY`, `RIOT_API_KEY` ve `DATABASE_URL` kesinlikle kod içine gömülmemeli, ortam değişkenlerinden okunmalıdır.
+3. **Satır Sonu (LF) ve Test Zorunluluğu:**
+   * Tüm dosyalar UTF-8 ve `\n` (LF) satır sonuyla kaydedilmeli; her görev (task) sonunda hem mevcut `pytest` testleri hem de Django testleri (`python manage.py test`) çalıştırılarak doğrulanmalıdır.
