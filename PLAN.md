@@ -16,14 +16,15 @@ Bu belge, **`v2-chat-platform`** dalında geliştirilecek **Django Chat-First TF
 
 ## Uygulama Görevleri (Sırasıyla Verilecek Tasklar)
 
-### 🔹 TASK 1: Django 5.x Proje İskeleti, Ayarlar ve Veritabanı Modelleri (ORM)
-* **Hedef:** Django projesini (`config/` ve `apps/`) kurmak ve [`DATABASE.md`](file:///C:/Users/besir_secilmis/.gemini/antigravity/scratch/tft-meta-analyzer/DATABASE.md) içindeki tüm tabloları oluşturup ilk migration'ları çalıştırmak.
-* **Yapılacaklar:**
-  1. `requirements.txt` dosyasına `Django>=5.1`, `uvicorn`, `whitenoise` paketlerinin eklenmesi ve kurulması.
-  2. `manage.py`, `config/settings.py`, `config/urls.py`, `config/asgi.py` dosyalarının oluşturulması (`/riot.txt` uç noktası dahil).
-  3. `apps/core`, `apps/accounts`, `apps/telemetry`, `apps/riot_sync` ve `apps/chat` uygulamalarının oluşturulması.
-  4. `UserProfile`, `PatchSnapshot`, `RAGChunk`, `PlayerMatchCache`, `ChatSession`, `ChatMessage` ve `RateLimitLog` modellerinin (`models.py`) ve Django Admin (`/admin`) panellerinin kodlanması.
-  5. `python manage.py makemigrations` ve `python manage.py migrate` komutlarıyla veritabanının ayağa kaldırılması ve model birim testlerinin yazılması.
+### 🔹 TASK 1: Django 5.x Proje İskeleti, Ayarlar ve Veritabanı Modelleri (ORM) [TAMAMLANDI]
+* **Durum:** ✅ Tamamlandı (`af0e292`).
+* **Gerçekleştirilenler:**
+  - Django 6.1 (5.x+), `whitenoise` ve `pytest-django` paketleri kuruldu ve `requirements.txt`'e eklendi.
+  - `config/settings.py`, `config/urls.py`, `config/asgi.py`, `config/wsgi.py` ve `manage.py` yapılandırıldı.
+  - Domain doğrulama için `/riot.txt` uç noktası (`55016fcd-fe08-40f7-bf33-18a2dbc82a60`) eklendi.
+  - 5 modüler uygulama (`apps.core`, `apps.accounts`, `apps.telemetry`, `apps.riot_sync`, `apps.chat`) oluşturuldu.
+  - 7 ana tablo (`UserProfile`, `PatchSnapshot`, `RAGChunk`, `PlayerMatchCache`, `ChatSession`, `ChatMessage`, `RateLimitLog`) ve Django `/admin` panelleri kodlandı.
+  - İlk migration'lar çalıştırıldı, `tests/test_django_models.py` birim testleri yazıldı ve 13 testin tamamı başarıyla geçti.
 
 ---
 
