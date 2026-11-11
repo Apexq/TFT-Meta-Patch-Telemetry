@@ -47,12 +47,13 @@ class AICoachLLMService:
 
         system_instruction = (
             "Sen elit bir TFT Set 18 Challenger Koçusun. "
-            "Kullanıcıların sorularına profesyonel, doğrudan ve hedefe yönelik yanıt verirsin. "
-            "ÇOK ÖNEMLİ KURAL: Kullanıcı kısa, net bir soru sorduysa (örneğin 'Yasuo var mı bu sette?', 'Guinsoo kime verilir?', 'Bu yama ne zaman geldi?'), "
-            "asla lafı uzatma, gereksiz uzun paragraflar ve zorlama taktikler yazma. Doğrudan 1-2 net cümleyle cevap ver (Örn: 'Hayır, Yasuo TFT Set 18 şampiyon havuzunda yer almıyor. Benzer yakın dövüş taşıyıcısı olarak Master Yi veya Rengar tercih edebilirsin.'). "
-            "Sadece kullanıcı özellikle 'nasıl oynanır', 'rehber ver', 'detaylı analiz et', 'geçiş planı çıkar' gibi kapsamlı strateji istediğinde detaylı maddeleme yap. "
-            "Gereksiz dolgu metinlerinden ve uzun selamlardan kaçın, samimi ve net ol. "
-            "Eklentiler için asla sayısal kazanma oranı/sıralama yazma (Riot politikası); S/A/B/C kademelerini kullan."
+            "Kullanıcıların sorularına yapay zekâ olarak tamamen özgür, profesyonel, bağlama uygun ve doğal bir koçluk tavsiyesi verirsin. "
+            "KURAL VE İLKELER:\n"
+            "1. Doğallık & Esneklik: Kullanıcıyı her seferinde aynı şablonla veya zorlama kompozisyon kartı yönlendirmesiyle boğma. Soruya en doğal ve mantıklı şekilde yaklaş.\n"
+            "2. Kısa/Faydalı Sorular: Kullanıcı 'Yasuo var mı?', 'Guinsoo kime verilir?' gibi net bir şey sorduysa, 1-2 samimi ve net cümleyle doğrudan yanıtla.\n"
+            "3. Strateji & 'Nasıl Oynanır' Soruları: Kullanıcı 'nasıl oynanmalı', 'rehber ver', 'erken aşamada ne yapmalıyım' dediğinde; Seviye temposunu (örn. ne zaman 7'ye basıp slow roll yapılacağı), ana taşıyıcıları, kritik eşyaları ve tank hattını akıcı bir dille anlat.\n"
+            "4. Serbest Öneriler: Telemetri bağlamındaki verileri mutlak kanun gibi dikte etme; oyuncunun oyun tarzına göre alternatif öneriler (örneğin 'Eğer lobi çok agresifse 6'da toparlanabilirsin' gibi) sun.\n"
+            "5. Eklenti İstatistikleri: Riot geliştirici kuralları gereği sayısal eklenti kazanma yüzdesi veya ortalama sıra yazma; harf kademelerini (S/A/B/C Tier) ve sinerjileri kullan."
         )
 
         user_prompt = (
@@ -91,7 +92,8 @@ class AICoachLLMService:
                                 "success": True,
                             }
             except Exception as e:
-                # Fallback to local deterministic response on any network or quota error
+                import logging
+                logging.getLogger("apps.chat").warning(f"Gemini API call failed, falling back to local engine: {e}")
                 pass
 
         # Smart Deterministic Telemetry Fallback
@@ -118,29 +120,20 @@ class AICoachLLMService:
         encounters = [c for c in ui_cards if c.get("card_type") == "encounter"]
 
         if lang == "tr":
-            lines = [f"**TFT Set 18 (Yama 18.6) Koçluk Analizi:**\n"]
+            lines = [f"**TFT Set 18 (Yama 18.6) Koçluk Notu:**\n"]
             if comps:
-                lines.append(f"Sorun için Master+ verilerinde en yüksek performansı gösteren kompozisyonlar şunlardır:")
+                lines.append(f"İlgilendiğin strateji için Master+ öne çıkan veriler:")
                 for c in comps[:2]:
-                    lines.append(f"• **{c.get('comp_name')} ({c.get('tier')} Tier)** — Tempo: `{c.get('levelling')}`, Ort. Sıralama: `#{c.get('avg_placement')}`, İlk 4: `%{c.get('top4_rate')}`.")
+                    lines.append(f"• **{c.get('comp_name')} ({c.get('tier')} Tier)** — Seviye temposu: `{c.get('levelling')}`.")
                     if c.get("carry_builds"):
-                        carries = ", ".join(f"{cb.get('unit_name')} ({len(cb.get('items', []))} BiS)" for cb in c.get("carry_builds"))
+                        carries = ", ".join(f"{cb.get('unit_name')}" for cb in c.get("carry_builds"))
                         lines.append(f"  *Taşıyıcılar:* {carries}")
-                lines.append("\n*Aşağıdaki kompozisyon kartından 4x7 tahta dizilimini açabilir ve tek tıkla oyun içi Team Planner kodunu kopyalayabilirsin.*")
-
             elif augments:
-                lines.append(f"Eklenti seçimleri için önerilen S-Tier eklentiler:")
-                for a in augments[:3]:
-                    lines.append(f"• **{a.get('name')} ({a.get('tier')} Tier, {a.get('rarity')})** — Aşama: {', '.join(a.get('rounds', []))}. Açıklama: {a.get('desc')}")
-
-            elif encounters:
-                lines.append(f"Set 18 Karşılaşma (Portal) taktik rehberi:")
-                for enc in encounters[:2]:
-                    lines.append(f"• **{enc.get('name')} ({enc.get('tempo_rating')})**: {enc.get('strategy_tr')}")
-
+                lines.append(f"Öne çıkan eklentiler:")
+                for a in augments[:2]:
+                    lines.append(f"• **{a.get('name')} ({a.get('tier')} Tier)**: {a.get('desc')}")
             else:
-                lines.append(f"'{query}' sorusuna ilişkin mevcut Yama 18.6 telemetrisi:")
-                for ch in retrieved_chunks[:3]:
+                for ch in retrieved_chunks[:2]:
                     lines.append(f"• {ch.get('title_tr')}: {ch.get('content_text')}")
 
             return "\n".join(lines)
