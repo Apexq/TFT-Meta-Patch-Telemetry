@@ -15,6 +15,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 ROOT_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = ROOT_DIR / "templates"
 DOCS_DIR = ROOT_DIR / "docs"
+RIOT_VERIFICATION_CODE = "55016fcd-fe08-40f7-bf33-18a2dbc82a60"
 
 
 class DashboardBuilder:
@@ -38,6 +39,9 @@ class DashboardBuilder:
 
         nojekyll_path = DOCS_DIR / ".nojekyll"
         nojekyll_path.write_text("", encoding="utf-8")
+
+        riot_txt_path = DOCS_DIR / "riot.txt"
+        riot_txt_path.write_text(RIOT_VERIFICATION_CODE, encoding="utf-8")
 
         summary_md = self.build_step_summary_markdown(full_report)
         summary_path = DOCS_DIR / "STEP_SUMMARY.md"
