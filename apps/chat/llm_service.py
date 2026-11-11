@@ -19,7 +19,7 @@ class AICoachLLMService:
     Supports Google Gemini API with smart RAG context injection and graceful degradation.
     """
 
-    MODEL_NAME = "gemini-3.5-flash"
+    MODEL_NAME = "gemini-3.1-flash-lite"
 
     @classmethod
     def get_api_key(cls) -> Optional[str]:
@@ -67,8 +67,8 @@ class AICoachLLMService:
                     "contents": [{"parts": [{"text": user_prompt}]}],
                     "systemInstruction": {"parts": [{"text": system_instruction}]},
                     "generationConfig": {
-                        "temperature": 0.3,
-                        "maxOutputTokens": 1024,
+                        "temperature": 0.4,
+                        "maxOutputTokens": 2048,
                     },
                 }
 
@@ -78,7 +78,7 @@ class AICoachLLMService:
                     headers={"Content-Type": "application/json"},
                     method="POST",
                 )
-                with urllib.request.urlopen(req, timeout=12) as resp:
+                with urllib.request.urlopen(req, timeout=20) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
                     candidates = data.get("candidates", [])
                     if candidates:
