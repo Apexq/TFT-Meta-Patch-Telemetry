@@ -184,11 +184,11 @@ class RAGBuilder:
             name_tr = a.get("name")
             rarity = a.get("rarity")
             rounds = ", ".join(a.get("rounds", []))
+            tags = ", ".join(a.get("tags", [])) or "Flex"
             synergies = ", ".join(s.get("title_en") or s.get("title", "") for s in a.get("synergy_comps", []))
             text = (
                 f"[Augment] {name_en} (TR: {name_tr}), {rarity} tier augment (Stages: {rounds}). "
-                f"Master+ Tier {a.get('tier')} — Avg placement #{a.get('avg_place')}, Pick rate {a.get('pick_rate')}%, "
-                f"Top 4%: {a.get('top4_rate')}%, Win rate: {a.get('win_rate')}%. "
+                f"Curated Rating: {a.get('tier')} Tier, Tactical Role: {tags}. "
                 f"Description: {a.get('desc_en')} (TR: {a.get('desc')}). "
                 f"Best synergistic compositions: {synergies or '-'}."
             )
