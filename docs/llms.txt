@@ -1,6 +1,6 @@
 # TFT Set 18 Meta & Patch Telemetry
 
-> Automatically updated Teamfight Tactics Set 18 knowledge base for live patch 18.6 (PBE 18.7 (PBE)). Master+ compositions, carry best-in-slot items, item and champion tier lists, CommunityDragon patch diffs, regional Challenger leaderboards and official in-game Team Planner codes. Last generated: 2026-11-10 14:33 UTC.
+> Automatically updated Teamfight Tactics Set 18 knowledge base for live patch 18.6 (PBE 18.7 (PBE)). Master+ compositions, carry best-in-slot items, item and champion tier lists, CommunityDragon patch diffs, regional Challenger leaderboards and official in-game Team Planner codes. Last generated: 2026-11-11 05:20 UTC.
 
 Attribution: Master+ match clustering, leaderboards and item telemetry courtesy of MetaTFT.com (used with permission). Patch data via CommunityDragon and the Riot Games API. Not endorsed by Riot Games.
 
