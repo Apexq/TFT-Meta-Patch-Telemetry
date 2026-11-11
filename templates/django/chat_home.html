@@ -198,6 +198,7 @@
 {% block extra_scripts %}
 <script>
   let currentCoachMode = 'META_COACH';
+  let currentSessionId = '{{ current_session.id|default:"" }}';
 
   function setCoachMode(mode, label) {
     currentCoachMode = mode;
@@ -248,9 +249,10 @@
         "Content-Type": "application/json",
         "X-CSRFToken": "{{ csrf_token }}"
       },
-      body: JSON.stringify({ query: query, mode: currentCoachMode })
+      body: JSON.stringify({ query: query, mode: currentCoachMode, session_id: currentSessionId })
     }).then(res => res.json()).then(data => {
       loadingBubble.remove();
+      currentSessionId = data.session_id;
       const msg = data.message;
       
       const botMsg = document.createElement('div');

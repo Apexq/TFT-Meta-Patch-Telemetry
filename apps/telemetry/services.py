@@ -93,8 +93,12 @@ class TelemetryRAGService:
                 elif tok in content:
                     score += 1.5
 
-            # Item component query booster
-            if selected_items and ch["chunk_type"] == "composition":
+        # Comp / Hero / Unit generic query boosters
+        if any(w in norm_query for w in ("comp", "komp", "hero", "sampiyon", "birim", "tahta", "erken", "level", "2 le", "2le")):
+            if ch["chunk_type"] == "composition":
+                score += 10.0
+            elif ch["chunk_type"] == "champion":
+                score += 4.0
                 payload = ch.get("ui_card_payload") or {}
                 comp_items = payload.get("comp_item_ids", [])
                 for it in selected_items:

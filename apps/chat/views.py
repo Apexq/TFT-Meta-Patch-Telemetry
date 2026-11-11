@@ -64,9 +64,16 @@ def send_message_view(request):
         content_markdown=query,
     )
 
+    # If query is short or refers to previous comp (e.g. "compta hangi herolar var"), augment query with previous context
+    effective_query = query
+    recent_messages = session.messages.filter(role="user").exclude(id=user_msg.id).order_by("-created_at")[:2]
+    if recent_messages.exists() and any(w in query.lower() for w in ("compta", "bu comp", "tahtada", "erken", "hero", "hangi")):
+        prev_text = " ".join(m.content_markdown for m in recent_messages)
+        effective_query = f"{prev_text} {query}"
+
     # Retrieve matching RAG chunks & Generative UI card payloads
     rag_result = TelemetryRAGService.retrieve_chunks_and_cards(
-        query=query,
+        query=effective_query,
         top_k=6,
         preferred_lang="tr",
         selected_items=selected_items,
