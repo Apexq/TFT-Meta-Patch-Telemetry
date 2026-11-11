@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}TFT Set 18 AI Koç & Meta Asistanı (Yama {{ active_snapshot.patch_label|default:"18.6" }}){% endblock %}
+
+{% block content %}
+<!-- LEFT SIDEBAR: CHAT SESSIONS & MODES -->
+<aside class="w-64 sm:w-72 bg-[#0c1018] border-r border-[#1e2738] flex flex-col shrink-0 z-20">
+  <!-- Sidebar Header: New Chat Button -->
+  <div class="p-3 border-b border-[#1e2738]">
+    <a href="{% url 'core:home' %}" class="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-[#f0c374]/20 hover:from-amber-500/30 hover:to-[#f0c374]/30 border border-[#f0c374]/40 text-[#f0c374] font-bold text-xs transition-all shadow-sm">
+      <span class="text-base leading-none">&plus;</span>
+      <span class="lang-tr">Yeni Koçluk Sohbeti</span>
+      <span class="lang-en">New Coaching Chat</span>
+    </a>
+  </div>
+
+  <!-- Coaching Modes Quick Pills -->
+  <div class="p-3 border-b border-[#1e2738] space-y-1">
+    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5 px-1">
+      <span class="lang-tr">Koçluk Modları</span><span class="lang-en">Coaching Modes</span>
+    </span>
+    <button type="button" onclick="setCoachMode('META_COACH', 'Genel Meta Koçu')"
+      class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-200 hover:bg-[#161e2e] hover:text-[#f0c374] transition-colors text-left">
+      <span>👑</span>
+      <span class="lang-tr">Genel Meta &amp; Komp</span>
+      <span class="lang-en">General Meta &amp; Comps</span>
+    </button>
+    <button type="button" onclick="setCoachMode('OPENER_BUILDER', 'Elimdekilerle Ne Oynarım?')"
+      class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-200 hover:bg-[#161e2e] hover:text-[#f0c374] transition-colors text-left">
+      <span>🎲</span>
+      <span class="lang-tr">Elimdeki Eşyayla Ne Gider?</span>
+      <span class="lang-en">What to Play With My Items</span>
+    </button>
+    <button type="button" onclick="setCoachMode('POST_GAME', 'Riot ID Maç Sonu Analizi')"
+      class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-200 hover:bg-[#161e2e] hover:text-[#f0c374] transition-colors text-left">
+      <span>🔍</span>
+      <span class="lang-tr">Maç Sonu Hata Analizi</span>
+      <span class="lang-en">Post-Game Match Review</span>
+    </button>
+  </div>
+
+  <!-- Recent Chat Sessions History -->
+  <div class="flex-1 overflow-y-auto p-2 space-y-1" id="chat-history-list">
+    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-2 py-1">
+      <span class="lang-tr">Geçmiş Sohbetler</span><span class="lang-en">Recent Chats</span>
+    </span>
+    {% for sess in chat_sessions %}
+    <a href="?session={{ sess.id }}" class="block px-2.5 py-2 rounded-lg text-xs text-slate-300 hover:bg-[#161e2e] hover:text-white transition-colors truncate {% if current_session and current_session.id == sess.id %}bg-[#161e2e] text-[#f0c374] border border-[#f0c374]/30{% endif %}">
+      <span class="mr-1.5">💬</span>{{ sess.title }}
+    </a>
+    {% empty %}
+    <p class="text-[11px] text-slate-400 px-2 py-2">
+      <span class="lang-tr">Henüz kaydedilmiş sohbet yok.</span>
+      <span class="lang-en">No saved chats yet.</span>
+    </p>
+    {% endfor %}
+  </div>
+
+  <!-- Sidebar Footer: User / Guest Quota Badge -->
+  <div class="p-3 border-t border-[#1e2738] bg-[#090d15] text-xs">
+    <div class="flex items-center justify-between">
+      <div class="truncate">
+        <span class="text-white font-semibold text-xs block truncate">{{ user_display }}</span>
+        <span class="text-[10px] text-slate-400 mono">Kalan Kota: <strong class="text-emerald-400">{{ quota_left }}</strong></span>
+      </div>
+      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#161e2e] text-[#f0c374] border border-[#f0c374]/30 mono">{{ plan_tier }}</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CHAT & DRAWERS AREA -->
+<main class="flex-1 flex flex-col bg-[#0a0e17] overflow-hidden relative">
+  <!-- Top Bar: Live Drawers Shortcuts -->
+  <header class="h-12 border-b border-[#1e2738] bg-[#0c1018] px-4 flex items-center justify-between shrink-0 z-10">
+    <div class="flex items-center gap-2">
+      <h1 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+        <span class="text-[#f0c374]">⚔️</span>
+        <span class="lang-tr">TFT Set 18 AI Koç</span>
+        <span class="lang-en">TFT Set 18 AI Coach</span>
+      </h1>
+      <span id="active-mode-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-[#f0c374] border border-[#f0c374]/30 mono">
+        Genel Meta Koçu
+      </span>
+    </div>
+
+    <!-- Quick Drawer Launchers -->
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <button type="button" onclick="openDrawer('Set 18 Master+ Meta Kompozisyonları', '{% url 'core:drawer_meta' %}')"
+        class="px-2 sm:px-2.5 py-1 rounded bg-[#121722] hover:bg-[#182030] border border-[#222d42] hover:border-[#f0c374]/50 text-slate-200 text-[11px] font-semibold transition-colors flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#f0c374]"></span>
+        <span class="hidden sm:inline">Meta</span> Komplar
+      </button>
+
+      <button type="button" onclick="openDrawer('Set 18 Eklenti (Augment) Rehberi', '{% url 'core:drawer_augments' %}')"
+        class="px-2 sm:px-2.5 py-1 rounded bg-[#121722] hover:bg-[#182030] border border-[#222d42] hover:border-amber-400/50 text-slate-200 text-[11px] font-semibold transition-colors flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+        Eklentiler
+      </button>
+
+      <button type="button" onclick="openDrawer('Set 18 Karşılaşmalar &amp; Dükkân Tılsımları', '{% url 'core:drawer_mechanics' %}')"
+        class="px-2 sm:px-2.5 py-1 rounded bg-[#121722] hover:bg-[#182030] border border-[#222d42] hover:border-purple-400/50 text-slate-200 text-[11px] font-semibold transition-colors flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+        <span class="hidden sm:inline">Set 18</span> Mekanikler
+      </button>
+    </div>
+  </header>
+
+  <!-- Chat Messages Stream Container -->
+  <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5" id="chat-stream">
+    {% if not chat_messages %}
+    <!-- Hero / Welcome Zero-State -->
+    <div class="max-w-2xl mx-auto my-auto text-center py-8">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400/20 to-purple-500/20 border border-[#f0c374]/40 flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <span class="text-3xl">⚔️</span>
+      </div>
+      <h2 class="text-xl sm:text-2xl font-black text-white mb-2">
+        <span class="lang-tr">TFT Set 18 Kişisel Yapay Zekâ Koçun</span>
+        <span class="lang-en">Your Personal TFT Set 18 AI Coach</span>
+      </h2>
+      <p class="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto mb-6 leading-relaxed">
+        <span class="lang-tr">Yama {{ active_snapshot.patch_label|default:"18.6" }} Master+ verileri, BiS eşyalar, 4x7 tahta dizilimi ve eklenti sinerjileriyle canlı analiz yap. Sorunu yaz veya sesli sor!</span>
+        <span class="lang-en">Analyze live Patch {{ active_snapshot.patch_label|default:"18.6" }} Master+ clustered data, BiS items, 4x7 boards and augment synergies. Ask via text or voice!</span>
+      </p>
+
+      <!-- Preset Suggestion Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left max-w-xl mx-auto">
+        <button type="button" onclick="askPresetQuestion('Guinsoo ile hangi comp gider?')"
+          class="p-3 rounded-xl bg-[#0d121c] hover:bg-[#161e2e] border border-[#1e2738] hover:border-[#f0c374]/60 text-xs text-slate-200 transition-all group">
+          <div class="font-bold text-white group-hover:text-[#f0c374] flex items-center justify-between">
+            <span>Guinsoo Eşya Analizi</span>
+            <span class="text-slate-400 group-hover:text-[#f0c374]">&rarr;</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5">Guinsoo's Rageblade için Yama 18.6'da en iyi 3 comp nedir?</p>
+        </button>
+
+        <button type="button" onclick="askPresetQuestion('4 Meclis LeBlanc nasıl oynanır, seviye basma temposu nedir?')"
+          class="p-3 rounded-xl bg-[#0d121c] hover:bg-[#161e2e] border border-[#1e2738] hover:border-[#f0c374]/60 text-xs text-slate-200 transition-all group">
+          <div class="font-bold text-white group-hover:text-[#f0c374] flex items-center justify-between">
+            <span>4 Meclis LeBlanc Rehberi</span>
+            <span class="text-slate-400 group-hover:text-[#f0c374]">&rarr;</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5">Fast 8 roll ve 4x7 tahta dizilimini göster.</p>
+        </button>
+
+        <button type="button" onclick="askPresetQuestion('Altın Şöleni karşılaşması gelince hangi kompozisyonu oynamalıyım?')"
+          class="p-3 rounded-xl bg-[#0d121c] hover:bg-[#161e2e] border border-[#1e2738] hover:border-[#f0c374]/60 text-xs text-slate-200 transition-all group">
+          <div class="font-bold text-white group-hover:text-[#f0c374] flex items-center justify-between">
+            <span>Set 18 Karşılaşma (Portal)</span>
+            <span class="text-slate-400 group-hover:text-[#f0c374]">&rarr;</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5">Altın Şöleni'nde ekonomi temposu nasıl olmalı?</p>
+        </button>
+
+        <button type="button" onclick="askPresetQuestion('Yama 18.6 da en yüksek kazanma oranlı S-Tier eklentiler hangileri?')"
+          class="p-3 rounded-xl bg-[#0d121c] hover:bg-[#161e2e] border border-[#1e2738] hover:border-[#f0c374]/60 text-xs text-slate-200 transition-all group">
+          <div class="font-bold text-white group-hover:text-[#f0c374] flex items-center justify-between">
+            <span>S-Tier Eklentiler (Augments)</span>
+            <span class="text-slate-400 group-hover:text-[#f0c374]">&rarr;</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5">2-1'de hangi altın eklentiyi almalıyım?</p>
+        </button>
+      </div>
+    </div>
+    {% else %}
+      {% for msg in chat_messages %}
+        {% include "partials/message_bubble.html" with message=msg %}
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <!-- Bottom Message Input Dock -->
+  <footer class="p-3 sm:p-4 bg-[#0c1018] border-t border-[#1e2738] z-10 shrink-0">
+    <div class="max-w-3xl mx-auto relative">
+      <form id="chat-form" onsubmit="handleChatSubmit(event)" class="flex items-center gap-2 bg-[#121722] border border-[#222d42] focus-within:border-[#f0c374]/80 rounded-2xl p-1.5 transition-all shadow-inner">
+        <!-- Voice Input Microphone Button -->
+        <button type="button" id="voice-btn" onclick="toggleVoiceInput()" title="Sesli Soru Sor (Mikrofon)"
+          class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z"/></svg>
+        </button>
+
+        <!-- Main Query Input -->
+        <input id="chat-input" type="text" autocomplete="off"
+          placeholder="TFT Set 18 hakkında bir soru sor (Örn: Guinsoo ile ne oynanır, LeBlanc nasıl oynanır?)..."
+          class="flex-1 bg-transparent border-0 outline-none px-2 py-1.5 text-xs sm:text-sm text-white placeholder-slate-400">
+
+        <!-- Send Button -->
+        <button type="submit" id="send-btn"
+          class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#f0c374] hover:from-amber-600 hover:to-[#e5b35c] text-slate-950 font-bold text-xs shrink-0 transition-all shadow flex items-center gap-1.5">
+          <span class="lang-tr">Sor</span><span class="lang-en">Ask</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </form>
+    </div>
+  </footer>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  let currentCoachMode = 'META_COACH';
+
+  function setCoachMode(mode, label) {
+    currentCoachMode = mode;
+    document.getElementById('active-mode-badge').innerText = label;
+  }
+
+  function askPresetQuestion(text) {
+    document.getElementById('chat-input').value = text;
+    handleChatSubmit(new Event('submit'));
+  }
+
+  function handleChatSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const query = input.value.trim();
+    if (!query) return;
+
+    // Render user message bubble immediately
+    const stream = document.getElementById('chat-stream');
+    const userBubble = document.createElement('div');
+    userBubble.className = 'flex justify-end';
+    userBubble.innerHTML = `
+      <div class="max-w-xl bg-gradient-to-r from-amber-500/20 to-[#f0c374]/20 border border-[#f0c374]/40 rounded-2xl rounded-tr-sm p-3 text-xs sm:text-sm text-white shadow-sm">
+        ${query}
+      </div>
+    `;
+    stream.appendChild(userBubble);
+    input.value = '';
+    stream.scrollTop = stream.scrollHeight;
+
+    // Loading indicator bubble
+    const loadingBubble = document.createElement('div');
+    loadingBubble.id = 'bot-loading-indicator';
+    loadingBubble.className = 'flex justify-start';
+    loadingBubble.innerHTML = `
+      <div class="bg-[#121722] border border-[#222d42] rounded-2xl rounded-tl-sm p-3 text-xs text-slate-400 flex items-center gap-2">
+        <span class="animate-spin text-[#f0c374]">&#9696;</span>
+        <span>AI Koç telemetriyi analiz ediyor...</span>
+      </div>
+    `;
+    stream.appendChild(loadingBubble);
+    stream.scrollTop = stream.scrollHeight;
+
+    // Dispatches to chat endpoint
+    fetch("{% url 'chat:ping' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: JSON.stringify({ query: query, mode: currentCoachMode })
+    }).then(res => res.json()).then(data => {
+      loadingBubble.remove();
+      // Temporary display until Task 4 streaming is attached
+      const botMsg = document.createElement('div');
+      botMsg.className = 'flex justify-start';
+      botMsg.innerHTML = `
+        <div class="max-w-2xl bg-[#0d121c] border border-[#222d42] rounded-2xl rounded-tl-sm p-4 text-xs sm:text-sm text-slate-100 shadow">
+          <p class="leading-relaxed mb-2 font-medium">Yama {{ active_snapshot.patch_label|default:"18.6" }} telemetrisi incelendi. Sorduğun soru için Task 4 canlı AI Koç motoru yanıt hazırlıyor.</p>
+          <span class="text-[11px] text-[#f0c374] mono">Hedef: Task 4 Generative UI</span>
+        </div>
+      `;
+      stream.appendChild(botMsg);
+      stream.scrollTop = stream.scrollHeight;
+    }).catch(err => {
+      loadingBubble.remove();
+    });
+  }
+
+  // Voice Input Speech Recognition
+  function toggleVoiceInput() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert("Tarayıcınız sesli konuşmayı desteklemiyor. Chrome veya Edge kullanabilirsiniz.");
+      return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = document.documentElement.getAttribute('data-lang') === 'en' ? 'en-US' : 'tr-TR';
+    recognition.interimResults = false;
+
+    const voiceBtn = document.getElementById('voice-btn');
+    voiceBtn.classList.add('text-rose-500', 'animate-pulse');
+
+    recognition.onresult = function(event) {
+      const transcript = event.results[0][0].transcript;
+      document.getElementById('chat-input').value = transcript;
+      voiceBtn.classList.remove('text-rose-500', 'animate-pulse');
+    };
+
+    recognition.onerror = function() {
+      voiceBtn.classList.remove('text-rose-500', 'animate-pulse');
+    };
+
+    recognition.start();
+  }
+</script>
+{% endblock %}

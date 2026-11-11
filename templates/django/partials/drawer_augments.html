@@ -1,0 +1,37 @@
+<div class="space-y-4">
+  <div class="flex items-center justify-between">
+    <p class="text-xs text-slate-400">
+      <span class="lang-tr">Riot Geliştirici Politikalarıyla %100 Uyumlu 261 Eklenti</span>
+      <span class="lang-en">261 Set 18 Augments (Riot Policy Compliant)</span>
+    </p>
+    <span class="text-xs font-bold text-amber-400 mono">S / A / B / C Tier</span>
+  </div>
+
+  <div class="space-y-2.5">
+    {% for aug in augments|slice:":30" %}
+    <div class="bg-[#121722] border border-[#222d42] hover:border-[#f0c374]/50 rounded-xl p-3 transition-colors flex items-start gap-3">
+      <img src="{{ aug.icon }}" alt="{{ aug.name }}" class="w-9 h-9 rounded-lg border border-[#29364f] p-0.5 bg-[#0a0e17] shrink-0" onerror="this.style.display='none'">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 truncate">
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-black mono text-slate-950" style="background-color: {{ aug.tier_color|default:'#f0c374' }};">
+              {{ aug.tier }}
+            </span>
+            <span class="font-bold text-white text-xs truncate">
+              <span class="lang-tr">{{ aug.name }}</span>
+              <span class="lang-en">{{ aug.name_en|default:aug.name }}</span>
+            </span>
+          </div>
+          <span class="text-[10px] text-slate-400 mono shrink-0">{{ aug.rounds|join:", " }}</span>
+        </div>
+        <p class="text-[11px] text-slate-300 mt-1 line-clamp-2 leading-relaxed">
+          <span class="lang-tr">{{ aug.desc }}</span>
+          <span class="lang-en">{{ aug.desc_en|default:aug.desc }}</span>
+        </p>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-slate-400 text-sm">Eklenti verisi yüklenemedi.</p>
+    {% endfor %}
+  </div>
+</div>

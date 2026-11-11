@@ -1,0 +1,55 @@
+<div class="space-y-4">
+  <div class="flex items-center justify-between">
+    <p class="text-xs text-slate-400">
+      <span class="lang-tr">Yama {{ active_snapshot.patch_label }} Master+ Kümeleme Verisi</span>
+      <span class="lang-en">Patch {{ active_snapshot.patch_label }} Master+ Clustered Data</span>
+    </p>
+    <span class="text-xs font-bold text-[#f0c374] mono">{{ compositions|length }} Kompozisyon</span>
+  </div>
+
+  <div class="space-y-3">
+    {% for comp in compositions %}
+    <div class="bg-[#121722] border border-[#222d42] hover:border-[#f0c374]/50 rounded-xl p-3.5 transition-colors">
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded flex items-center justify-center font-bold text-xs mono
+            {% if comp.tier == 'S' %}bg-amber-500/20 text-[#f0c374] border border-[#f0c374]/40
+            {% elif comp.tier == 'A' %}bg-purple-500/20 text-purple-300 border border-purple-500/40
+            {% else %}bg-blue-500/20 text-blue-300 border border-blue-500/40{% endif %}">
+            {{ comp.tier }}
+          </span>
+          <h4 class="font-bold text-white text-sm">
+            <span class="lang-tr">{{ comp.comp_name }}</span>
+            <span class="lang-en">{{ comp.comp_name_en|default:comp.comp_name }}</span>
+          </h4>
+        </div>
+        <span class="text-[11px] font-semibold text-emerald-400 mono">#{{ comp.master_stats.avg_placement }}</span>
+      </div>
+
+      <!-- Units preview -->
+      <div class="flex flex-wrap items-center gap-1 mb-2.5">
+        {% for u in comp.units %}
+        <div class="relative w-8 h-8 rounded border cost-{{ u.cost }} overflow-hidden bg-slate-900">
+          <img src="{{ u.icon }}" alt="{{ u.name }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+          {% if u.is_carry %}
+          <span class="absolute top-0 left-0 bg-[#f0c374] text-slate-950 text-[7px] font-bold px-0.5 rounded-br">C</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Action: Ask AI Coach about this comp -->
+      <div class="flex items-center justify-between pt-2 border-t border-[#1c2536] text-[11px]">
+        <span class="text-slate-400 mono">{{ comp.levelling }}</span>
+        <button type="button"
+          onclick="askPresetQuestion('{{ comp.comp_name }} nasıl oynanır, seviye basma temposu nedir?')"
+          class="text-[#f0c374] hover:underline font-semibold flex items-center gap-1">
+          <span>AI Koç'a Sor &rarr;</span>
+        </button>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-slate-400 text-sm">Kompozisyon verisi yüklenemedi.</p>
+    {% endfor %}
+  </div>
+</div>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr" class="h-full bg-[#0a0e17]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}TFT Set 18 AI Koç & Meta Platform{% endblock %}</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- HTMX 2.0 CDN -->
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            hextech: {
+              gold: '#f0c374',
+              hover: '#e5b35c',
+              dark: '#0a0e17',
+              surface: '#121722',
+              card: '#0d121c',
+              border: '#222d42',
+              borderLight: '#29364f',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0e17; }
+    ::-webkit-scrollbar-thumb { background: #222d42; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b4d6e; }
+
+    .cost-1 { border-color: #94a3b8; }
+    .cost-2 { border-color: #10b981; }
+    .cost-3 { border-color: #0ea5e9; }
+    .cost-4 { border-color: #d946ef; }
+    .cost-5 { border-color: #f59e0b; }
+    .cost-6 { border-color: #ef4444; }
+
+    [data-lang="en"] .lang-tr { display: none !important; }
+    [data-lang="tr"] .lang-en { display: none !important; }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full text-slate-100 font-sans antialiased flex flex-col overflow-hidden" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+  <!-- Riot Production Legal Jibber Jabber Strip (Top Compact Banner) -->
+  <div class="bg-[#080b12] border-b border-[#1c2536] px-3 py-1 text-[11px] text-slate-400 flex items-center justify-between z-30 shrink-0">
+    <div class="flex items-center gap-2 truncate">
+      <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse"></span>
+      <span class="truncate">
+        <span class="lang-tr">TFT Set 18 Canlı Yama: <strong class="text-white">{{ active_snapshot.patch_label|default:"18.6" }}</strong></span>
+        <span class="lang-en">TFT Set 18 Live Patch: <strong class="text-white">{{ active_snapshot.patch_label|default:"18.6" }}</strong></span>
+      </span>
+      <span class="text-slate-600 hidden sm:inline">&bull;</span>
+      <span class="text-slate-400 hidden sm:inline truncate">Riot Developer Production Verification Active</span>
+    </div>
+    <div class="flex items-center gap-3 shrink-0">
+      <div class="inline-flex rounded bg-[#121722] p-0.5 border border-[#222d42] text-[10px] font-bold">
+        <button type="button" onclick="setGlobalLang('tr')" id="btn-lang-tr" class="px-2 py-0.5 rounded bg-[#f0c374] text-slate-950">TR</button>
+        <button type="button" onclick="setGlobalLang('en')" id="btn-lang-en" class="px-2 py-0.5 rounded text-slate-300 hover:text-white">EN</button>
+      </div>
+      <a href="/riot.txt" target="_blank" class="text-slate-400 hover:text-[#f0c374] mono text-[10px] underline">riot.txt</a>
+    </div>
+  </div>
+
+  <!-- Main Content Layout -->
+  <div class="flex-1 flex overflow-hidden relative">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Global Slide-Over Drawer Container (Slide from Right) -->
+  <div id="drawer-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden transition-opacity" onclick="closeDrawer()"></div>
+  <aside id="side-drawer" class="fixed inset-y-0 right-0 max-w-full w-full sm:w-[540px] lg:w-[680px] bg-[#0d121c] border-l border-[#222d42] z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+    <!-- Drawer Header -->
+    <div class="p-4 border-b border-[#222d42] flex items-center justify-between bg-[#121722]">
+      <div class="flex items-center gap-2.5">
+        <span class="w-2 h-4 rounded-sm bg-[#f0c374]"></span>
+        <h3 id="drawer-title" class="font-bold text-white text-base">Telemetri Çekmecesi</h3>
+      </div>
+      <button type="button" onclick="closeDrawer()" class="p-1.5 rounded-lg bg-[#0d121c] hover:bg-slate-800 border border-[#222d42] text-slate-400 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <!-- Drawer Dynamic HTMX Body -->
+    <div id="drawer-content" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+      <div class="flex items-center justify-center h-48 text-slate-400 text-sm">
+        <span class="animate-spin mr-2">&#9696;</span> Yükleniyor...
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    // Language Switcher
+    function setGlobalLang(lang) {
+      document.documentElement.setAttribute('data-lang', lang);
+      localStorage.setItem('tft_lang', lang);
+      const btnTr = document.getElementById('btn-lang-tr');
+      const btnEn = document.getElementById('btn-lang-en');
+      if (lang === 'tr') {
+        btnTr.className = 'px-2 py-0.5 rounded bg-[#f0c374] text-slate-950 font-bold';
+        btnEn.className = 'px-2 py-0.5 rounded text-slate-300 hover:text-white';
+      } else {
+        btnEn.className = 'px-2 py-0.5 rounded bg-[#f0c374] text-slate-950 font-bold';
+        btnTr.className = 'px-2 py-0.5 rounded text-slate-300 hover:text-white';
+      }
+    }
+    // Initialize language from storage
+    const savedLang = localStorage.getItem('tft_lang') || 'tr';
+    setGlobalLang(savedLang);
+
+    // Slide-Over Drawer Controls
+    function openDrawer(title, url) {
+      document.getElementById('drawer-title').innerText = title;
+      document.getElementById('drawer-backdrop').classList.remove('hidden');
+      const drawer = document.getElementById('side-drawer');
+      drawer.classList.remove('translate-x-full');
+      htmx.ajax('GET', url, { target: '#drawer-content', swap: 'innerHTML' });
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer-backdrop').classList.add('hidden');
+      document.getElementById('side-drawer').classList.add('translate-x-full');
+    }
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

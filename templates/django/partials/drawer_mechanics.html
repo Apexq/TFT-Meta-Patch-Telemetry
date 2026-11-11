@@ -1,0 +1,32 @@
+<div class="space-y-4">
+  <div class="flex items-center justify-between">
+    <p class="text-xs text-slate-400">
+      <span class="lang-tr">Set 18 İmza Mekaniği: 20 Karşılaşma (Portallar) &amp; Dükkân Tılsımları</span>
+      <span class="lang-en">Set 18 Encounters (Portals) &amp; Shop Charms</span>
+    </p>
+    <span class="text-xs font-bold text-purple-400 mono">Set 18</span>
+  </div>
+
+  <div class="space-y-2.5">
+    {% for enc in encounters %}
+    <div class="bg-[#121722] border border-[#222d42] hover:border-purple-500/50 rounded-xl p-3 transition-colors">
+      <div class="flex items-center justify-between gap-2 mb-1.5">
+        <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+          <span class="lang-tr">{{ enc.name }}</span>
+          <span class="lang-en">{{ enc.name_en|default:enc.name }}</span>
+        </h4>
+        <span class="px-2 py-0.5 rounded text-[10px] font-bold mono" style="background-color: {{ enc.tempo_color }}25; color: {{ enc.tempo_color }};">
+          {{ enc.tempo_rating }}
+        </span>
+      </div>
+      <p class="text-[11px] text-slate-300 leading-relaxed">
+        <span class="lang-tr">{{ enc.strategy_tr }}</span>
+        <span class="lang-en">{{ enc.strategy_en|default:enc.strategy_tr }}</span>
+      </p>
+    </div>
+    {% empty %}
+    <p class="text-slate-400 text-sm">Karşılaşma mekanikleri yüklenemedi.</p>
+    {% endfor %}
+  </div>
+</div>

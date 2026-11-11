@@ -38,13 +38,16 @@ Bu belge, **`v2-chat-platform`** dalında geliştirilecek **Django Chat-First TF
 
 ---
 
-### 🔹 TASK 3: Chat-First Ana Sayfa Tasarımı ve Yan Çekmeceler (`apps.core` + HTMX UI)
-* **Hedef:** Sitenin ana sayfasını (`/`) ChatGPT / Perplexity tarzı tam ekran bir **TFT Set 18 AI Koç** arayüzüne dönüştürmek.
-* **Yapılacaklar:**
-  1. `templates/django/base.html` ve `templates/django/chat_home.html` şablonlarının Hextech koyu temayla (`#0a0e17` zemin, `#f0c374` altın vurgu) hazırlanması.
-  2. **Sol Kenar Çubuğu (Sidebar):** "Yeni Sohbet Başlat" butonu, geçmiş sohbet oturumları (`ChatSession` listesi), hızlı mod seçiciler ve `TR / EN` dil değiştirici.
-  3. **Orta Sohbet Ekranı:** Karşılama ekranı, hazır strateji soru kartları, sesli soru sorma (Web Speech API mikrofon butonu) ve mesaj giriş çubuğu.
-  4. **Yandan Açılır Canlı Telemetri Çekmeceleri (Slide-Over Drawers):** Sohbetten çıkmadan sağ panelde tek tıkla açılan **Meta Tier List**, **Yama Buff/Nerf**, **Eklenti Rehberi** ve **Set 18 Karşılaşma/Tılsım** çekmeceleri.
+### 🔹 TASK 3: Chat-First Ana Sayfa Tasarımı ve Yan Çekmeceler (`apps.core` + HTMX UI) [TAMAMLANDI]
+* **Durum:** ✅ Tamamlandı.
+* **Gerçekleştirilenler:**
+  - `templates/django/base.html`: Hextech koyu tema (`#0a0e17` zemin, `#f0c374` altın), HTMX 2.0, Tailwind CSS, çift dilli (`TR/EN`) kontrol ve Riot `/riot.txt` bağlantısı hazırlandı.
+  - `templates/django/chat_home.html`: Tam ekran ChatGPT/Perplexity tarzı AI Koç ana sayfası kuruldu (Sol geçmiş sohbet oturumları listesi, hızlı koçluk modu butonları, kalan kota göstergesi, hazır strateji soru kartları, sesli soru sorma / Web Speech API mikrofon butonu ve mesaj girdi alanı).
+  - Sağdan açılan canlı telemetri çekmeceleri (Slide-Over Drawers) ve HTMX uç noktaları yazıldı:
+    - `/drawers/meta/`: Master+ Meta kompozisyonları ve tek tıkla AI Koç'a sorma butonu.
+    - `/drawers/augments/`: Riot kurallarıyla tam uyumlu 261 Eklenti listesi (S/A/B/C Tier).
+    - `/drawers/mechanics/`: Set 18 Karşılaşmaları (Portallar) ve Dükkân Tılsımları (Charms).
+  - `tests/test_chat_home_ui.py` arayüz ve çekmece testleri yazıldı ve 17 testin tamamı başarıyla geçti.
 
 ---
 
