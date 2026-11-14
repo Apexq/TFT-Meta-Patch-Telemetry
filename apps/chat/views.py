@@ -141,3 +141,29 @@ def message_feedback_view(request, message_id: int):
         return JsonResponse({"status": "saved", "feedback": vote})
 
     return JsonResponse({"error": "Geçersiz mesaj veya oy"}, status=400)
+
+
+@require_POST
+def delete_session_view(request, session_id):
+    """
+    Deletes an individual ChatSession and its cascading messages.
+    Strictly checks ownership for authenticated users and guest session keys.
+    Returns 403 on authorization failure, 404 if not found.
+    """
+    session = ChatSession.objects.filter(id=session_id).first()
+    if not session:
+        return JsonResponse({"error": "Sohbet oturumu bulunamadı."}, status=404)
+
+    # Strict Authorization Check
+    if request.user.is_authenticated:
+        if session.user != request.user:
+            return JsonResponse({"error": "Yetkisiz işlem: Bu sohbet oturumu size ait değil."}, status=403)
+    else:
+        session_key = request.session.session_key or ""
+        if not session_key or session.guest_session_key != session_key or session.user is not None:
+            return JsonResponse({"error": "Yetkisiz işlem: Bu misafir sohbeti size ait değil."}, status=403)
+
+    # Cascading deletion via models.CASCADE on ChatMessage
+    session.delete()
+    return JsonResponse({"status": "success", "session_id": str(session_id)})
+

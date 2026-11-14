@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.core.exceptions import ValidationError
 from apps.telemetry.models import PatchSnapshot
 from apps.chat.models import ChatSession
 
@@ -36,6 +37,25 @@ def chat_home_view(request):
         quota_left = 30
         plan_tier = "FREE"
 
+    # Historical Session Loading with strict authorization
+    session_id_param = request.GET.get("session")
+    current_session = None
+    chat_messages = []
+    if session_id_param:
+        try:
+            target_session = ChatSession.objects.filter(id=session_id_param).first()
+            if target_session:
+                if request.user.is_authenticated:
+                    if target_session.user == request.user:
+                        current_session = target_session
+                else:
+                    if session_key and target_session.guest_session_key == session_key and target_session.user is None:
+                        current_session = target_session
+                if current_session:
+                    chat_messages = list(current_session.messages.order_by("created_at"))
+        except (ValueError, TypeError, ValidationError):
+            pass
+
     context = {
         "active_snapshot": active_snapshot,
         "matcher_items": matcher_items,
@@ -43,8 +63,10 @@ def chat_home_view(request):
         "user_display": user_display,
         "quota_left": quota_left,
         "plan_tier": plan_tier,
-        "chat_messages": [],
+        "current_session": current_session,
+        "chat_messages": chat_messages,
     }
+
     return render(request, "chat_home.html", context)
 
 
