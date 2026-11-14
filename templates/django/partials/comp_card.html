@@ -37,34 +37,28 @@
   </div>
 
   <!-- Units & Mini BiS Items Bar -->
-  <div class="py-2.5 flex flex-wrap items-center gap-1.5">
+  <div class="py-2.5 flex flex-wrap items-start gap-2">
     {% for u in card.units %}
-    <div class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-md border cost-{{ u.cost }} overflow-hidden bg-slate-900 group" title="{{ u.name }}">
-      <img src="{{ u.icon }}" alt="{{ u.name }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
-      {% if u.is_carry %}
-      <span class="absolute top-0 left-0 bg-[#f0c374] text-slate-950 text-[7px] font-bold px-1 rounded-br">C</span>
-      {% endif %}
-      {% if u.is_three_star %}
-      <span class="absolute top-0 left-0 bg-amber-400 text-slate-950 text-[7px] font-bold px-1 rounded-br mono">3★</span>
+    <div class="flex flex-col items-center gap-1">
+      <div class="relative w-10 h-10 rounded-md border cost-{{ u.cost }} overflow-hidden bg-slate-900 group" title="{{ u.name }}">
+        <img src="{{ u.icon }}" alt="{{ u.name }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+        {% if u.is_carry %}
+        <span class="absolute top-0 left-0 bg-[#f0c374] text-slate-950 text-[7px] font-bold px-1 rounded-br">C</span>
+        {% endif %}
+        {% if u.is_three_star %}
+        <span class="absolute top-0 left-0 bg-amber-400 text-slate-950 text-[7px] font-bold px-1 rounded-br mono">3★</span>
+        {% endif %}
+      </div>
+      {% if u.bis_items %}
+      <div class="flex items-center gap-0.5">
+        {% for item in u.bis_items|slice:":3" %}
+        <img src="{{ item.icon }}" alt="{{ item.name }}" title="{{ item.name }}" class="w-3.5 h-3.5 rounded-sm border border-[#2a3750] object-cover bg-slate-900" onerror="this.style.display='none'">
+        {% endfor %}
+      </div>
       {% endif %}
     </div>
     {% endfor %}
   </div>
-
-  <!-- Carry BiS Item Tags -->
-  {% if card.carry_builds %}
-  <div class="pt-2 border-t border-[#1c2536] flex flex-wrap items-center gap-2 text-[10px]">
-    <span class="text-slate-400 font-semibold">Taşıyıcı BiS Eşyaları:</span>
-    {% for cb in card.carry_builds %}
-    <div class="inline-flex items-center gap-1 bg-[#0a0e17] px-2 py-0.5 rounded border border-[#1e2738]">
-      <span class="font-bold text-slate-200">{{ cb.unit_name }}:</span>
-      {% for item in cb.items %}
-      <span class="text-[#f0c374]">{{ item.name }}</span>{% if not forloop.last %}&bull;{% endif %}
-      {% endfor %}
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
 
   <!-- Stage Leveling & Roll Schedule (Task 5 Pivot Curve) -->
   {% if card.level_schedule %}
@@ -104,8 +98,7 @@
     <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">4&times;7 Hex Tahta (Üst: Ön Saf / Alt: Arka Saf)</div>
     <div class="space-y-1.5 min-w-[340px]">
       {% for row in card.board_grid %}
-      {% set row_idx = forloop.counter0 %}
-      <div class="flex items-center gap-1.5 {% if forloop.counter0 % 2 == 1 %}pl-4{% endif %}">
+      <div class="flex items-center gap-1.5 {% if forloop.counter|divisibleby:2 %}pl-4{% endif %}">
         {% for cell in row %}
         {% if cell %}
         <div class="relative w-8 h-8 rounded border cost-{{ cell.cost }} bg-slate-900 flex items-center justify-center shrink-0 shadow" title="{{ cell.name }}">

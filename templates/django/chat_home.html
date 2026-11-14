@@ -800,11 +800,20 @@
                     </button>
                   ` : ''}
                 </div>
-                <div class="py-2.5 flex flex-wrap items-center gap-1.5">
+                <div class="py-2.5 flex flex-wrap items-start gap-2">
                   ${(card.units || []).map(u => `
-                    <div class="relative w-9 h-9 rounded-md border cost-${u.cost} overflow-hidden bg-slate-900" title="${u.name}">
-                      <img src="${u.icon}" alt="${u.name}" class="w-full h-full object-cover" onerror="this.style.display='none'">
-                      ${u.is_carry ? '<span class="absolute top-0 left-0 bg-[#f0c374] text-slate-950 text-[7px] font-bold px-1 rounded-br">C</span>' : ''}
+                    <div class="flex flex-col items-center gap-1">
+                      <div class="relative w-10 h-10 rounded-md border cost-${u.cost} overflow-hidden bg-slate-900" title="${u.name}">
+                        <img src="${u.icon}" alt="${u.name}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                        ${u.is_carry ? '<span class="absolute top-0 left-0 bg-[#f0c374] text-slate-950 text-[7px] font-bold px-1 rounded-br">C</span>' : ''}
+                      </div>
+                      ${u.bis_items && u.bis_items.length > 0 ? `
+                        <div class="flex items-center gap-0.5">
+                          ${u.bis_items.slice(0, 3).map(item => `
+                            <img src="${item.icon}" alt="${item.name}" title="${item.name}" class="w-3.5 h-3.5 rounded-sm border border-[#2a3750] object-cover bg-slate-900" onerror="this.style.display='none'">
+                          `).join('')}
+                        </div>
+                      ` : ''}
                     </div>
                   `).join('')}
                 </div>

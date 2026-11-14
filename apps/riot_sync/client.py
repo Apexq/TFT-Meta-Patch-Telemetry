@@ -194,11 +194,14 @@ class RiotApiClient:
         platform = self.get_platform_region(region)
         url = (
             f"https://{platform}.api.riotgames.com"
-            f"/tft/league/v1/entries/by-puuid/{puuid}"
+            f"/tft/league/v1/by-puuid/{puuid}"
         )
         try:
             data = self._request(url)
         except RiotNotFoundError:
+            data = []
+        except RiotApiError as exc:
+            logger.warning(f"Non-fatal error fetching TFT rank for {puuid}: {exc}")
             data = []
 
         ranked_entry: Optional[Dict[str, Any]] = None

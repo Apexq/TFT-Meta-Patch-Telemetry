@@ -29,7 +29,7 @@
       <!-- Units preview -->
       <div class="flex flex-wrap items-center gap-1 mb-2.5">
         {% for u in comp.units %}
-        <div class="relative w-8 h-8 rounded border cost-{{ u.cost }} overflow-hidden bg-slate-900">
+        <div class="relative w-8 h-8 rounded border cost-{{ u.cost }} overflow-hidden bg-slate-900" title="{{ u.name }}">
           <img src="{{ u.icon }}" alt="{{ u.name }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
           {% if u.is_carry %}
           <span class="absolute top-0 left-0 bg-[#f0c374] text-slate-950 text-[7px] font-bold px-0.5 rounded-br">C</span>
@@ -37,6 +37,27 @@
         </div>
         {% endfor %}
       </div>
+
+      <!-- Carry BiS Items -->
+      {% if comp.carry_builds %}
+      <div class="mb-2.5 pt-2 border-t border-[#1c2536] space-y-1">
+        {% for cb in comp.carry_builds %}
+        <div class="flex items-center justify-between gap-2 bg-[#0a0e17] px-2 py-1 rounded border border-[#1e2738]">
+          <div class="flex items-center gap-1.5 min-w-0">
+            {% if cb.unit_icon %}
+            <img src="{{ cb.unit_icon }}" alt="{{ cb.unit_name }}" class="w-5 h-5 rounded border cost-{{ cb.unit_cost|default:4 }} object-cover shrink-0" onerror="this.style.display='none'">
+            {% endif %}
+            <span class="text-[10px] font-bold text-slate-200 truncate">{{ cb.unit_name }}</span>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            {% for item in cb.items %}
+            <img src="{{ item.icon }}" alt="{{ item.name }}" title="{{ item.name }}" class="w-4 h-4 rounded-sm border border-[#2a3750] object-cover" onerror="this.style.display='none'">
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
 
       <!-- Action: Ask AI Coach about this comp -->
       <div class="flex items-center justify-between pt-2 border-t border-[#1c2536] text-[11px]">
