@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Profil &amp; Ayarlar • TFT Set 18 AI Koç{% endblock %}
+
+{% block content %}
+<div class="flex-1 flex items-center justify-center p-4 sm:p-6 bg-[#0a0e17] overflow-y-auto">
+  <div class="relative w-full max-w-lg bg-[#0d121c] border border-[#f0c374]/30 rounded-2xl shadow-2xl p-6 sm:p-8 overflow-hidden my-4">
+    <!-- Ambient Glow -->
+    <div class="absolute -top-16 -right-16 w-36 h-36 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-16 -left-16 w-36 h-36 bg-[#f0c374]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="flex items-center justify-between pb-4 border-b border-[#1e2738] mb-6 relative z-10">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/15 border border-[#f0c374]/40 flex items-center justify-center text-[#f0c374] font-black text-lg">
+          {{ user.username|slice:":1"|upper }}
+        </div>
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <span>{{ user.username }}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#161e2e] text-[#f0c374] border border-[#f0c374]/30 mono">
+              {{ profile.plan_tier }}
+            </span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">{{ user.email|default:"E-posta belirtilmedi" }}</p>
+        </div>
+      </div>
+      <a href="{% url 'accounts:logout' %}" class="px-3 py-1.5 rounded-xl bg-[#121722] hover:bg-rose-500/20 border border-[#222d42] hover:border-rose-500/40 text-rose-300 text-xs font-semibold transition-colors">
+        Çıkış Yap
+      </a>
+    </div>
+
+    <!-- Quota Stats Card -->
+    <div class="p-3.5 mb-5 rounded-xl bg-[#121722] border border-[#222d42] relative z-10">
+      <div class="flex items-center justify-between text-xs mb-2">
+        <span class="text-slate-400 font-semibold">Günlük Koçluk Kotası</span>
+        <span class="mono font-bold text-white">
+          {% if profile.plan_tier == "ADMIN" %}
+            <span class="text-[#f0c374]">Sınırsız (Admin)</span>
+          {% else %}
+            <span class="text-emerald-400">{{ quota_left }}</span> / {{ profile.daily_quota_limit }} soru kaldı
+          {% endif %}
+        </span>
+      </div>
+      <div class="w-full bg-[#0a0e17] h-2 rounded-full overflow-hidden border border-[#1e2738]">
+        <div class="bg-gradient-to-r from-amber-500 to-[#f0c374] h-full"
+             style="width: {% if profile.plan_tier == 'ADMIN' %}100%{% else %}{{ profile.daily_quota_used }}0%{% endif %}; max-width: 100%;">
+        </div>
+      </div>
+      {% if profile.tier_badge %}
+      <div class="mt-2.5 pt-2 border-t border-[#1c2536] flex items-center justify-between text-[11px]">
+        <span class="text-slate-400">Riot Derecesi:</span>
+        <span class="text-[#f0c374] font-bold mono">{{ profile.tier_badge }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Edit Form -->
+    <form method="post" action="{% url 'accounts:profile' %}" class="space-y-4 relative z-10">
+      {% csrf_token %}
+
+      <div class="pt-1">
+        <span class="text-[11px] font-bold text-[#f0c374] uppercase tracking-wider block mb-2.5">Riot ID &amp; Bölge Ayarları</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] text-slate-300 font-bold mb-1">Riot Oyuncu Adı</label>
+            {{ form.riot_game_name }}
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-300 font-bold mb-1">Riot Etiketi (#)</label>
+            {{ form.riot_tag_line }}
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[10px] text-slate-300 font-bold mb-1">Riot Bölgesi</label>
+          {{ form.riot_region }}
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-300 font-bold mb-1">Tercih Edilen Dil</label>
+          {{ form.preferred_lang }}
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-[#1e2738]">
+        <a href="{% url 'core:home' %}" class="text-xs text-slate-400 hover:text-white transition-colors">
+          &larr; Sohbet Ekranına Dön
+        </a>
+        <button type="submit"
+          class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#f0c374] hover:from-amber-600 hover:to-[#e5b35c] text-slate-950 font-bold text-xs transition-all shadow-md">
+          Değişiklikleri Kaydet
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

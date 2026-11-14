@@ -38,6 +38,27 @@ def send_message_view(request):
     if not query:
         return JsonResponse({"error": "Soru metni boş olamaz."}, status=400)
 
+    # Quota Enforcement
+    profile = None
+    if request.user.is_authenticated:
+        from apps.accounts.models import UserProfile
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        if not profile.consume_quota():
+            return JsonResponse({
+                "error": "Günlük soru limitinize ulaştınız (30 soru/gün). Yarın tekrar deneyin veya planınızı yükseltin.",
+                "quota_exceeded": True,
+            }, status=429)
+    else:
+        guest_used = request.session.get("guest_quota_used", 0)
+        guest_limit = 30
+        if guest_used >= guest_limit:
+            return JsonResponse({
+                "error": "Misafir oturumu soru limitinize ulaştınız (30 soru). Devam etmek için ücretsiz kayıt olun!",
+                "quota_exceeded": True,
+            }, status=429)
+        request.session["guest_quota_used"] = guest_used + 1
+        request.session.modified = True
+
     # Resolve or create ChatSession
     session_key = request.session.session_key or ""
     if not session_key:
@@ -142,9 +163,15 @@ def send_message_view(request):
     if request.headers.get("HX-Request"):
         return render(request, "partials/message_bubble.html", {"message": assistant_msg})
 
+    quota_remaining = (
+        (profile.daily_quota_limit - profile.daily_quota_used) if request.user.is_authenticated and profile and profile.plan_tier != "ADMIN"
+        else ("∞" if request.user.is_authenticated else max(0, 30 - request.session.get("guest_quota_used", 0)))
+    )
+
     return JsonResponse({
         "session_id": str(session.id),
         "user_message_id": user_msg.id,
+        "quota_left": quota_remaining,
         "message": {
             "id": assistant_msg.id,
             "role": "assistant",

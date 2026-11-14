@@ -75,6 +75,7 @@ class AICoachLLMService:
             recs_desc = "; ".join(diag.get("recommendations", [])) or "Genel tempo ve ekonomi disiplinine devam et."
             match_telemetry_text = (
                 f"\n--- BAĞLI TFT MAÇ TELEMETRİSİ ({attached_match.match_id}) ---\n"
+                f"• Maç ID: {attached_match.match_id} (Yanıtının başında '{attached_match.match_id}' maç kodunu ve '#{attached_match.placement}' derecesini mutlaka belirt)\n"
                 f"• Sıralama: #{attached_match.placement} (Yanıtında '#{attached_match.placement}' derecesini mutlaka belirt)\n"
                 f"• Seviye: {attached_match.level} | Elenme/Bitiş Turu: {attached_match.last_round} | Kalan Altın: {attached_match.gold_left}g\n"
                 f"• Değerlendirme: {diag.get('summary_headline', f'#{attached_match.placement} Sıralama Analizi')}\n"
@@ -103,7 +104,7 @@ class AICoachLLMService:
             "5. Riot İstatistik Politikası:\n"
             "   - Eklenti (Augment) kazanma oranı (%) veya sayısal ortalama sıralama yazma; bunun yerine S/A/B kademeleri ve sinerji uyumlarını tavsiye et.\n\n"
             "6. Bağlı TFT Maç Analizi (Post-Game Coaching):\n"
-            "   - Eğer oturumda 'BAĞLI TFT MAÇ TELEMETRİSİ' verilmişse, kullanıcının sorularını bu maçın sıralamasını ('#...' biçiminde bitiriş derecesini) belirterek, elenme turu, kalan altın durumu (dead gold riski), lobide çekişilen (contested) taşıyıcıları ve pivot önerileri doğrultusunda doğrudan maç telemetrisine atıfta bulunarak yanıtla."
+            "   - Eğer oturumda 'BAĞLI TFT MAÇ TELEMETRİSİ' verilmişse, kullanıcının sorularını bu maçın Maç ID'sini (örneğin TR1_DEMO_9988) ve sıralamasını ('#...' biçiminde bitiriş derecesini) belirterek, elenme turu, kalan altın durumu (dead gold riski), lobide çekişilen (contested) taşıyıcıları ve pivot önerileri doğrultusunda doğrudan maç telemetrisine atıfta bulunarak yanıtla."
         )
 
         user_prompt = (

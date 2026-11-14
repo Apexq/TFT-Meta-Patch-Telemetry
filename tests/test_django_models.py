@@ -26,13 +26,12 @@ def test_riot_verification_endpoint():
 @pytest.mark.django_db
 def test_user_profile_quota_lifecycle():
     user = User.objects.create_user(username="apexq_tester", password="safe_password_123")
-    profile = UserProfile.objects.create(
-        user=user,
-        riot_game_name="Apexq",
-        riot_tag_line="TR1",
-        riot_region="TR1",
-        daily_quota_limit=2,
-    )
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    profile.riot_game_name = "Apexq"
+    profile.riot_tag_line = "TR1"
+    profile.riot_region = "TR1"
+    profile.daily_quota_limit = 2
+    profile.save()
 
     assert profile.can_ask_question() is True
     assert profile.consume_quota() is True

@@ -28,13 +28,21 @@ def chat_home_view(request):
     if request.user.is_authenticated:
         chat_sessions = ChatSession.objects.filter(user=request.user)[:20]
         user_display = request.user.username
-        profile = getattr(request.user, "profile", None)
-        quota_left = profile.daily_quota_limit - profile.daily_quota_used if profile else 30
-        plan_tier = profile.plan_tier if profile else "FREE"
+        from apps.accounts.models import UserProfile
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        profile.check_and_reset_quota()
+        quota_left = (
+            profile.daily_quota_limit - profile.daily_quota_used
+            if profile.plan_tier != "ADMIN"
+            else "∞"
+        )
+        plan_tier = profile.plan_tier
     else:
         chat_sessions = ChatSession.objects.filter(guest_session_key=session_key)[:20]
         user_display = "Misafir Oyuncu"
-        quota_left = 30
+        profile = None
+        guest_used = request.session.get("guest_quota_used", 0)
+        quota_left = max(0, 30 - guest_used)
         plan_tier = "FREE"
 
     # Historical Session Loading with strict authorization
@@ -61,6 +69,7 @@ def chat_home_view(request):
         "matcher_items": matcher_items,
         "chat_sessions": chat_sessions,
         "user_display": user_display,
+        "profile": profile,
         "quota_left": quota_left,
         "plan_tier": plan_tier,
         "current_session": current_session,
