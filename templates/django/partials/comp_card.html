@@ -139,5 +139,29 @@
     <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">{{ card.desc }}</p>
   </div>
 </div>
+{% elif card.card_type == 'match_review' %}
+<!-- MATCH REVIEW UI CARD -->
+<div class="mt-3 bg-[#0d121c] border border-[#f0c374]/40 rounded-xl p-4 shadow-lg space-y-3">
+  <div class="flex items-center justify-between pb-2.5 border-b border-[#1c2536]">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-base mono border {% if card.placement == 1 %}bg-amber-500/20 text-[#f0c374] border-[#f0c374]/60{% elif card.placement <= 4 %}bg-emerald-500/20 text-emerald-400 border-emerald-500/40{% else %}bg-rose-500/20 text-rose-400 border-rose-500/40{% endif %}">
+        #{{ card.placement }}
+      </div>
+      <div>
+        <h4 class="font-bold text-white text-xs sm:text-sm">{{ card.summary_headline|default:"Sıralama Analizi" }}</h4>
+        <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400 mono">
+          <span>Lvl {{ card.level }}</span>
+          <span>&bull;</span>
+          <span>Aşama {{ card.last_round }}</span>
+          <span>&bull;</span>
+          <span>Kalan: {{ card.gold_left }}g</span>
+        </div>
+      </div>
+    </div>
+    <span class="px-2 py-0.5 rounded text-[10px] font-bold mono {% if card.is_heavily_contested %}bg-rose-500/20 text-rose-400 border border-rose-500/40{% else %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/40{% endif %}">
+      {% if card.is_heavily_contested %}⚠️ Contested{% else %}✓ Uncontested{% endif %}
+    </span>
+  </div>
+</div>
 {% endif %}
 {% endfor %}

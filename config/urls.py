@@ -20,4 +20,5 @@ urlpatterns = [
     path("", include("apps.core.urls")),
     path("accounts/", include("apps.accounts.urls")),
     path("chat/", include("apps.chat.urls")),
+    path("riot/", include("apps.riot_sync.urls", namespace="riot_sync")),
 ]

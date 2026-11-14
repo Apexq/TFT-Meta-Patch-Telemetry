@@ -34,6 +34,7 @@ class AICoachLLMService:
         preferred_lang: str = "tr",
         mode: str = "META_COACH",
         history: Optional[List[Dict[str, str]]] = None,
+        attached_match: Optional[Any] = None,
     ) -> Dict[str, Any]:
         """
         Generates AI coaching response using Gemini if available, or deterministic fallback.
@@ -61,6 +62,28 @@ class AICoachLLMService:
             candidate_cards_lines.append(f"- ID: `{cid}` | Tür: {ctype} | Başlık: {label}{tier}")
         candidate_cards_text = "\n".join(candidate_cards_lines) if candidate_cards_lines else "(Aday kart yok)"
 
+        match_telemetry_text = ""
+        if attached_match:
+            diag = getattr(attached_match, "ai_diagnosis_cache", None) or {}
+            lobby = getattr(attached_match, "lobby_contested_json", None) or {}
+            contested_units = lobby.get("contested_units", [])
+            contested_desc = ", ".join(
+                f"{u.get('unit_name')} ({u.get('opponents_count')} rakipte, %{int(u.get('pool_depleted_pct', 0))} havuz tükendi)"
+                for u in contested_units
+            ) if contested_units else "Lobide yoğun çekişme tespit edilmedi."
+            mistakes_desc = "; ".join(diag.get("critical_mistakes", [])) or "Kritik makro hata saptanmadı."
+            recs_desc = "; ".join(diag.get("recommendations", [])) or "Genel tempo ve ekonomi disiplinine devam et."
+            match_telemetry_text = (
+                f"\n--- BAĞLI TFT MAÇ TELEMETRİSİ ({attached_match.match_id}) ---\n"
+                f"• Sıralama: #{attached_match.placement} (Yanıtında '#{attached_match.placement}' derecesini mutlaka belirt)\n"
+                f"• Seviye: {attached_match.level} | Elenme/Bitiş Turu: {attached_match.last_round} | Kalan Altın: {attached_match.gold_left}g\n"
+                f"• Değerlendirme: {diag.get('summary_headline', f'#{attached_match.placement} Sıralama Analizi')}\n"
+                f"• Lobi Rekabeti (Contested): {contested_desc}\n"
+                f"• Tespit Edilen Kritik Hatalar: {mistakes_desc}\n"
+                f"• Önerilen Pivot ve Koçluk Tavsiyeleri: {recs_desc}\n"
+                f"----------------------------------------------------\n\n"
+            )
+
         system_instruction = (
             "Sen elit ve samimi bir TFT Set 18 Challenger Koçusun. "
             "Kullanıcıya yapay ve mekanik kalıplarla değil, tıpkı Discord'da konuşan deneyimli bir koç gibi esnek, doğal ve öneri odaklı rehberlik yaparsın.\n\n"
@@ -78,11 +101,14 @@ class AICoachLLMService:
             "   - Kullanıcı bir kompozisyon, tahta dizilimi, eşya/build, eklenti veya karşılaşma/tılsım önerisi istiyorsa ilgili kart ID'sini `selected_card_ids` dizisine ekle (en fazla 2 kart).\n"
             "   - Eğer soru basit bir varlık/yokluk kontrolü ('Yasuo var mı?'), genel sohbet/selamlaşma ya da zaten az önce gösterilmiş bir kart üzerine kısa devam sorusuysa (`compta neleri 2 lemeli?` gibi yeni karta ihtiyaç yoksa) `selected_card_ids` dizisini BOŞ (`[]`) bırak!\n\n"
             "5. Riot İstatistik Politikası:\n"
-            "   - Eklenti (Augment) kazanma oranı (%) veya sayısal ortalama sıralama yazma; bunun yerine S/A/B kademeleri ve sinerji uyumlarını tavsiye et."
+            "   - Eklenti (Augment) kazanma oranı (%) veya sayısal ortalama sıralama yazma; bunun yerine S/A/B kademeleri ve sinerji uyumlarını tavsiye et.\n\n"
+            "6. Bağlı TFT Maç Analizi (Post-Game Coaching):\n"
+            "   - Eğer oturumda 'BAĞLI TFT MAÇ TELEMETRİSİ' verilmişse, kullanıcının sorularını bu maçın sıralamasını ('#...' biçiminde bitiriş derecesini) belirterek, elenme turu, kalan altın durumu (dead gold riski), lobide çekişilen (contested) taşıyıcıları ve pivot önerileri doğrultusunda doğrudan maç telemetrisine atıfta bulunarak yanıtla."
         )
 
         user_prompt = (
             f"Kullanıcı Sorusu: '{query}'\n\n"
+            f"{match_telemetry_text}"
             f"Doğrulanmış Set 18 Telemetri Bağlamı:\n{context_text}\n\n"
             f"Aday Hextech Arayüz Kartları:\n{candidate_cards_text}"
         )
@@ -167,7 +193,13 @@ class AICoachLLMService:
                 pass
 
         # Smart Deterministic Telemetry Fallback
-        fallback_content = cls._build_rule_based_coach_response(query, retrieved_chunks, ui_cards, preferred_lang)
+        fallback_content = cls._build_rule_based_coach_response(
+            query,
+            retrieved_chunks,
+            ui_cards,
+            preferred_lang,
+            attached_match=attached_match,
+        )
         return {
             "content": fallback_content,
             "ui_cards": ui_cards[:2],
@@ -182,6 +214,7 @@ class AICoachLLMService:
         retrieved_chunks: List[Dict[str, Any]],
         ui_cards: List[Dict[str, Any]],
         lang: str = "tr",
+        attached_match: Optional[Any] = None,
     ) -> str:
         """
         Builds a high-quality deterministic coaching response directly from Master+ telemetry.
@@ -189,6 +222,75 @@ class AICoachLLMService:
         comps = [c for c in ui_cards if c.get("card_type") == "composition"]
         augments = [c for c in ui_cards if c.get("card_type") == "augment"]
         encounters = [c for c in ui_cards if c.get("card_type") == "encounter"]
+
+        if attached_match:
+            placement = attached_match.placement
+            level = attached_match.level
+            last_round = attached_match.last_round
+            gold_left = attached_match.gold_left
+            diag = getattr(attached_match, "ai_diagnosis_cache", None) or {}
+            lobby = getattr(attached_match, "lobby_contested_json", None) or {}
+            headline = diag.get("summary_headline", f"#{placement} Sıralama Analizi")
+            contested_units = lobby.get("contested_units", [])
+            mistakes = diag.get("critical_mistakes", [])
+            recommendations = diag.get("recommendations", [])
+
+            if lang == "tr":
+                lines = [
+                    f"**TFT Set 18 Maç Sonu Analizi ({attached_match.match_id}):**\n",
+                    f"Maçını detaylı olarak inceledim. Bu karşılaşmayı **#{placement}** sırada tamamladın (Seviye {level}, Aşama {last_round}, Kalan Altın: {gold_left}g).",
+                    f"\n**Özet Teşhis:** {headline}",
+                ]
+
+                if contested_units:
+                    contested_names = ", ".join(
+                        f"{u.get('unit_name')} ({u.get('opponents_count')} rakipte, %{int(u.get('pool_depleted_pct', 0))} havuz tükendi)"
+                        for u in contested_units
+                    )
+                    lines.append(f"\n**Lobi Rekabeti (Contested):** Tahtandaki kilit birimler lobide yoğun rekabet altındaydı: {contested_names}.")
+
+                if gold_left >= 15 and placement > 4:
+                    lines.append(f"\n**Ekonomi Riski (Dead Gold):** Elendiğinde tahtanda harcanmamış **{gold_left} altın** kaldı. Canın kritik seviyeye indiğinde bu altını seviye veya tahta gücüne (roll down) dönüştürmelisin.")
+
+                if mistakes:
+                    lines.append("\n**Kritik Hatalar:**")
+                    for m in mistakes:
+                        lines.append(f"• {m}")
+
+                if recommendations:
+                    lines.append("\n**Koç Tavsiyeleri & Pivot Planı:**")
+                    for r in recommendations:
+                        lines.append(f"• {r}")
+
+                if comps:
+                    lines.append("\n**Önerilen Alternatif Kompozisyonlar:**")
+                    for c in comps[:2]:
+                        lines.append(f"• **{c.get('comp_name')} ({c.get('tier')} Tier)** — Seviye temposu: `{c.get('levelling')}`.")
+
+                return "\n".join(lines)
+            else:
+                lines = [
+                    f"**TFT Set 18 Post-Game Match Review ({attached_match.match_id}):**\n",
+                    f"I reviewed your match telemetry. You finished in **#{placement}** place (Level {level}, Stage {last_round}, Remaining Gold: {gold_left}g).",
+                    f"\n**Assessment:** {headline}",
+                ]
+                if contested_units:
+                    contested_names = ", ".join(
+                        f"{u.get('unit_name')} (contested by {u.get('opponents_count')} players, {int(u.get('pool_depleted_pct', 0))}% pool depleted)"
+                        for u in contested_units
+                    )
+                    lines.append(f"\n**Lobby Contention:** Key carries contested: {contested_names}.")
+                if gold_left >= 15 and placement > 4:
+                    lines.append(f"\n**Dead Gold Warning:** You exited with **{gold_left} unspent gold**. Roll down earlier when low on HP.")
+                if mistakes:
+                    lines.append("\n**Critical Mistakes:**")
+                    for m in mistakes:
+                        lines.append(f"• {m}")
+                if recommendations:
+                    lines.append("\n**Coach Recommendations:**")
+                    for r in recommendations:
+                        lines.append(f"• {r}")
+                return "\n".join(lines)
 
         if lang == "tr":
             lines = [f"**TFT Set 18 (Yama 18.6) Koçluk Notu:**\n"]

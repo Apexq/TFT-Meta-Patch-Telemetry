@@ -186,6 +186,54 @@
       <!-- Opener & Item Pivot Builder Bar -->
       {% include "partials/opener_bar.html" with matcher_items=matcher_items %}
 
+      <!-- Post-Game Match Review Dock (Riot ID Maç Analizi) -->
+      <div id="post-game-dock" class="hidden mb-3 p-3.5 bg-[#0d121c] border border-[#f0c374]/40 rounded-2xl shadow-xl transition-all">
+        <div class="flex items-center justify-between pb-2.5 border-b border-[#1e2738] mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base text-[#f0c374]">🔍</span>
+            <div>
+              <h3 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                <span>Riot ID Maç Sonu Analizi</span>
+                <span id="player-rank-badge" class="hidden px-2 py-0.5 rounded text-[10px] font-bold bg-[#161e2e] text-[#f0c374] border border-[#f0c374]/30 mono"></span>
+              </h3>
+              <p class="text-[11px] text-slate-400">Son 5 maçınızdaki lobi rekabeti (contested birimler), ölü altın ve BiS eşya karnesini inceleyin.</p>
+            </div>
+          </div>
+          <button type="button" onclick="closePostGameDock()" class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs" title="Kapat">✕</button>
+        </div>
+
+        <!-- Search Form -->
+        <div class="flex flex-col sm:flex-row items-center gap-2 mb-3">
+          <div class="flex-1 w-full relative">
+            <input id="riot-id-input" type="text" placeholder="Riot ID girin (Örn: Oyuncu#TR1)..."
+              value="{% if user.is_authenticated and user.profile.riot_game_name %}{{ user.profile.riot_game_name }}#{{ user.profile.riot_tag_line }}{% endif %}"
+              onkeydown="if(event.key==='Enter'){event.preventDefault(); fetchRecentMatches();}"
+              class="w-full bg-[#121722] border border-[#222d42] focus:border-[#f0c374] rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 outline-none">
+          </div>
+          <select id="riot-region-select" class="w-full sm:w-28 bg-[#121722] border border-[#222d42] focus:border-[#f0c374] rounded-xl px-2.5 py-2 text-xs text-slate-200 outline-none">
+            <option value="TR1" selected>TR1 (Türkiye)</option>
+            <option value="EUW1">EUW1 (Batı)</option>
+            <option value="EUN1">EUN1 (Kuzey)</option>
+            <option value="NA1">NA1 (Kuzey Amerika)</option>
+            <option value="KR">KR (Kore)</option>
+          </select>
+          <button type="button" id="fetch-matches-btn" onclick="fetchRecentMatches()"
+            class="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#f0c374] hover:from-amber-600 hover:to-[#e5b35c] text-slate-950 font-bold text-xs shrink-0 transition-all shadow flex items-center justify-center gap-1.5">
+            <span id="fetch-matches-spinner" class="hidden animate-spin">&#9696;</span>
+            <span id="fetch-matches-label">Maçları Getir</span>
+          </button>
+        </div>
+
+        <!-- Error Alert -->
+        <div id="riot-sync-error" class="hidden p-2.5 mb-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+          <span>⚠️</span>
+          <span id="riot-sync-error-msg"></span>
+        </div>
+
+        <!-- Matches Cards Container -->
+        <div id="recent-matches-container" class="space-y-2.5 max-h-80 overflow-y-auto pr-1"></div>
+      </div>
+
       <form id="chat-form" onsubmit="handleChatSubmit(event)" class="flex items-center gap-2 bg-[#121722] border border-[#222d42] focus-within:border-[#f0c374]/80 rounded-2xl p-1.5 transition-all shadow-inner">
         <!-- Item Opener Drawer Toggle Button -->
         <button type="button" onclick="toggleOpenerDrawer()" title="Elimdeki Eşyayla Ne Oynanır? (Opener Seçici)"
@@ -266,6 +314,7 @@
   let currentCoachMode = 'META_COACH';
   let currentSessionId = '{{ current_session.id|default:"" }}';
   let selectedOpenerItems = [];
+  let attachedMatchId = null;
 
   function toggleOpenerDrawer() {
     const drawer = document.getElementById('opener-builder-drawer');
@@ -336,6 +385,146 @@
   function setCoachMode(mode, label) {
     currentCoachMode = mode;
     document.getElementById('active-mode-badge').innerText = label;
+    const postGameDock = document.getElementById('post-game-dock');
+    if (postGameDock) {
+      if (mode === 'POST_GAME') {
+        postGameDock.classList.remove('hidden');
+        const rInput = document.getElementById('riot-id-input');
+        if (rInput) rInput.focus();
+      } else {
+        postGameDock.classList.add('hidden');
+      }
+    }
+  }
+
+  function closePostGameDock() {
+    const postGameDock = document.getElementById('post-game-dock');
+    if (postGameDock) postGameDock.classList.add('hidden');
+    setCoachMode('META_COACH', 'Genel Meta Koçu');
+  }
+
+  function fetchRecentMatches() {
+    const riotInput = document.getElementById('riot-id-input');
+    const regionSelect = document.getElementById('riot-region-select');
+    const errBox = document.getElementById('riot-sync-error');
+    const errMsg = document.getElementById('riot-sync-error-msg');
+    const spinner = document.getElementById('fetch-matches-spinner');
+    const label = document.getElementById('fetch-matches-label');
+    const btn = document.getElementById('fetch-matches-btn');
+    const container = document.getElementById('recent-matches-container');
+    const rankBadge = document.getElementById('player-rank-badge');
+
+    const riotId = riotInput ? riotInput.value.trim() : '';
+    const region = regionSelect ? regionSelect.value : 'TR1';
+
+    if (!riotId) {
+      if (errBox && errMsg) {
+        errMsg.innerText = "Lütfen bir Riot ID girin (Örn: Oyuncu#TR1).";
+        errBox.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (errBox) errBox.classList.add('hidden');
+    if (spinner) spinner.classList.remove('hidden');
+    if (label) label.innerText = "Yükleniyor...";
+    if (btn) btn.disabled = true;
+
+    fetch(`/riot/player-matches/?riot_id=${encodeURIComponent(riotId)}&region=${encodeURIComponent(region)}`)
+      .then(res => {
+        if (!res.ok) {
+          return res.json().then(j => { throw new Error(j.error || "Riot API hatası"); });
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data.player && data.player.rank && rankBadge) {
+          rankBadge.innerText = data.player.rank.badge || 'UNRANKED';
+          rankBadge.classList.remove('hidden');
+        }
+
+        if (!data.matches || data.matches.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-4 text-slate-400 text-xs">
+              Bu oyuncu için son dönemde oynanmış Set 18 maçı bulunamadı.
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = data.matches.map(m => {
+          const isTop4 = m.placement <= 4;
+          const placeColor = m.placement === 1
+            ? 'bg-amber-500/20 text-[#f0c374] border-[#f0c374]/60'
+            : isTop4
+              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+              : 'bg-rose-500/20 text-rose-400 border-rose-500/40';
+
+          const contestedBadge = m.is_contested
+            ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 border border-rose-500/30 text-rose-300 mono">⚠️ Lobide Rekabet Var</span>`
+            : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 mono">✓ Uncontested</span>`;
+
+          const unitsHtml = (m.player_board || []).slice(0, 8).map(u => `
+            <div class="relative w-8 h-8 rounded border cost-${u.cost || 1} bg-slate-900 flex items-center justify-center shrink-0 shadow text-[9px] font-bold text-slate-200" title="${u.name} (${u.tier}★)">
+              <span class="truncate px-0.5">${(u.name || '').substring(0, 3)}</span>
+              ${u.tier > 1 ? `<span class="absolute -top-1 -right-0.5 bg-slate-950 text-[#f0c374] text-[8px] font-bold px-0.5 rounded border border-[#f0c374]/40">${'★'.repeat(u.tier)}</span>` : ''}
+              ${u.items && u.items.length > 0 ? `<span class="absolute -bottom-1 -left-0.5 bg-[#f0c374] text-slate-950 text-[7px] font-black px-0.5 rounded">${u.items.length}</span>` : ''}
+            </div>
+          `).join('');
+
+          return `
+            <div class="p-3 bg-[#121722] border border-[#222d42] hover:border-[#f0c374]/50 rounded-xl transition-all shadow-sm">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#1c2536]">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm mono border ${placeColor}">
+                    #${m.placement}
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-white text-xs">${m.headline || '#' + m.placement + ' Sıralama'}</span>
+                      ${contestedBadge}
+                    </div>
+                    <div class="flex items-center gap-2 text-[10px] text-slate-400 mono mt-0.5">
+                      <span>Lvl ${m.level}</span>
+                      <span>&bull;</span>
+                      <span>Aşama ${m.last_round}</span>
+                      <span>&bull;</span>
+                      <span>Kalan: ${m.gold_left}g</span>
+                    </div>
+                  </div>
+                </div>
+                <button type="button" onclick="selectMatchForAiAnalysis('${m.match_id}', ${m.placement})"
+                  class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 to-[#f0c374]/20 hover:from-amber-500/30 hover:to-[#f0c374]/30 border border-[#f0c374]/40 text-[#f0c374] text-[11px] font-bold transition-all shadow flex items-center justify-center gap-1.5 shrink-0">
+                  <span>⚡</span>
+                  <span>Yapay Zeka ile Analiz Et</span>
+                </button>
+              </div>
+              <div class="pt-2 flex flex-wrap items-center gap-1.5">
+                ${unitsHtml}
+              </div>
+            </div>
+          `;
+        }).join('');
+      })
+      .catch(err => {
+        if (errBox && errMsg) {
+          errMsg.innerText = err.message || "Maçlar getirilirken bir hata oluştu.";
+          errBox.classList.remove('hidden');
+        }
+      })
+      .finally(() => {
+        if (spinner) spinner.classList.add('hidden');
+        if (label) label.innerText = "Maçları Getir";
+        if (btn) btn.disabled = false;
+      });
+  }
+
+  function selectMatchForAiAnalysis(matchId, placement) {
+    attachedMatchId = matchId;
+    closePostGameDock();
+    const query = `${matchId} numaralı maçımı analiz et. Neden #${placement}. oldum ve hangi kritik hataları yaptım?`;
+    document.getElementById('chat-input').value = query;
+    handleChatSubmit(new Event('submit'));
   }
 
   function askPresetQuestion(text) {
@@ -383,7 +572,13 @@
         "Content-Type": "application/json",
         "X-CSRFToken": "{{ csrf_token }}"
       },
-      body: JSON.stringify({ query: query, mode: currentCoachMode, session_id: currentSessionId, selected_items: itemApis })
+      body: JSON.stringify({
+        query: query,
+        mode: currentCoachMode,
+        session_id: currentSessionId,
+        selected_items: itemApis,
+        match_id: attachedMatchId
+      })
     }).then(res => res.json()).then(data => {
       loadingBubble.remove();
       currentSessionId = data.session_id;
@@ -466,6 +661,87 @@
                   </div>
                   <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">${card.desc}</p>
                 </div>
+              </div>
+            `;
+          } else if (card.card_type === 'match_review') {
+            const isTop4 = card.placement <= 4;
+            const placeColor = card.placement === 1
+              ? 'bg-amber-500/20 text-[#f0c374] border-[#f0c374]/60'
+              : isTop4
+                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                : 'bg-rose-500/20 text-rose-400 border-rose-500/40';
+
+            const contestedListHtml = (card.contested_units || []).map(u => `
+              <div class="flex items-center justify-between py-1 border-b border-[#1c2536] text-[11px]">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full ${u.severity === 'HIGH' ? 'bg-rose-400' : 'bg-amber-400'}"></span>
+                  <span class="font-bold text-white">${u.unit_name}</span>
+                  <span class="text-slate-400">(${u.player_tier}★)</span>
+                </div>
+                <div class="text-right mono">
+                  <span class="text-slate-300 font-semibold">${u.opponents_count} rakipte var</span>
+                  <span class="text-slate-500 text-[10px]">(${u.pool_depleted_pct}% havuz tükendi)</span>
+                </div>
+              </div>
+            `).join('');
+
+            const mistakesHtml = (card.critical_mistakes || []).map(m => `
+              <li class="flex items-start gap-1.5 text-[11px] text-rose-300">
+                <span class="text-rose-400 font-bold shrink-0">✕</span>
+                <span>${m}</span>
+              </li>
+            `).join('');
+
+            const recommendationsHtml = (card.recommendations || []).map(r => `
+              <li class="flex items-start gap-1.5 text-[11px] text-[#f0c374]">
+                <span class="text-[#f0c374] font-bold shrink-0">💡</span>
+                <span>${r}</span>
+              </li>
+            `).join('');
+
+            cardsHtml += `
+              <div class="mt-3 bg-[#0d121c] border border-[#f0c374]/40 rounded-xl p-4 shadow-lg space-y-3">
+                <div class="flex items-center justify-between pb-2.5 border-b border-[#1c2536]">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-base mono border ${placeColor}">
+                      #${card.placement}
+                    </div>
+                    <div>
+                      <h4 class="font-bold text-white text-xs sm:text-sm">${card.summary_headline || '#' + card.placement + ' Sıralama Analizi'}</h4>
+                      <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400 mono">
+                        <span>Lvl ${card.level}</span>
+                        <span>&bull;</span>
+                        <span>Aşama ${card.last_round}</span>
+                        <span>&bull;</span>
+                        <span>Kalan: ${card.gold_left}g</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold mono ${card.is_heavily_contested ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'}">
+                    ${card.is_heavily_contested ? '⚠️ Contested' : '✓ Uncontested'}
+                  </span>
+                </div>
+
+                ${contestedListHtml ? `
+                  <div class="bg-[#121722] p-2.5 rounded-lg border border-[#222d42]">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Lobi Rekabeti (Contested Birimler)</div>
+                    ${contestedListHtml}
+                  </div>
+                ` : ''}
+
+                ${mistakesHtml ? `
+                  <div class="bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-rose-400 mb-1">Kritik Hatalar</div>
+                    <ul class="space-y-1">${mistakesHtml}</ul>
+                  </div>
+                ` : ''}
+
+                ${recommendationsHtml ? `
+                  <div class="bg-amber-500/10 p-2.5 rounded-lg border border-[#f0c374]/20">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-[#f0c374] mb-1">Koç Tavsiyesi &amp; Pivot Planı</div>
+                    <ul class="space-y-1">${recommendationsHtml}</ul>
+                  </div>
+                ` : ''}
               </div>
             `;
           }

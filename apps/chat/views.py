@@ -33,6 +33,7 @@ def send_message_view(request):
     mode = body.get("mode", "META_COACH")
     session_id = body.get("session_id")
     selected_items = body.get("selected_items", [])
+    match_id = body.get("match_id")
 
     if not query:
         return JsonResponse({"error": "Soru metni boş olamaz."}, status=400)
@@ -47,15 +48,27 @@ def send_message_view(request):
     if session_id:
         session = ChatSession.objects.filter(id=session_id).first()
 
+    attached_match = None
+    if match_id:
+        from apps.riot_sync.models import PlayerMatchCache
+        attached_match = PlayerMatchCache.objects.filter(match_id=str(match_id).strip()).first()
+
     if not session:
         session_title = query[:40] + ("..." if len(query) > 40 else "")
         session = ChatSession.objects.create(
             user=request.user if request.user.is_authenticated else None,
             guest_session_key=session_key if not request.user.is_authenticated else "",
             title=session_title,
-            mode=mode,
+            mode=mode if (mode != "META_COACH" or not attached_match) else "POST_GAME",
             selected_items_json=selected_items,
+            attached_match=attached_match,
         )
+    else:
+        if attached_match:
+            session.attached_match = attached_match
+            session.save(update_fields=["attached_match"])
+        elif session.attached_match:
+            attached_match = session.attached_match
 
     # Save User Message
     user_msg = ChatMessage.objects.create(
@@ -92,7 +105,25 @@ def send_message_view(request):
         preferred_lang="tr",
         mode=mode,
         history=history,
+        attached_match=attached_match,
     )
+
+    ui_cards = list(ai_result.get("ui_cards", []))
+    if attached_match:
+        match_card = {
+            "card_type": "match_review",
+            "match_id": attached_match.match_id,
+            "placement": attached_match.placement,
+            "level": attached_match.level,
+            "last_round": attached_match.last_round,
+            "gold_left": attached_match.gold_left,
+            "summary_headline": (attached_match.ai_diagnosis_cache or {}).get("summary_headline", f"#{attached_match.placement} Sıralama Analizi"),
+            "is_heavily_contested": (attached_match.lobby_contested_json or {}).get("is_heavily_contested", False),
+            "contested_units": (attached_match.lobby_contested_json or {}).get("contested_units", []),
+            "critical_mistakes": (attached_match.ai_diagnosis_cache or {}).get("critical_mistakes", []),
+            "recommendations": (attached_match.ai_diagnosis_cache or {}).get("recommendations", []),
+        }
+        ui_cards.insert(0, match_card)
 
     latency_ms = int((time.time() - start_time) * 1000)
 
@@ -101,7 +132,7 @@ def send_message_view(request):
         session=session,
         role="assistant",
         content_markdown=ai_result["content"],
-        ui_cards_json=ai_result.get("ui_cards", []),
+        ui_cards_json=ui_cards,
         cited_chunk_ids=rag_result["cited_chunk_ids"],
         latency_ms=latency_ms,
         model_used=ai_result["model_used"],
