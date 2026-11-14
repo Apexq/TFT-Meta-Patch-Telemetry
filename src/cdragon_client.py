@@ -158,11 +158,22 @@ class CDragonClient:
         try:
             url = f"{CDRAGON_BASE_URL}/{cdragon_version}/cdragon/tft/{self.lang}.json"
             full_data = self._http_get_json(url, timeout=40)
-        except Exception:
-            if cdragon_version != "latest":
-                url = f"{CDRAGON_BASE_URL}/latest/cdragon/tft/{self.lang}.json"
-                full_data = self._http_get_json(url, timeout=40)
-            else:
+        except Exception as primary_err:
+            try:
+                if cdragon_version != "latest":
+                    url = f"{CDRAGON_BASE_URL}/latest/cdragon/tft/{self.lang}.json"
+                    full_data = self._http_get_json(url, timeout=40)
+                else:
+                    raise primary_err
+            except Exception:
+                # If CDragon is temporarily unreachable (e.g. HTTP 522), fall back to cached JSON if available
+                if self.use_cache and cache_file.exists():
+                    print(f"[CDragon Warning] Upstream unreachable ({primary_err}); using cached {cache_file.name}")
+                    return json.loads(cache_file.read_text(encoding="utf-8"))
+                fallback_caches = sorted(CACHE_DIR.glob(f"set18_*_{self.lang}.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+                if self.use_cache and fallback_caches:
+                    print(f"[CDragon Warning] Upstream unreachable ({primary_err}); using fallback cache {fallback_caches[0].name}")
+                    return json.loads(fallback_caches[0].read_text(encoding="utf-8"))
                 raise
 
         set18_entry: Optional[Dict[str, Any]] = None
