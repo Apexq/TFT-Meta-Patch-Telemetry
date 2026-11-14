@@ -70,24 +70,32 @@ class TelemetryRAGService:
         top_k: int = 8,
         preferred_lang: str = "tr",
         selected_items: Optional[List[str]] = None,
+        history_text: str = "",
     ) -> Dict[str, Any]:
         """
-        Retrieves top relevant RAG chunks and extracts matching Generative UI cards.
+        Retrieves top relevant RAG chunks and extracts candidate Generative UI cards
+        with deterministic card_id values so the LLM can decide which cards to show.
         """
-        norm_query = normalize_query(query)
+        combined_query = f"{query} {history_text}".strip() if history_text else query
+        norm_query = normalize_query(combined_query)
         q_tokens = [w for w in norm_query.split() if len(w) > 1]
         chunks = cls.get_cached_chunks()
 
         if not chunks:
             return {"chunks": [], "ui_cards": [], "cited_chunk_ids": []}
 
-        STOPWORDS = {"en", "ve", "ile", "bir", "de", "da", "bu", "ne", "mi", "mu", "var", "miyiz", "icin", "nasil", "hangisi", "hangileri", "the", "and", "or", "in", "of", "to", "a", "is"}
+        STOPWORDS = {"en", "ve", "ile", "bir", "de", "da", "bu", "ne", "mi", "mu", "var", "miyiz", "icin", "nasil", "hangisi", "hangileri", "the", "and", "or", "in", "of", "to", "a", "is", "peki", "neleri", "erken", "2"}
         meaningful_tokens = [w for w in q_tokens if w not in STOPWORDS]
         if not meaningful_tokens:
             meaningful_tokens = q_tokens
 
         scored = []
+        overview_chunks = []
         for ch in chunks:
+            if ch["chunk_type"] == "overview":
+                overview_chunks.append(ch)
+                continue
+
             score = 0.0
             kw_text = ch["keywords_normalized"]
             content = ch["content_text"].lower()
@@ -133,28 +141,26 @@ class TelemetryRAGService:
         scored.sort(key=lambda x: x[0], reverse=True)
         top_results = [item[1] for item in scored[:top_k]]
 
-        # Intent check: Is user asking a simple existence / greeting question?
-        is_simple_query = any(w in norm_query for w in ("var mi", "var mı", "mevcut mu", "selam", "merhaba", "gunaydin", "iyi gunler"))
-        is_comp_query = any(w in norm_query for w in ("comp", "komp", "tahta", "board", "dizilim", "tier", "meta", "build", "nasil oynan", "nasıl oynan", "rehber", "oner", "öner", "eklenti", "augment"))
+        # Always include overview chunk (just like worker/src/index.js always_include)
+        for ov in overview_chunks[:1]:
+            if ov not in top_results:
+                top_results.insert(0, ov)
 
-        # If zero matches found, give high-level overview chunk to context (NO fake cards)
-        if not top_results:
-            top_results = [c for c in chunks if c["chunk_type"] == "overview"][:1]
-
+        # Build candidate UI cards with unique card_id so the AI can choose which to display
         ui_cards = []
-        # Only attach interactive UI cards if the query matched actual relevant chunks AND is not a simple yes/no query
-        if scored and (is_comp_query or not is_simple_query):
-            seen_card_keys = set()
-            for c in top_results:
-                payload = c.get("ui_card_payload")
-                if payload and payload.get("card_type"):
-                    card_key = f"{payload.get('card_type')}:{payload.get('comp_name') or payload.get('title') or c['chunk_id']}"
-                    if card_key not in seen_card_keys:
-                        seen_card_keys.add(card_key)
-                        ui_cards.append(payload)
+        seen_card_keys = set()
+        for c in top_results:
+            payload = c.get("ui_card_payload")
+            if payload and payload.get("card_type"):
+                card_key = f"{payload.get('card_type')}:{payload.get('comp_name') or payload.get('title') or c['chunk_id']}"
+                if card_key not in seen_card_keys:
+                    seen_card_keys.add(card_key)
+                    card_copy = dict(payload)
+                    card_copy["card_id"] = str(c["chunk_id"])
+                    ui_cards.append(card_copy)
 
         return {
             "chunks": top_results,
-            "ui_cards": ui_cards[:2],  # keep cards focused and clean
+            "ui_cards": ui_cards[:4],
             "cited_chunk_ids": [c["chunk_id"] for c in top_results if c.get("chunk_id")],
         }

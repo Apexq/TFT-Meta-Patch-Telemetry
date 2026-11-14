@@ -60,3 +60,51 @@ def test_message_feedback_endpoint():
 
     msg.refresh_from_db()
     assert msg.feedback == 1
+
+
+@pytest.mark.django_db
+def test_ai_decides_ui_cards_via_structured_output(monkeypatch):
+    """Verifies AI can choose zero cards for simple queries or specific cards when needed."""
+    call_command("sync_tft_meta")
+
+    class FakeResponse:
+        def __init__(self, payload):
+            self._payload = payload
+
+        def read(self):
+            return json.dumps(self._payload).encode("utf-8")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    # 1) AI selects NO cards for a simple existence question
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    monkeypatch.setattr(
+        "urllib.request.urlopen",
+        lambda req, timeout=20: FakeResponse({
+            "candidates": [{
+                "content": {
+                    "parts": [{
+                        "text": json.dumps({
+                            "reply": "Yasuo Set 18'de bulunmuyor.",
+                            "selected_card_ids": [],
+                        })
+                    }]
+                }
+            }]
+        }),
+    )
+
+    client = Client()
+    resp = client.post(
+        "/chat/send/",
+        data=json.dumps({"query": "yasuo var mi"}),
+        content_type="application/json",
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["message"]["content"] == "Yasuo Set 18'de bulunmuyor."
+    assert data["message"]["ui_cards"] == []

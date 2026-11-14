@@ -33,17 +33,33 @@ class AICoachLLMService:
         ui_cards: List[Dict[str, Any]],
         preferred_lang: str = "tr",
         mode: str = "META_COACH",
+        history: Optional[List[Dict[str, str]]] = None,
     ) -> Dict[str, Any]:
         """
         Generates AI coaching response using Gemini if available, or deterministic fallback.
+        Uses Structured JSON Output so the AI decides both the reply and which Hextech UI cards to display.
         """
         api_key = cls.get_api_key()
 
-        # Build clean RAG context block
+        # Build clean RAG context block (always include overview + top chunks)
         context_snippets = []
-        for ch in retrieved_chunks[:6]:
+        for ch in retrieved_chunks[:8]:
             context_snippets.append(f"• [{ch.get('chunk_type')}] {ch.get('title_tr')}: {ch.get('content_text')}")
         context_text = "\n".join(context_snippets)
+
+        # Build candidate Hextech UI cards catalog so the AI can decide if any card should be shown
+        candidate_cards_lines = []
+        cards_by_id: Dict[str, Dict[str, Any]] = {}
+        for card in ui_cards:
+            cid = str(card.get("card_id") or "")
+            if not cid:
+                continue
+            cards_by_id[cid] = card
+            label = card.get("comp_name") or card.get("name") or card.get("title") or cid
+            ctype = card.get("card_type", "card")
+            tier = f" ({card.get('tier')} Tier)" if card.get("tier") else ""
+            candidate_cards_lines.append(f"- ID: `{cid}` | Tür: {ctype} | Başlık: {label}{tier}")
+        candidate_cards_text = "\n".join(candidate_cards_lines) if candidate_cards_lines else "(Aday kart yok)"
 
         system_instruction = (
             "Sen elit ve samimi bir TFT Set 18 Challenger Koçusun. "
@@ -53,29 +69,56 @@ class AICoachLLMService:
             "   - Kullanıcı 'Yasuo var mı?', 'Guinsoo kime verilir?' veya selamlaşma gibi basit/net bir soru sorduysa, 1-2 samimi ve net cümleyle doğrudan yanıtla. İstenmeyen uzun analizler veya kompozisyon destanları yazma.\n"
             "   - Kullanıcı 'nasıl oynanmalı', 'erken aşamada ne yapmalıyım', 'rehber ver' dediğinde ise seviye temposu (örneğin 7'de slow roll mu yoksa Fast 8 mi), erken tahta tutuşu ve kritik eşya önceliklerini akıcı bir şekilde anlat.\n\n"
             "2. Set 18 Gerçekliği & Halüsinasyon Yasağı:\n"
-            "   - Yalnızca Set 18 (Yama 18.6) telemetri verilerine sadık kal. Eğer sorulan şampiyon (örneğin Yasuo, Yone, Zed vb.) bu sette yoksa, doğrudan 'Bu şampiyon TFT Set 18'de bulunmuyor' de. Eski setlerden (Ionia, Shadow vb.) asla hayali kompozisyon veya eşya uydurma!\n\n"
+            "   - Yalnızca verilen TELEMETRİ BAĞLAMI'ndaki Set 18 (Yama 18.6) verilerine sadık kal. Eğer sorulan şampiyon (örneğin Yasuo, Yone, Zed vb.) bu sette yoksa, doğrudan 'Bu şampiyon TFT Set 18'de bulunmuyor' de. Eski setlerden (Ionia, Shadow vb.) asla hayali kompozisyon veya eşya uydurma!\n\n"
             "3. Oyuncuyu Bir Şeye Mecbur Bırakma (Öneri & Alternatif Odaklı Ol):\n"
-            "   - Kullanıcıyı tek bir kompozisyona ya da katı kurallara mahkûm etme ('bunu oynamak zorundasın' gibi konuşma). Oyunun durumuna göre esnek alternatifler öner (örn: 'Eğer erkenden AD eşyaları bulursan Rengar/Master Yi düşünebilirsin, ama büyü eşyaların birikirse Ahri varyasyonuna pivotlayabilirsin').\n"
-            "   - 'Aşağıdaki karta bak' veya 'Hextech kartını incele' gibi klişe yönlendirme cümlelerini sürekli tekrarlama. Bilgiyi doğal bir sohbet akışında aktar.\n\n"
-            "4. Riot İstatistik Politikası:\n"
+            "   - Kullanıcıyı tek bir kompozisyona ya da katı kurallara mahkûm etme ('bunu oynamak zorundasın' gibi konuşma). Oyunun durumuna göre esnek alternatifler öner.\n"
+            "   - 'Aşağıdaki karta bak' veya 'Hextech kartını incele' gibi klişe yönlendirme cümlelerini sürekli tekrarlama.\n\n"
+            "4. Hextech Arayüz Kartı Seçimi (selected_card_ids):\n"
+            "   - Sana aşağıda aday Hextech kart ID'leri verilmiştir. Bu kartları ekranda gösterip göstermemeye SEN karar ver:\n"
+            "   - Kullanıcı bir kompozisyon, tahta dizilimi, eşya/build, eklenti veya karşılaşma/tılsım önerisi istiyorsa ilgili kart ID'sini `selected_card_ids` dizisine ekle (en fazla 2 kart).\n"
+            "   - Eğer soru basit bir varlık/yokluk kontrolü ('Yasuo var mı?'), genel sohbet/selamlaşma ya da zaten az önce gösterilmiş bir kart üzerine kısa devam sorusuysa (`compta neleri 2 lemeli?` gibi yeni karta ihtiyaç yoksa) `selected_card_ids` dizisini BOŞ (`[]`) bırak!\n\n"
+            "5. Riot İstatistik Politikası:\n"
             "   - Eklenti (Augment) kazanma oranı (%) veya sayısal ortalama sıralama yazma; bunun yerine S/A/B kademeleri ve sinerji uyumlarını tavsiye et."
         )
 
         user_prompt = (
-            f"TFT Set 18 Coaching Query: '{query}'\n\n"
-            f"Verified Patch 18.6 Telemetry Context:\n{context_text}\n\n"
-            "Provide your strategic recommendation based strictly on this telemetry."
+            f"Kullanıcı Sorusu: '{query}'\n\n"
+            f"Doğrulanmış Set 18 Telemetri Bağlamı:\n{context_text}\n\n"
+            f"Aday Hextech Arayüz Kartları:\n{candidate_cards_text}"
         )
+
+        # Build multi-turn contents array (up to last 6 turns)
+        contents: List[Dict[str, Any]] = []
+        if history:
+            for turn in history[-6:]:
+                role = "model" if turn.get("role") in ("assistant", "model") else "user"
+                text = (turn.get("content") or "").strip()[:1500]
+                if text:
+                    contents.append({"role": role, "parts": [{"text": text}]})
+        contents.append({"role": "user", "parts": [{"text": user_prompt}]})
 
         if api_key:
             try:
                 endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{cls.MODEL_NAME}:generateContent?key={api_key}"
                 payload = {
-                    "contents": [{"parts": [{"text": user_prompt}]}],
+                    "contents": contents,
                     "systemInstruction": {"parts": [{"text": system_instruction}]},
                     "generationConfig": {
-                        "temperature": 0.4,
+                        "temperature": 0.3,
                         "maxOutputTokens": 2048,
+                        "thinkingConfig": {"thinkingBudget": 0},
+                        "responseMimeType": "application/json",
+                        "responseSchema": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "reply": {"type": "STRING"},
+                                "selected_card_ids": {
+                                    "type": "ARRAY",
+                                    "items": {"type": "STRING"},
+                                },
+                            },
+                            "required": ["reply", "selected_card_ids"],
+                        },
                     },
                 }
 
@@ -89,13 +132,35 @@ class AICoachLLMService:
                     data = json.loads(resp.read().decode("utf-8"))
                     candidates = data.get("candidates", [])
                     if candidates:
-                        text_part = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                        if text_part:
-                            return {
-                                "content": text_part.strip(),
-                                "model_used": cls.MODEL_NAME,
-                                "success": True,
-                            }
+                        raw_text = "".join(
+                            p.get("text", "")
+                            for p in candidates[0].get("content", {}).get("parts", [])
+                        ).strip()
+                        if raw_text:
+                            try:
+                                parsed = json.loads(raw_text)
+                                reply_text = str(parsed.get("reply") or "").strip()
+                                selected_ids = parsed.get("selected_card_ids") or []
+                                chosen_cards = [
+                                    cards_by_id[str(cid)]
+                                    for cid in selected_ids
+                                    if str(cid) in cards_by_id
+                                ][:2]
+                                if reply_text:
+                                    return {
+                                        "content": reply_text,
+                                        "ui_cards": chosen_cards,
+                                        "model_used": cls.MODEL_NAME,
+                                        "success": True,
+                                    }
+                            except json.JSONDecodeError:
+                                # Fallback if model returned plain text despite responseSchema
+                                return {
+                                    "content": raw_text,
+                                    "ui_cards": ui_cards[:2],
+                                    "model_used": cls.MODEL_NAME,
+                                    "success": True,
+                                }
             except Exception as e:
                 import logging
                 logging.getLogger("apps.chat").warning(f"Gemini API call failed, falling back to local engine: {e}")
@@ -105,6 +170,7 @@ class AICoachLLMService:
         fallback_content = cls._build_rule_based_coach_response(query, retrieved_chunks, ui_cards, preferred_lang)
         return {
             "content": fallback_content,
+            "ui_cards": ui_cards[:2],
             "model_used": "telemetry-rag-engine",
             "success": True,
         }

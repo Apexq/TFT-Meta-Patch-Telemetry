@@ -64,38 +64,44 @@ def send_message_view(request):
         content_markdown=query,
     )
 
-    # If query is short or refers to previous comp (e.g. "compta hangi herolar var"), augment query with previous context
-    effective_query = query
-    recent_messages = session.messages.filter(role="user").exclude(id=user_msg.id).order_by("-created_at")[:2]
-    if recent_messages.exists() and any(w in query.lower() for w in ("compta", "bu comp", "tahtada", "erken", "hero", "hangi")):
-        prev_text = " ".join(m.content_markdown for m in recent_messages)
-        effective_query = f"{prev_text} {query}"
+    # Collect recent conversation history (up to last 6 messages, chronological order)
+    prior_msgs = list(
+        session.messages.exclude(id=user_msg.id).order_by("-created_at")[:6]
+    )
+    prior_msgs.reverse()
+    history = [
+        {"role": m.role, "content": m.content_markdown}
+        for m in prior_msgs
+    ]
+    recent_history_text = " ".join(m.content_markdown for m in prior_msgs[-2:])
 
-    # Retrieve matching RAG chunks & Generative UI card payloads
+    # Retrieve matching RAG chunks & candidate Generative UI card payloads
     rag_result = TelemetryRAGService.retrieve_chunks_and_cards(
-        query=effective_query,
-        top_k=6,
+        query=query,
+        top_k=8,
         preferred_lang="tr",
         selected_items=selected_items,
+        history_text=recent_history_text,
     )
 
-    # Generate AI Coach Response
+    # Generate AI Coach Response (AI decides both reply and which Hextech cards to render)
     ai_result = AICoachLLMService.generate_coach_response(
         query=query,
         retrieved_chunks=rag_result["chunks"],
         ui_cards=rag_result["ui_cards"],
         preferred_lang="tr",
         mode=mode,
+        history=history,
     )
 
     latency_ms = int((time.time() - start_time) * 1000)
 
-    # Save Assistant Message
+    # Save Assistant Message with AI-selected UI cards
     assistant_msg = ChatMessage.objects.create(
         session=session,
         role="assistant",
         content_markdown=ai_result["content"],
-        ui_cards_json=rag_result["ui_cards"],
+        ui_cards_json=ai_result.get("ui_cards", []),
         cited_chunk_ids=rag_result["cited_chunk_ids"],
         latency_ms=latency_ms,
         model_used=ai_result["model_used"],
