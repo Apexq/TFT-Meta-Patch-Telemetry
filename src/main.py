@@ -71,8 +71,15 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         f"| PBE: {versions['pbe_label']} | DDragon: {versions.get('ddragon_version', '-')}"
     )
 
-    latest_data = tr_client.fetch_set18_data(versions["latest_cdragon"], force_refresh=check_only)
-    pbe_data = tr_client.fetch_set18_data("pbe", force_refresh=check_only)
+    try:
+        latest_data = tr_client.fetch_set18_data(versions["latest_cdragon"], force_refresh=check_only)
+        pbe_data = tr_client.fetch_set18_data("pbe", force_refresh=check_only)
+    except RuntimeError as exc:
+        if check_only and not force:
+            print(f"[Check-Only Warning] CommunityDragon unreachable ({exc}); skipping run cleanly.")
+            write_github_output({"should_run": "false", "live_changed": "false", "pbe_changed": "false", "meta_stale": "false"})
+            return {"should_run": False, "versions": versions}
+        raise
 
     latest_fp = CDragonClient.compute_set18_fingerprint(latest_data)
     pbe_fp = CDragonClient.compute_set18_fingerprint(pbe_data)
