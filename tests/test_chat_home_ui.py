@@ -1,5 +1,5 @@
 """
-Tests for Task 3: Chat-First homepage and slide-over drawers.
+Tests for Chat-First homepage and slide-over drawers.
 """
 
 import pytest

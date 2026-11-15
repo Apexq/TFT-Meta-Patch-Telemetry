@@ -1,5 +1,5 @@
 """
-Tests for Task 5: Opener Builder & Item Pivot Tool.
+Tests for Opener Builder & Item Pivot Tool.
 """
 
 import json

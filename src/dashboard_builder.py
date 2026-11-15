@@ -63,7 +63,7 @@ class DashboardBuilder:
         lines = [
             f"# TFT Set 18 Patch & Meta Report ({v['previous_label']} -> {v['latest_label']})",
             "",
-            f"**Data Source:** {live_meta.get('data_source_en') or live_meta['data_source']}",
+            f"**Data Source:** {live_meta.get('data_source_en') or live_meta.get('data_source', 'Master+ Telemetry')}",
             "",
             "### Executive Summary (EN)",
             f"**{ai.get('live_headline_en') or ai['live_headline']}**",
@@ -114,15 +114,15 @@ class DashboardBuilder:
         if aug_data and aug_data.get("augments"):
             lines.extend([
                 "",
-                "## Set 18 Top S-Tier Augments (Master+ Telemetry)",
-                "| Tier | Augment (EN / TR) | Rarity | Rounds | Avg Place | Pick Rate | Top 4 % | Win % |",
-                "| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: |",
+                "## Set 18 Top S-Tier Augments (Riot Policy Compliant)",
+                "| Tier | Augment (EN / TR) | Rarity | Rounds |",
+                "| :---: | :--- | :---: | :---: |",
             ])
             for aug in [a for a in aug_data.get("augments", []) if a.get("tier") == "S"][:10]:
                 name_en = aug.get("name_en", aug["name"])
                 rnds = ", ".join(aug.get("rounds", []))
                 lines.append(
-                    f"| **S** | {name_en} ({aug['name']}) | `{aug.get('rarity')}` | `{rnds}` | **#{aug['avg_place']}** | {aug['pick_rate']}% | {aug['top4_rate']}% | {aug['win_rate']}% |"
+                    f"| **S** | {name_en} ({aug['name']}) | `{aug.get('rarity')}` | `{rnds}` |"
                 )
 
         mech_data = report.get("mechanics", {})
@@ -141,10 +141,10 @@ class DashboardBuilder:
         lines.extend([
             "",
             f"## PBE Early Preview ({v['pbe_label']})",
-            f"**{ai.get('pbe_headline_en') or ai['pbe_headline']}**",
+            f"**{ai.get('pbe_headline_en') or ai.get('pbe_headline', 'PBE Synchronized')}**",
             "",
-            f"{ai.get('pbe_analysis_en') or ai['pbe_analysis']}",
+            f"{ai.get('pbe_analysis_en') or ai.get('pbe_analysis', '')}",
             "",
-            f"*Generated at: {report['generated_at']} | Target Mutator: `TFTSet18`*",
+            f"*Generated at: {report.get('generated_at', 'N/A')} | Target Mutator: `TFTSet18`*",
         ])
         return "\n".join(lines)

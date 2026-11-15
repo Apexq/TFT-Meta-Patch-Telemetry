@@ -1,5 +1,5 @@
 """
-Comprehensive tests for User Accounts, Guest Chat Transfer, and Daily Quota System (Task 7).
+Comprehensive tests for User Accounts, Guest Chat Transfer, and Daily Quota System.
 """
 
 import json

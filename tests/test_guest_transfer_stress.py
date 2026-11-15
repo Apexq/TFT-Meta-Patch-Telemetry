@@ -1,5 +1,5 @@
 """
-Empirical stress-test suite for Milestone 3 (Task 7): Guest Chat Transfer & Auth Flows.
+Adversarial stress-test suite for Guest Chat Transfer & Auth Flows.
 Challenger Verification Harness for adversarial testing and edge case exploration.
 """
 

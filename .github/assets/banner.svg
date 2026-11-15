@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" width="100%" height="260" role="img" aria-label="TFT Meta &amp; AI Coach Platform">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070b12"/>
+      <stop offset="55%" stop-color="#0d1320"/>
+      <stop offset="100%" stop-color="#0a0e17"/>
+    </linearGradient>
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c89b3c"/>
+      <stop offset="50%" stop-color="#f0c374"/>
+      <stop offset="100%" stop-color="#c89b3c"/>
+    </linearGradient>
+    <linearGradient id="accent-line" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f0c374" stop-opacity="0"/>
+      <stop offset="25%" stop-color="#f0c374" stop-opacity="0.7"/>
+      <stop offset="75%" stop-color="#38bdf8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="260" rx="14" fill="url(#bg-grad)"/>
+  <rect x="1.5" y="1.5" width="1197" height="257" rx="13" fill="none" stroke="#222d42" stroke-width="1.5"/>
+
+  <!-- Subtle Hextech grid accents -->
+  <g stroke="#1b263b" stroke-width="1" opacity="0.55">
+    <path d="M 60 0 L 60 260 M 1140 0 L 1140 260"/>
+    <path d="M 0 44 L 1200 44 M 0 216 L 1200 216"/>
+  </g>
+  <polygon points="88,78 112,92 112,120 88,134 64,120 64,92" fill="none" stroke="#f0c374" stroke-width="2" opacity="0.85"/>
+  <polygon points="88,88 103,97 103,115 88,124 73,115 73,97" fill="#f0c374" fill-opacity="0.14"/>
+
+  <text x="142" y="102" fill="url(#gold-grad)" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="38" font-weight="800" letter-spacing="0.5">
+    TFT Set 18 · AI Coach &amp; Patch Telemetry
+  </text>
+  <text x="142" y="142" fill="#cbd5e1" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="500">
+    Telemetry-grounded strategy coaching, live Master+ patch deltas, and post-game match intelligence
+  </text>
+
+  <line x1="142" y1="168" x2="1080" y2="168" stroke="url(#accent-line)" stroke-width="1.5"/>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="13" font-weight="600">
+    <rect x="142" y="186" width="166" height="30" rx="6" fill="#121a2a" stroke="#29364f"/>
+    <text x="225" y="206" text-anchor="middle" fill="#f0c374">DJANGO 5 · HTMX</text>
+
+    <rect x="322" y="186" width="198" height="30" rx="6" fill="#121a2a" stroke="#29364f"/>
+    <text x="421" y="206" text-anchor="middle" fill="#38bdf8">RIOT &amp; CDRAGON SYNC</text>
+
+    <rect x="534" y="186" width="214" height="30" rx="6" fill="#121a2a" stroke="#29364f"/>
+    <text x="641" y="206" text-anchor="middle" fill="#34d399">RIOT POLICY COMPLIANT</text>
+
+    <rect x="762" y="186" width="178" height="30" rx="6" fill="#121a2a" stroke="#29364f"/>
+    <text x="851" y="206" text-anchor="middle" fill="#e2e8f0">BILINGUAL TR / EN</text>
+  </g>
+</svg>

@@ -1,5 +1,5 @@
 """
-Unit tests for Django ORM models and verification endpoints (Task 1).
+Unit tests for Django ORM models and verification endpoints.
 """
 
 import pytest

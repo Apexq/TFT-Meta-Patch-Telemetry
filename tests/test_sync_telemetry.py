@@ -1,5 +1,5 @@
 """
-Integration tests for Task 2: sync_tft_meta and TelemetryRAGService.
+Integration tests for sync_tft_meta and TelemetryRAGService.
 """
 
 import pytest

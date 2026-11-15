@@ -1,5 +1,5 @@
 """
-Tests for Task 4: AI Coach Chat Engine, LLM service, and Generative UI cards.
+Tests for AI Coach Chat Engine, LLM service, and Generative UI cards.
 """
 
 import json

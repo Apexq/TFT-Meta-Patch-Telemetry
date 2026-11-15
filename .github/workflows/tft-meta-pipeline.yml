@@ -25,10 +25,14 @@ on:
       - "data/state.json"
       - "data/meta_report.json"
       - "README.md"
-      - "ARCHITECTURE.md"
-      - "DATABASE.md"
-      - "RULES.md"
-      - "PLAN.md"
+      - "SECURITY.md"
+      - "LICENSE"
+      - ".editorconfig"
+      - ".gitattributes"
+      - ".github/assets/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/CODEOWNERS"
       - "worker/**"
 
 # Principle of least privilege at workflow root; elevated per-job below

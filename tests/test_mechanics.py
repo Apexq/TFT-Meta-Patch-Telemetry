@@ -272,3 +272,30 @@ def test_dashboard_renders_augments_and_mechanics(mock_set18_data, sample_meta_c
     assert "Altın Şöleni" in rendered_html
     assert "Aftershock" in rendered_html
     assert "Artçı Sarsıntı" in rendered_html
+
+
+def test_step_summary_markdown_omits_banned_augment_stats(mock_set18_data, sample_meta_comps):
+    analyzer = RiotTFTAnalyzer()
+    aug_report = analyzer.fetch_augment_tier_list(mock_set18_data, meta_compositions=sample_meta_comps)
+    mech_report = analyzer.fetch_set18_mechanics_telemetry(mock_set18_data, meta_compositions=sample_meta_comps)
+
+    full_report = {
+        "generated_at": "2026-11-09 13:00 UTC",
+        "versions": {"latest_label": "18.6", "previous_label": "18.5", "pbe_label": "18.7"},
+        "ai_summary": {
+            "live_headline": "Test",
+            "live_analysis": "Test",
+            "pbe_headline": "PBE OK",
+            "pbe_analysis": "PBE synced.",
+        },
+        "live_diff": {"champion_diffs": []},
+        "live_meta": {"compositions": sample_meta_comps},
+        "augments": aug_report,
+        "mechanics": mech_report,
+    }
+
+    summary_md = DashboardBuilder().build_step_summary_markdown(full_report)
+    assert "Set 18 Top S-Tier Augments (Riot Policy Compliant)" in summary_md
+    augment_section = summary_md.split("Set 18 Top S-Tier Augments", 1)[1].split("Set 18 Opening Encounters", 1)[0]
+    for banned_metric in ("Avg Place", "Pick Rate", "Top 4 %", "Win %"):
+        assert banned_metric not in augment_section

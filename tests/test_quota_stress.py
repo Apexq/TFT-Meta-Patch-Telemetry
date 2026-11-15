@@ -1,5 +1,5 @@
 """
-Empirical Stress-Test Suite for Milestone 3 (Task 7):
+Adversarial Stress-Test Suite:
 Quota Enforcement, Midnight Resets, Multi-Tier Limits, Guest Quotas, and Profile Sync.
 
 Verifies:

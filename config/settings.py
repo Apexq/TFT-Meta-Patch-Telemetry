@@ -20,7 +20,7 @@ if env_file.exists():
                     val = val[1:-1]
                 os.environ.setdefault(k.strip(), val)
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-tft-set18-dev-secret-key-apexq-2026")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-local-development-fallback-key")
 
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() in ("true", "1", "yes")
 

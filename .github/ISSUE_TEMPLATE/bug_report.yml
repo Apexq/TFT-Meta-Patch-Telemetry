@@ -1,0 +1,37 @@
+name: Bug Report
+description: Report an issue on the hosted TFT AI Coach web platform or telemetry dashboard
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue on the hosted platform. Please verify it is not a security issue (use **Security Advisories** instead).
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected Area
+      options:
+        - AI Coach Chat & Comp Cards
+        - Match History & Post-Game Analyzer
+        - Patch Telemetry & Meta Drawers
+        - Account & UI Language (TR / EN)
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Clear description of the unexpected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Navigate to '...'
+        2. Send query or select '...'
+        3. Observe unexpected output
+    validations:
+      required: true

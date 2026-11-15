@@ -34,3 +34,9 @@ staticfiles/
 
 .wrangler/
 worker/.wrangler/
+
+# Internal agent & OS artifacts
+.agents/
+handoff.md
+*.log
+nul
