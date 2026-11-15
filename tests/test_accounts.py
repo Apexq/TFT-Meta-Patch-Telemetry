@@ -510,3 +510,51 @@ class QuotaSystemTests(TestCase):
         data = res_limit.json()
         self.assertTrue(data.get("quota_exceeded"))
         self.assertIn("Misafir oturumu soru limitinize ulaştınız", data.get("error", ""))
+
+    def test_login_open_redirect_blocked_and_logout_post_only(self):
+        """
+        Ensures login rejects external/scheme-relative next URLs (Open Redirect)
+        and logout rejects GET requests with 405 Method Not Allowed.
+        """
+        User.objects.create_user(username="redir_user", password="password123")
+
+        res_evil = self.client.post(
+            reverse("accounts:login") + "?next=https://evil.example.com/phish",
+            data={"username": "redir_user", "password": "password123"},
+        )
+        self.assertEqual(res_evil.status_code, 302)
+        self.assertEqual(res_evil.url, "/")
+
+        res_get_logout = self.client.get(reverse("accounts:logout"))
+        self.assertEqual(res_get_logout.status_code, 405)
+
+        # GET logout must not have logged user out; verify safe internal redirect on a fresh unauthenticated client
+        fresh_client = Client()
+        res_safe = fresh_client.post(
+            reverse("accounts:login") + "?next=/accounts/profile/",
+            data={"username": "redir_user", "password": "password123"},
+        )
+        self.assertEqual(res_safe.status_code, 302)
+        self.assertEqual(res_safe.url, "/accounts/profile/")
+
+    def test_pro_plan_dynamic_quota_sync_and_429_message(self):
+        """
+        Switching plan_tier from FREE to PRO updates daily_quota_limit to 500
+        and the 429 message dynamically reports 500 soru/gün.
+        """
+        self.profile.plan_tier = "PRO"
+        self.profile.save()
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.daily_quota_limit, 500)
+
+        self.profile.daily_quota_used = 500
+        self.profile.save(update_fields=["daily_quota_used"])
+
+        self.client.login(username="quota_user", password="quota_pass_123")
+        res = self.client.post(
+            reverse("chat:send_message"),
+            data=json.dumps({"query": "PRO limit check"}),
+            content_type="application/json",
+        )
+        self.assertEqual(res.status_code, 429)
+        self.assertIn("500 soru/gün", res.json().get("error", ""))

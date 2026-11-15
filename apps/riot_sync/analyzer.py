@@ -14,6 +14,17 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 logger = logging.getLogger("apps.riot_sync")
 
+# Riot tft-match-v1 sends 0-indexed rarity instead of gold cost for standard units
+RARITY_TO_COST: Dict[int, int] = {
+    0: 1,
+    1: 2,
+    2: 3,
+    3: 4,
+    4: 5,
+    6: 5,
+    9: 5,
+}
+
 # Standard Set 18 Bag Pool Sizes
 POOL_SIZES: Dict[int, int] = {
     1: 30,
@@ -134,26 +145,168 @@ class MatchAnalyzer:
 
     @classmethod
     def clean_name(cls, raw_name: str) -> str:
-        """Strips TFT prefixes for clean readable name."""
-        return (
-            raw_name.replace("TFT18_", "")
-            .replace("DA_18_", "")
-            .replace("DA_", "")
-            .replace("TFT_", "")
-            .replace("Item_", "")
-            .strip()
+        """Strips TFT prefixes and technical Set/role suffixes for clean readable name."""
+        if not raw_name:
+            return ""
+        s = str(raw_name).strip()
+        for prefix in (
+            "TFT18_",
+            "TFT15_",
+            "TFT14_",
+            "TFT13_",
+            "DA_18_",
+            "DA_",
+            "TFT_Item_",
+            "TFT_",
+            "Item_",
+        ):
+            s = s.replace(prefix, "")
+        for suffix in ("_Base", "_base", "_AD", "_AP", "_Tank"):
+            if s.endswith(suffix):
+                s = s[: -len(suffix)]
+        if s.endswith("18") and len(s) > 2:
+            s = s[:-2]
+        return s.strip()
+
+    @staticmethod
+    def _norm_key(raw: str) -> str:
+        """Normalizes champion or item identifiers for fuzzy matching."""
+        return "".join(ch for ch in str(raw or "").lower() if ch.isalnum())
+
+    @classmethod
+    def get_set18_unit_catalog(cls) -> Dict[str, Dict[str, Any]]:
+        """
+        Builds an index of Set 18 champions from the active PatchSnapshot
+        (`tier_lists.unit_tiers`) mapping normalized IDs/names to exact gold cost and BiS items.
+        """
+        catalog: Dict[str, Dict[str, Any]] = {}
+        try:
+            from apps.telemetry.services import TelemetryRAGService
+            snap = TelemetryRAGService.get_active_snapshot()
+        except Exception:
+            snap = None
+
+        if not snap or not isinstance(snap.full_report_json, dict):
+            return catalog
+
+        unit_tiers = (
+            snap.full_report_json.get("tier_lists", {}).get("unit_tiers", [])
+            or []
         )
+        for u in unit_tiers:
+            if not isinstance(u, dict):
+                continue
+            cost_raw = u.get("cost")
+            try:
+                cost_val = int(cost_raw) if cost_raw is not None else 0
+            except (ValueError, TypeError):
+                cost_val = 0
+
+            best_items = u.get("best_items") or []
+            entry = {
+                "apiName": u.get("apiName", ""),
+                "name": u.get("name", ""),
+                "name_en": u.get("name_en", ""),
+                "cost": cost_val,
+                "bis_en": [bi.get("name_en") or bi.get("name") or "" for bi in best_items if isinstance(bi, dict)],
+                "bis_tr": [bi.get("name") or bi.get("name_en") or "" for bi in best_items if isinstance(bi, dict)],
+                "bis_apis": [bi.get("apiName") or "" for bi in best_items if isinstance(bi, dict)],
+            }
+
+            keys = set()
+            for candidate in (
+                u.get("apiName", ""),
+                cls.clean_name(u.get("apiName", "")),
+                u.get("name_en", ""),
+                u.get("name", ""),
+            ):
+                if candidate:
+                    c_low = str(candidate).strip().lower()
+                    keys.add(c_low)
+                    keys.add(cls._norm_key(candidate))
+                    if c_low.endswith("small") and len(c_low) > 5:
+                        keys.add(c_low[:-5])
+                        keys.add(cls._norm_key(c_low[:-5]))
+            for k in keys:
+                if k:
+                    catalog.setdefault(k, entry)
+
+        return catalog
+
+    @classmethod
+    def _lookup_catalog_entry(
+        cls,
+        char_id: str,
+        unit_name: str = "",
+        unit_catalog: Optional[Dict[str, Dict[str, Any]]] = None,
+    ) -> Optional[Dict[str, Any]]:
+        if not unit_catalog:
+            return None
+        cleaned = cls.clean_name(char_id)
+        for candidate in (char_id, cleaned, unit_name):
+            if not candidate:
+                continue
+            low = str(candidate).strip().lower()
+            if low in unit_catalog:
+                return unit_catalog[low]
+            normed = cls._norm_key(candidate)
+            if normed in unit_catalog:
+                return unit_catalog[normed]
+        return None
+
+    @classmethod
+    def resolve_unit_cost(
+        cls,
+        unit: Dict[str, Any],
+        unit_catalog: Optional[Dict[str, Dict[str, Any]]] = None,
+        default: int = 3,
+    ) -> int:
+        """
+        Resolves true TFT gold cost (1-5) for a unit payload.
+        Explicit 'cost' takes precedence; otherwise checks Set 18 CDragon/Snapshot catalog
+        before mapping Riot's 0-indexed 'rarity' field.
+        """
+        explicit_cost = unit.get("cost")
+        if explicit_cost is not None:
+            try:
+                c = int(explicit_cost)
+                if 1 <= c <= 7:
+                    return c
+            except (ValueError, TypeError):
+                pass
+
+        char_id = unit.get("character_id") or unit.get("name") or ""
+        entry = cls._lookup_catalog_entry(char_id, unit.get("name", ""), unit_catalog)
+        if entry and 1 <= entry.get("cost", 0) <= 7:
+            return int(entry["cost"])
+
+        rarity = unit.get("rarity")
+        if rarity is not None:
+            try:
+                r = int(rarity)
+                if r in RARITY_TO_COST:
+                    return RARITY_TO_COST[r]
+                if 0 <= r <= 4:
+                    return r + 1
+            except (ValueError, TypeError):
+                pass
+
+        return default
 
     @classmethod
     def analyze_contested_units(
         cls,
         target_units: List[Dict[str, Any]],
         opponent_participants: List[Dict[str, Any]],
+        unit_catalog: Optional[Dict[str, Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
         """
         Pillar 1: Compares player's units against all 7 lobby opponents.
         Calculates copy counts and bag pool depletion percentages.
         """
+        if unit_catalog is None:
+            unit_catalog = cls.get_set18_unit_catalog()
+
         contested_list = []
         is_heavily_contested = False
 
@@ -162,7 +315,7 @@ class MatchAnalyzer:
             clean_id = cls.clean_name(char_id).lower()
             player_tier = unit.get("tier", 1)
             player_copies = TIER_COPIES.get(player_tier, 1)
-            cost = unit.get("rarity", unit.get("cost", 3))
+            cost = cls.resolve_unit_cost(unit, unit_catalog=unit_catalog, default=3)
             pool_size = POOL_SIZES.get(cost, 18)
 
             opponents_holding = 0
@@ -316,11 +469,18 @@ class MatchAnalyzer:
         }
 
     @classmethod
-    def analyze_bis_fit(cls, target_units: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def analyze_bis_fit(
+        cls,
+        target_units: List[Dict[str, Any]],
+        unit_catalog: Optional[Dict[str, Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
         """
         Pillar 3: Carry Best-in-Slot (BiS) Item Fit.
         Detects carry units and evaluates equipped items against optimal Set 18 itemization.
         """
+        if unit_catalog is None:
+            unit_catalog = cls.get_set18_unit_catalog()
+
         carries = []
         total_fit_scores = []
 
@@ -328,14 +488,31 @@ class MatchAnalyzer:
         for u in target_units:
             char_id = u.get("character_id") or u.get("name") or ""
             items = u.get("itemNames") or u.get("items") or []
-            cost = u.get("rarity", u.get("cost", 1))
+            cost = cls.resolve_unit_cost(u, unit_catalog=unit_catalog, default=1)
 
             if len(items) >= 2 or (len(items) >= 1 and cost >= 4):
                 clean_char = cls.clean_name(char_id).lower()
                 unit_name = u.get("name") or cls.clean_name(char_id)
 
-                # Look up carry profile
+                # Look up carry profile: curated KNOWN_BIS_CARRIES first, then active PatchSnapshot catalog
                 profile = KNOWN_BIS_CARRIES.get(clean_char)
+                catalog_entry = cls._lookup_catalog_entry(char_id, unit_name, unit_catalog)
+                dynamic_display_bis: List[str] = []
+
+                if not profile and catalog_entry and (catalog_entry.get("bis_en") or catalog_entry.get("bis_apis")):
+                    bis_candidates = [
+                        cls.clean_name(x).lower()
+                        for x in (catalog_entry.get("bis_en", []) + catalog_entry.get("bis_apis", []))
+                        if x
+                    ]
+                    dynamic_display_bis = [x for x in (catalog_entry.get("bis_tr") or catalog_entry.get("bis_en") or []) if x]
+                    profile = {
+                        "role": "SNAPSHOT_META",
+                        "bis": list(dict.fromkeys(bis_candidates)),
+                        "good": [],
+                        "bad": [],
+                    }
+
                 clean_items = [cls.clean_name(it).lower() for it in items]
 
                 if profile:
@@ -343,20 +520,19 @@ class MatchAnalyzer:
                     good_set = profile.get("good", [])
                     bad_set = profile.get("bad", [])
 
-                    def norm(s: str) -> str:
-                        return s.lower().replace(" ", "").replace("_", "").replace("-", "").replace("'", "")
-
                     bis_matches = 0
                     good_matches = 0
                     bad_matches = 0
 
                     for itm in clean_items:
-                        norm_itm = norm(cls.clean_name(itm))
-                        if any(norm(b) in norm_itm or norm_itm in norm(b) for b in bis_set):
+                        norm_itm = cls._norm_key(cls.clean_name(itm))
+                        if not norm_itm:
+                            continue
+                        if any(cls._norm_key(b) in norm_itm or norm_itm in cls._norm_key(b) for b in bis_set if cls._norm_key(b)):
                             bis_matches += 1
-                        elif any(norm(g) in norm_itm or norm_itm in norm(g) for g in good_set):
+                        elif any(cls._norm_key(g) in norm_itm or norm_itm in cls._norm_key(g) for g in good_set if cls._norm_key(g)):
                             good_matches += 1
-                        elif any(norm(w) in norm_itm or norm_itm in norm(w) for w in bad_set):
+                        elif any(cls._norm_key(w) in norm_itm or norm_itm in cls._norm_key(w) for w in bad_set if cls._norm_key(w)):
                             bad_matches += 1
 
                     if bis_matches >= 3 or (len(items) == 2 and bis_matches == 2):
@@ -364,7 +540,7 @@ class MatchAnalyzer:
                         rating = "Optimal BiS"
                         critique_tr = f"{unit_name} üzerinde kurulan eşyalar tamamen optimal (BiS)."
                         critique_en = f"{unit_name} itemization is optimal BiS."
-                    elif bis_matches >= 2 or (bis_matches == 1 and good_matches >= 1):
+                    elif bis_matches >= 2 or (bis_matches == 1 and (good_matches >= 1 or profile.get("role") == "SNAPSHOT_META")):
                         fit_score = 80
                         rating = "Solid Flex"
                         critique_tr = f"{unit_name} üzerinde güçlü ve esnek eşya tercihi yapılmış."
@@ -380,12 +556,13 @@ class MatchAnalyzer:
                         critique_tr = f"{unit_name} için daha ideal eşya kombinasyonları mümkündü."
                         critique_en = f"{unit_name} has suboptimal item combinations."
 
+                    bis_display = dynamic_display_bis[:3] if dynamic_display_bis else [b.title() for b in bis_set[:3]]
                     carries.append({
                         "unit_name": unit_name,
                         "character_id": char_id,
                         "cost": cost,
                         "equipped_items": [cls.clean_name(it) for it in items],
-                        "bis_items": [b.title() for b in bis_set[:3]],
+                        "bis_items": bis_display,
                         "fit_score": fit_score,
                         "rating": rating,
                         "critique_tr": critique_tr,
@@ -432,14 +609,17 @@ class MatchAnalyzer:
         target_p = None
         other_participants = []
         for p in participants:
-            if p.get("puuid") == target_puuid:
+            if target_puuid and p.get("puuid") == target_puuid:
                 target_p = p
             else:
                 other_participants.append(p)
 
         if not target_p and participants:
-            target_p = participants[0]
-            other_participants = participants[1:]
+            if not target_puuid:
+                target_p = participants[0]
+                other_participants = participants[1:]
+            else:
+                logger.warning("Target PUUID %s not found in match participants; skipping board attribution.", target_puuid)
 
         target_units = target_p.get("units", []) if target_p else []
         placement = target_p.get("placement", 8) if target_p else 8
@@ -447,10 +627,11 @@ class MatchAnalyzer:
         gold_left = target_p.get("gold_left", 0) if target_p else 0
         last_round = target_p.get("last_round", "") if target_p else ""
 
-        # Run 3 Pillars
-        contested_res = cls.analyze_contested_units(target_units, other_participants)
+        # Run 3 Pillars (shared Set 18 unit catalog)
+        unit_catalog = cls.get_set18_unit_catalog()
+        contested_res = cls.analyze_contested_units(target_units, other_participants, unit_catalog=unit_catalog)
         economy_res = cls.analyze_economy_and_tempo(placement, level, gold_left, last_round)
-        bis_res = cls.analyze_bis_fit(target_units)
+        bis_res = cls.analyze_bis_fit(target_units, unit_catalog=unit_catalog)
 
         # Synthesize Primary Cause and Strengths / Mistakes
         strengths: List[str] = []

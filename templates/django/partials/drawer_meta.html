@@ -63,7 +63,7 @@
       <div class="flex items-center justify-between pt-2 border-t border-[#1c2536] text-[11px]">
         <span class="text-slate-400 mono">{{ comp.levelling }}</span>
         <button type="button"
-          onclick="askPresetQuestion('{{ comp.comp_name }} nasıl oynanır, seviye basma temposu nedir?')"
+          onclick="askPresetQuestion('{{ comp.comp_name|escapejs }} nasıl oynanır, seviye basma temposu nedir?')"
           class="text-[#f0c374] hover:underline font-semibold flex items-center gap-1">
           <span>AI Koç'a Sor &rarr;</span>
         </button>

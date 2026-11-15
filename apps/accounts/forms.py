@@ -4,7 +4,6 @@ Forms for user authentication, registration, and profile management.
 
 from django import forms
 from django.contrib.auth import get_user_model, authenticate
-from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from apps.accounts.models import UserProfile
 

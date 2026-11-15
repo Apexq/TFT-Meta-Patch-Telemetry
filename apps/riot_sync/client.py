@@ -319,14 +319,19 @@ class RiotApiClient:
         # Fetch Rank
         rank_info = self.get_tft_rank(puuid, region)
 
-        # Fetch Match IDs
-        match_ids = self.get_recent_match_ids(puuid, region, count=count)
+        # Fetch Match IDs (larger window so skipped non-Set-18 games don't short-change the requested count)
+        fetch_limit = min(20, max(count, count * 2)) if count <= 10 else count
+        match_ids = self.get_recent_match_ids(puuid, region, count=fetch_limit)
+        unit_catalog = MatchAnalyzer.get_set18_unit_catalog()
 
         cached_matches: List[PlayerMatchCache] = []
 
         for mid in match_ids:
-            # Check DB Cache first
-            cached_obj = PlayerMatchCache.objects.filter(match_id=mid).first()
+            if len(cached_matches) >= count:
+                break
+
+            # Check per-player DB cache first
+            cached_obj = PlayerMatchCache.objects.filter(match_id=mid, puuid=puuid).first()
             if cached_obj:
                 cached_matches.append(cached_obj)
                 continue
@@ -341,6 +346,10 @@ class RiotApiClient:
             info = detail.get("info", {})
             metadata = detail.get("metadata", {})
             participants = info.get("participants", [])
+
+            if not self._is_set18_match(info):
+                logger.info(f"Skipping non-Set-18 match {mid} (set={info.get('tft_set_number')})")
+                continue
 
             # Locate target player participant
             target_p = None
@@ -359,21 +368,20 @@ class RiotApiClient:
                         target_p = p
                         break
 
-            if not target_p and participants:
-                target_p = participants[0]
-
             if not target_p:
+                logger.warning(f"Target player {full_riot_id} ({puuid}) not found in match {mid}, skipping.")
                 continue
 
             # Analyze match using MatchAnalyzer (Pillars 1, 2, 3)
-            analysis = MatchAnalyzer.analyze_match(detail, target_puuid=puuid)
+            target_participant_puuid = target_p.get("puuid") or puuid
+            analysis = MatchAnalyzer.analyze_match(detail, target_puuid=target_participant_puuid)
 
             # Extract board, traits, augments
             player_board = []
             for u in target_p.get("units", []):
                 char_id = u.get("character_id", "")
-                name = char_id.replace("TFT18_", "").replace("DA_18_", "").replace("DA_", "")
-                cost = u.get("rarity", u.get("cost", 1))
+                name = MatchAnalyzer.clean_name(char_id)
+                cost = MatchAnalyzer.resolve_unit_cost(u, unit_catalog=unit_catalog, default=1)
                 player_board.append({
                     "character_id": char_id,
                     "name": name,
@@ -407,23 +415,25 @@ class RiotApiClient:
             last_round_raw = target_p.get("last_round", "")
             last_round_stage = MatchAnalyzer.round_to_stage(last_round_raw)
 
-            # Create PlayerMatchCache
-            match_cache = PlayerMatchCache.objects.create(
+            # Persist per-(match_id, puuid) cache cleanly
+            match_cache, _ = PlayerMatchCache.objects.update_or_create(
                 match_id=mid,
                 puuid=puuid,
-                riot_id_display=full_riot_id,
-                region=region.upper(),
-                patch_version=info.get("game_version", "Set 18 (18.6)"),
-                placement=target_p.get("placement", 8),
-                level=target_p.get("level", 8),
-                gold_left=target_p.get("gold_left", 0),
-                last_round=last_round_stage,
-                player_board_json=player_board,
-                active_traits_json=active_traits,
-                augments_selected_json=augments,
-                lobby_contested_json=analysis.get("lobby_contested_json", {}),
-                ai_diagnosis_cache=analysis.get("diagnosis", {}),
-                game_datetime=game_dt,
+                defaults={
+                    "riot_id_display": full_riot_id,
+                    "region": region.upper(),
+                    "patch_version": info.get("game_version", "Set 18 (18.6)"),
+                    "placement": target_p.get("placement", 8),
+                    "level": target_p.get("level", 8),
+                    "gold_left": target_p.get("gold_left", 0),
+                    "last_round": last_round_stage,
+                    "player_board_json": player_board,
+                    "active_traits_json": active_traits,
+                    "augments_selected_json": augments,
+                    "lobby_contested_json": analysis.get("lobby_contested_json", {}),
+                    "ai_diagnosis_cache": analysis.get("diagnosis", {}),
+                    "game_datetime": game_dt,
+                },
             )
             cached_matches.append(match_cache)
 
@@ -437,6 +447,35 @@ class RiotApiClient:
         }
 
         return player_info, cached_matches
+
+
+    @classmethod
+    def _is_set18_match(cls, info: Dict[str, Any]) -> bool:
+        """
+        Returns True when a match payload belongs to TFT Set 18 (or test fixtures without legacy prefixes).
+        Filters out older Revival / legacy set matches (e.g., TFT15_).
+        """
+        tft_set = info.get("tft_set_number")
+        if tft_set is not None:
+            try:
+                return int(tft_set) == 18
+            except (ValueError, TypeError):
+                pass
+
+        participants = info.get("participants", [])
+        legacy_prefixes = ("TFT15_", "TFT14_", "TFT13_", "TFT12_", "TFT16_", "TFT17_")
+        saw_legacy = False
+        saw_set18 = False
+        for p in participants:
+            for u in p.get("units", []):
+                cid = str(u.get("character_id") or "")
+                if cid.startswith("TFT18_") or cid.startswith("DA_18_") or cid.endswith("18") or cid.endswith("18_Base"):
+                    saw_set18 = True
+                elif cid.startswith(legacy_prefixes):
+                    saw_legacy = True
+        if saw_legacy and not saw_set18:
+            return False
+        return True
 
 
 # Backward compatibility alias

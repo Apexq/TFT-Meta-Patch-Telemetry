@@ -41,7 +41,10 @@ def fetch_player_matches_view(request: HttpRequest) -> JsonResponse:
             body = {}
         riot_id = body.get("riot_id") or body.get("summoner_name", "")
         region = body.get("region", "TR1")
-        count = int(body.get("count", 5))
+        try:
+            count = int(body.get("count", 5))
+        except (ValueError, TypeError):
+            count = 5
     else:
         riot_id = request.GET.get("riot_id") or request.GET.get("summoner_name", "")
         region = request.GET.get("region", "TR1")
@@ -49,6 +52,8 @@ def fetch_player_matches_view(request: HttpRequest) -> JsonResponse:
             count = int(request.GET.get("count", 5))
         except (ValueError, TypeError):
             count = 5
+
+    count = max(1, min(20, count))
 
     riot_id = (riot_id or "").strip()
     if not riot_id:
@@ -103,6 +108,20 @@ def fetch_player_matches_view(request: HttpRequest) -> JsonResponse:
     })
 
 
+def _extract_match_param(request: HttpRequest, key: str, default: str = "") -> str:
+    val = request.GET.get(key)
+    if val:
+        return str(val).strip()
+    if request.method == "POST":
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+            if isinstance(body, dict) and body.get(key):
+                return str(body[key]).strip()
+        except Exception:
+            pass
+    return default
+
+
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def analyze_match_view(request: HttpRequest, match_id: str) -> JsonResponse:
@@ -110,22 +129,37 @@ def analyze_match_view(request: HttpRequest, match_id: str) -> JsonResponse:
     Returns cached or computed full post-game diagnosis and coach prompt for a specific match.
     """
     match_id = match_id.strip()
-    match_obj = PlayerMatchCache.objects.filter(match_id=match_id).first()
+    puuid = _extract_match_param(request, "puuid", "")
+    if not puuid and request.user.is_authenticated:
+        profile = getattr(request.user, "profile", None)
+        if profile and profile.riot_puuid:
+            puuid = profile.riot_puuid
+
+    qs = PlayerMatchCache.objects.filter(match_id=match_id)
+    match_obj = (qs.filter(puuid=puuid).first() or qs.first()) if puuid else qs.first()
 
     if not match_obj:
         # Fallback: attempt to fetch match detail directly if possible
-        region = request.GET.get("region", "TR1")
+        region = _extract_match_param(request, "region", "TR1") or "TR1"
         client = RiotApiClient(default_region=region)
         try:
             detail = client.get_match_detail(match_id, region=region)
-            target_puuid = request.GET.get("puuid") or ""
-            analysis = MatchAnalyzer.analyze_match(detail, target_puuid=target_puuid)
+            analysis = MatchAnalyzer.analyze_match(detail, target_puuid=puuid)
+            diag = analysis.get("diagnosis", {})
+            placement = diag.get("placement", 8)
             return JsonResponse({
                 "status": "success",
                 "match_id": match_id,
-                "diagnosis": analysis.get("diagnosis", {}),
+                "placement": placement,
+                "level": diag.get("level", 8),
+                "gold_left": diag.get("gold_left", 0),
+                "last_round": diag.get("last_round", ""),
+                "diagnosis": diag,
                 "lobby_contested": analysis.get("lobby_contested_json", {}),
-                "suggested_prompt": f"{match_id} numaralı maçımı analiz et. Hangi kritik hataları yaptım?",
+                "suggested_prompt": (
+                    f"{match_id} numaralı maçımı analiz et. "
+                    f"Neden #{placement}. oldum ve hangi kritik hataları yaptım?"
+                ),
             })
         except Exception as e:
             return JsonResponse(

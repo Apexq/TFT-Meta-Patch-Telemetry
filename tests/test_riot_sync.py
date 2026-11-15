@@ -665,3 +665,136 @@ class RiotChatPostGameIntegrationTests(TestCase):
         ui_card_types = [c.get("card_type") for c in data["message"]["ui_cards"]]
         self.assertNotIn("match_review", ui_card_types)
 
+    def test_rarity_zero_based_mapping_and_dynamic_snapshot_bis(self):
+        """
+        Riot tft-match-v1 sends 0-indexed rarity without cost (rarity=3 -> 4-cost, rarity=4 -> 5-cost).
+        Verifies MatchAnalyzer resolves true gold costs and evaluates carries using PatchSnapshot unit_tiers.
+        """
+        from apps.telemetry.models import PatchSnapshot
+        from apps.telemetry.services import TelemetryRAGService
+
+        PatchSnapshot.objects.create(
+            patch_label="18.6",
+            fingerprint="snap-test-bis",
+            is_active=True,
+            full_report_json={
+                "tier_lists": {
+                    "unit_tiers": [
+                        {
+                            "apiName": "TFT18_Amumu",
+                            "name": "Amumu",
+                            "name_en": "Amumu",
+                            "cost": 4,
+                            "best_items": [
+                                {"apiName": "DA_GargoyleStoneplate", "name": "Gargoyl Taşzırhı", "name_en": "Gargoyle Stoneplate"},
+                                {"apiName": "DA_WarmogsArmor", "name": "Warmog'un Zırhı", "name_en": "Warmog's Armor"},
+                                {"apiName": "DA_DragonsClaw", "name": "Ejder Pençesi", "name_en": "Dragon's Claw"},
+                            ],
+                        },
+                        {"apiName": "TFT18_Veigar", "name": "Veigar", "name_en": "Veigar", "cost": 1, "best_items": []},
+                        {"apiName": "TFT18_Taric", "name": "Taric", "name_en": "Taric", "cost": 5, "best_items": []},
+                    ]
+                }
+            },
+        )
+        TelemetryRAGService.invalidate_cache()
+
+        units = [
+            {"character_id": "TFT18_Veigar", "rarity": 0, "tier": 2, "itemNames": []},
+            {"character_id": "TFT18_Amumu", "rarity": 3, "tier": 2, "itemNames": ["TFT_Item_GargoyleStoneplate", "TFT_Item_WarmogsArmor", "TFT_Item_DragonsClaw"]},
+            {"character_id": "TFT18_Taric", "rarity": 4, "tier": 1, "itemNames": ["TFT_Item_Redemption"]},
+        ]
+
+        catalog = MatchAnalyzer.get_set18_unit_catalog()
+        self.assertEqual(MatchAnalyzer.resolve_unit_cost(units[0], catalog), 1)
+        self.assertEqual(MatchAnalyzer.resolve_unit_cost(units[1], catalog), 4)
+        self.assertEqual(MatchAnalyzer.resolve_unit_cost(units[2], catalog), 5)
+
+        bis_res = MatchAnalyzer.analyze_bis_fit(units, unit_catalog=catalog)
+        carries = {c["character_id"]: c for c in bis_res["carries"]}
+        self.assertIn("TFT18_Amumu", carries)
+        self.assertEqual(carries["TFT18_Amumu"]["rating"], "Optimal BiS")
+        self.assertEqual(carries["TFT18_Amumu"]["fit_score"], 100)
+        # 5-cost Taric with 1 item qualifies because cost resolved to 5 (>= 4)
+        self.assertIn("TFT18_Taric", carries)
+        self.assertEqual(carries["TFT18_Taric"]["cost"], 5)
+
+    def test_multi_player_same_match_id_isolation_and_set15_skip(self):
+        """
+        Verifies two distinct PUUIDs in the same match_id get separate PlayerMatchCache records
+        and legacy Set 15 (TFT15_) matches are skipped when fetching Set 18 matches.
+        """
+        riot_client = RiotApiClient(api_key="TEST-TOKEN", default_region="TR1")
+        puuid_a = "puuid-player-a"
+        puuid_b = "puuid-player-b"
+        shared_mid = "TR1_SHARED_555"
+        set15_mid = "TR1_SET15_OLD"
+
+        set15_detail = {
+            "metadata": {"match_id": set15_mid},
+            "info": {
+                "tft_set_number": 15,
+                "game_datetime": 1700000000000,
+                "participants": [
+                    {"puuid": puuid_a, "placement": 1, "units": [{"character_id": "TFT15_Aatrox", "rarity": 3, "tier": 2}]}
+                ],
+            },
+        }
+        shared_detail = {
+            "metadata": {"match_id": shared_mid},
+            "info": {
+                "tft_set_number": 18,
+                "game_datetime": 1700000500000,
+                "game_version": "Set 18 (18.6)",
+                "participants": [
+                    {
+                        "puuid": puuid_a,
+                        "placement": 2,
+                        "level": 9,
+                        "gold_left": 5,
+                        "last_round": 35,
+                        "units": [{"character_id": "TFT18_Taric", "rarity": 4, "tier": 2, "itemNames": []}],
+                        "traits": [],
+                        "augments": [],
+                    },
+                    {
+                        "puuid": puuid_b,
+                        "placement": 7,
+                        "level": 7,
+                        "gold_left": 30,
+                        "last_round": 26,
+                        "units": [{"character_id": "TFT18_Veigar", "rarity": 0, "tier": 2, "itemNames": []}],
+                        "traits": [],
+                        "augments": [],
+                    },
+                ],
+            },
+        }
+
+        with patch.object(riot_client, "resolve_riot_id", return_value={"puuid": puuid_a, "gameName": "PlayerA", "tagLine": "TR1"}), \
+             patch.object(riot_client, "get_tft_rank", return_value={"tier": "GOLD", "rank": "I", "leaguePoints": 10, "badge": "GOLD I"}), \
+             patch.object(riot_client, "get_recent_match_ids", return_value=[set15_mid, shared_mid]), \
+             patch.object(riot_client, "get_match_detail", side_effect=lambda mid, r: set15_detail if mid == set15_mid else shared_detail):
+            _, matches_a = riot_client.fetch_and_cache_player_matches("PlayerA#TR1", region="TR1", count=5)
+
+        self.assertEqual(len(matches_a), 1)
+        self.assertEqual(matches_a[0].match_id, shared_mid)
+        self.assertEqual(matches_a[0].placement, 2)
+        self.assertEqual(matches_a[0].player_board_json[0]["cost"], 5)
+
+        with patch.object(riot_client, "resolve_riot_id", return_value={"puuid": puuid_b, "gameName": "PlayerB", "tagLine": "TR1"}), \
+             patch.object(riot_client, "get_tft_rank", return_value={"tier": "SILVER", "rank": "II", "leaguePoints": 20, "badge": "SILVER II"}), \
+             patch.object(riot_client, "get_recent_match_ids", return_value=[shared_mid]), \
+             patch.object(riot_client, "get_match_detail", return_value=shared_detail):
+            _, matches_b = riot_client.fetch_and_cache_player_matches("PlayerB#TR1", region="TR1", count=5)
+
+        self.assertEqual(len(matches_b), 1)
+        self.assertEqual(matches_b[0].placement, 7)
+        self.assertEqual(matches_b[0].player_board_json[0]["cost"], 1)
+        self.assertEqual(PlayerMatchCache.objects.filter(match_id=shared_mid).count(), 2)
+
+        # analyze_match_view respects ?puuid=
+        res_b = self.client.get(reverse("riot_sync:analyze_match", kwargs={"match_id": shared_mid}), {"puuid": puuid_b})
+        self.assertEqual(res_b.status_code, 200)
+        self.assertEqual(res_b.json()["placement"], 7)
+

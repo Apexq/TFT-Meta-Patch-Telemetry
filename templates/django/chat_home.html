@@ -86,12 +86,15 @@
         <span class="lang-tr">Profil &amp; Riot ID</span>
         <span class="lang-en">Profile &amp; Riot ID</span>
       </button>
-      <a href="{% url 'accounts:logout' %}"
-        class="py-1 px-2.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-[11px] font-semibold transition-colors text-center"
-        title="Çıkış Yap">
-        <span class="lang-tr">Çıkış</span>
-        <span class="lang-en">Logout</span>
-      </a>
+      <form method="post" action="{% url 'accounts:logout' %}" class="shrink-0">
+        {% csrf_token %}
+        <button type="submit"
+          class="py-1 px-2.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-[11px] font-semibold transition-colors text-center cursor-pointer"
+          title="Çıkış Yap">
+          <span class="lang-tr">Çıkış</span>
+          <span class="lang-en">Logout</span>
+        </button>
+      </form>
     </div>
     {% else %}
     <div class="flex items-center gap-1.5 pt-1 border-t border-[#1a2232]">
@@ -151,7 +154,7 @@
   <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5" id="chat-stream">
     {% if not chat_messages %}
     <!-- Hero / Welcome Zero-State -->
-    <div class="max-w-2xl mx-auto my-auto text-center py-8">
+    <div id="hero-welcome-state" class="max-w-2xl mx-auto my-auto text-center py-8">
       <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400/20 to-purple-500/20 border border-[#f0c374]/40 flex items-center justify-center mx-auto mb-4 shadow-lg">
         <span class="text-3xl">⚔️</span>
       </div>
@@ -241,11 +244,11 @@
               class="w-full bg-[#121722] border border-[#222d42] focus:border-[#f0c374] rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 outline-none">
           </div>
           <select id="riot-region-select" class="w-full sm:w-28 bg-[#121722] border border-[#222d42] focus:border-[#f0c374] rounded-xl px-2.5 py-2 text-xs text-slate-200 outline-none">
-            <option value="TR1" selected>TR1 (Türkiye)</option>
-            <option value="EUW1">EUW1 (Batı)</option>
-            <option value="EUN1">EUN1 (Kuzey)</option>
-            <option value="NA1">NA1 (Kuzey Amerika)</option>
-            <option value="KR">KR (Kore)</option>
+            <option value="TR1" {% if not profile or not profile.riot_region or profile.riot_region == 'TR1' %}selected{% endif %}>TR1 (Türkiye)</option>
+            <option value="EUW1" {% if profile and profile.riot_region == 'EUW1' %}selected{% endif %}>EUW1 (Batı)</option>
+            <option value="EUN1" {% if profile and profile.riot_region == 'EUN1' %}selected{% endif %}>EUN1 (Kuzey)</option>
+            <option value="NA1" {% if profile and profile.riot_region == 'NA1' %}selected{% endif %}>NA1 (Kuzey Amerika)</option>
+            <option value="KR" {% if profile and profile.riot_region == 'KR' %}selected{% endif %}>KR (Kore)</option>
           </select>
           <button type="button" id="fetch-matches-btn" onclick="fetchRecentMatches()"
             class="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#f0c374] hover:from-amber-600 hover:to-[#e5b35c] text-slate-950 font-bold text-xs shrink-0 transition-all shadow flex items-center justify-center gap-1.5">
@@ -489,6 +492,62 @@
   let selectedOpenerItems = [];
   let attachedMatchId = null;
 
+  function escapeHtml(val) {
+    return String(val ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function escapeJsArg(val) {
+    return String(val ?? '')
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/\r/g, '\\r')
+      .replace(/\n/g, '\\n');
+  }
+
+  function prependSidebarSession(sessionId, rawTitle) {
+    const container = document.getElementById('session-items-container');
+    if (!container || !sessionId) return;
+    if (document.getElementById(`session-item-${sessionId}`)) return;
+
+    const emptyMsg = document.getElementById('no-sessions-msg');
+    if (emptyMsg) emptyMsg.classList.add('hidden');
+
+    container.querySelectorAll('[id^="session-item-"]').forEach(el => {
+      el.classList.remove('bg-[#161e2e]', 'text-[#f0c374]', 'border', 'border-[#f0c374]/30');
+      el.classList.add('text-slate-300');
+    });
+
+    const trimmed = String(rawTitle || '').trim();
+    const shortTitle = trimmed.length > 40 ? trimmed.slice(0, 40) + '...' : trimmed;
+    const safeTitle = escapeHtml(shortTitle);
+    const safeTitleJs = escapeHtml(escapeJsArg(shortTitle));
+    const safeSidJs = escapeHtml(escapeJsArg(sessionId));
+
+    const item = document.createElement('div');
+    item.id = `session-item-${sessionId}`;
+    item.className = 'group flex items-center justify-between rounded-lg px-2.5 py-1.5 hover:bg-[#161e2e] transition-colors bg-[#161e2e] text-[#f0c374] border border-[#f0c374]/30';
+    item.innerHTML = `
+      <a href="?session=${encodeURIComponent(sessionId)}" class="flex-1 min-w-0 flex items-center gap-1.5 text-xs hover:text-white truncate" title="${safeTitle}">
+        <span class="text-slate-500 shrink-0">💬</span>
+        <span class="truncate">${safeTitle}</span>
+      </a>
+      <button type="button"
+        onclick="openDeleteSessionModal('${safeSidJs}', '${safeTitleJs}')"
+        title="Sohbeti Sil"
+        class="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-all shrink-0 ml-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+      </button>
+    `;
+    container.prepend(item);
+  }
+
   function toggleOpenerDrawer() {
     const drawer = document.getElementById('opener-builder-drawer');
     drawer.classList.toggle('hidden');
@@ -531,7 +590,7 @@
     clearBtn.classList.remove('hidden');
     tags.innerHTML = selectedOpenerItems.map(i => `
       <span class="px-2 py-0.5 rounded bg-[#182030] border border-[#f0c374]/40 text-[#f0c374] text-[10px] font-bold">
-        ${i.name}
+        ${escapeHtml(i.name)}
       </span>
     `).join('');
   }
@@ -637,10 +696,10 @@
             ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 border border-rose-500/30 text-rose-300 mono">⚠️ Lobide Rekabet Var</span>`
             : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 mono">✓ Uncontested</span>`;
 
-          const unitsHtml = (m.player_board || []).slice(0, 8).map(u => `
-            <div class="relative w-8 h-8 rounded border cost-${u.cost || 1} bg-slate-900 flex items-center justify-center shrink-0 shadow text-[9px] font-bold text-slate-200" title="${u.name} (${u.tier}★)">
-              <span class="truncate px-0.5">${(u.name || '').substring(0, 3)}</span>
-              ${u.tier > 1 ? `<span class="absolute -top-1 -right-0.5 bg-slate-950 text-[#f0c374] text-[8px] font-bold px-0.5 rounded border border-[#f0c374]/40">${'★'.repeat(u.tier)}</span>` : ''}
+          const unitsHtml = (m.player_board || []).slice(0, 10).map(u => `
+            <div class="relative w-8 h-8 rounded border cost-${Number(u.cost) || 1} bg-slate-900 flex items-center justify-center shrink-0 shadow text-[9px] font-bold text-slate-200" title="${escapeHtml(u.name)} (${Number(u.tier) || 1}★)">
+              <span class="truncate px-0.5">${escapeHtml((u.name || '').substring(0, 3))}</span>
+              ${u.tier > 1 ? `<span class="absolute -top-1 -right-0.5 bg-slate-950 text-[#f0c374] text-[8px] font-bold px-0.5 rounded border border-[#f0c374]/40">${'★'.repeat(Math.min(4, Number(u.tier) || 1))}</span>` : ''}
               ${u.items && u.items.length > 0 ? `<span class="absolute -bottom-1 -left-0.5 bg-[#f0c374] text-slate-950 text-[7px] font-black px-0.5 rounded">${u.items.length}</span>` : ''}
             </div>
           `).join('');
@@ -650,23 +709,23 @@
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#1c2536]">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm mono border ${placeColor}">
-                    #${m.placement}
+                    #${Number(m.placement) || 8}
                   </div>
                   <div>
                     <div class="flex items-center gap-2">
-                      <span class="font-bold text-white text-xs">${m.headline || '#' + m.placement + ' Sıralama'}</span>
+                      <span class="font-bold text-white text-xs">${escapeHtml(m.headline || '#' + m.placement + ' Sıralama')}</span>
                       ${contestedBadge}
                     </div>
                     <div class="flex items-center gap-2 text-[10px] text-slate-400 mono mt-0.5">
-                      <span>Lvl ${m.level}</span>
+                      <span>Lvl ${Number(m.level) || 8}</span>
                       <span>&bull;</span>
-                      <span>Aşama ${m.last_round}</span>
+                      <span>Aşama ${escapeHtml(m.last_round)}</span>
                       <span>&bull;</span>
-                      <span>Kalan: ${m.gold_left}g</span>
+                      <span>Kalan: ${Number(m.gold_left) || 0}g</span>
                     </div>
                   </div>
                 </div>
-                <button type="button" onclick="selectMatchForAiAnalysis('${m.match_id}', ${m.placement})"
+                <button type="button" onclick="selectMatchForAiAnalysis('${escapeHtml(escapeJsArg(m.match_id))}', ${Number(m.placement) || 8})"
                   class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 to-[#f0c374]/20 hover:from-amber-500/30 hover:to-[#f0c374]/30 border border-[#f0c374]/40 text-[#f0c374] text-[11px] font-bold transition-all shadow flex items-center justify-center gap-1.5 shrink-0">
                   <span>⚡</span>
                   <span>Yapay Zeka ile Analiz Et</span>
@@ -711,13 +770,19 @@
     const query = input.value.trim();
     if (!query) return;
 
-    // Render user message bubble immediately
+    // Remove welcome hero once chat begins
+    const heroState = document.getElementById('hero-welcome-state');
+    if (heroState) {
+      heroState.remove();
+    }
+
+    // Render user message bubble immediately (HTML-escaped)
     const stream = document.getElementById('chat-stream');
     const userBubble = document.createElement('div');
     userBubble.className = 'flex justify-end';
     userBubble.innerHTML = `
       <div class="max-w-xl bg-gradient-to-r from-amber-500/20 to-[#f0c374]/20 border border-[#f0c374]/40 rounded-2xl rounded-tr-sm p-3 text-xs sm:text-sm text-white shadow-sm">
-        ${query}
+        ${escapeHtml(query).replace(/\r?\n/g, '<br>')}
       </div>
     `;
     stream.appendChild(userBubble);
@@ -750,7 +815,8 @@
         mode: currentCoachMode,
         session_id: currentSessionId,
         selected_items: itemApis,
-        match_id: attachedMatchId
+        match_id: attachedMatchId,
+        lang: document.documentElement.getAttribute('data-lang') || 'tr'
       })
     }).then(async res => {
       const data = await res.json();
@@ -761,6 +827,7 @@
     }).then(data => {
       loadingBubble.remove();
       currentSessionId = data.session_id;
+      prependSidebarSession(data.session_id, query);
       if (data.quota_left !== undefined) {
         const qEl = document.getElementById('sidebar-quota-left');
         if (qEl) qEl.innerText = data.quota_left;
@@ -779,38 +846,43 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-[#1c2536]">
                   <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 mono bg-amber-500/20 text-[#f0c374] border border-[#f0c374]/50">
-                      ${card.tier}
+                      ${escapeHtml(card.tier)}
                     </div>
                     <div>
-                      <h4 class="font-bold text-white text-xs sm:text-sm">${card.comp_name}</h4>
+                      <h4 class="font-bold text-white text-xs sm:text-sm">
+                        <span class="lang-tr">${escapeHtml(card.comp_name)}</span>
+                        <span class="lang-en">${escapeHtml(card.comp_name_en || card.comp_name)}</span>
+                      </h4>
                       <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
-                        <span class="px-1.5 py-0.2 rounded bg-[#0a0e17] text-slate-300 mono">${card.levelling}</span>
+                        <span class="px-1.5 py-0.2 rounded bg-[#0a0e17] text-slate-300 mono">${escapeHtml(card.levelling)}</span>
                         <span>&bull;</span>
-                        <span class="text-emerald-400 mono font-semibold">Ort. #${card.avg_placement}</span>
+                        <span class="text-emerald-400 mono font-semibold">Ort. #${escapeHtml(card.avg_placement)}</span>
                         <span>&bull;</span>
-                        <span class="text-slate-300 mono font-semibold">Top 4: %${card.top4_rate}</span>
+                        <span class="text-slate-300 mono font-semibold">Top 4: %${escapeHtml(card.top4_rate)}</span>
                       </div>
                     </div>
                   </div>
                   ${card.team_planner_code ? `
-                    <button type="button" onclick="copyTeamPlannerCode('${card.team_planner_code}', this)"
+                    <button type="button" onclick="copyTeamPlannerCode('${escapeHtml(escapeJsArg(card.team_planner_code))}', this)"
                       class="self-start sm:self-auto px-2.5 py-1 rounded-lg bg-[#0a0e17] hover:bg-[#1a2334] border border-[#222d42] hover:border-[#f0c374]/60 text-[#f0c374] text-[11px] font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
                       <span>📋</span>
-                      <span>Takım Kodunu Kopyala</span>
+                      <span class="lang-tr">Takım Kodunu Kopyala</span>
+                      <span class="lang-en">Copy Team Code</span>
                     </button>
                   ` : ''}
                 </div>
                 <div class="py-2.5 flex flex-wrap items-start gap-2">
                   ${(card.units || []).map(u => `
                     <div class="flex flex-col items-center gap-1">
-                      <div class="relative w-10 h-10 rounded-md border cost-${u.cost} overflow-hidden bg-slate-900" title="${u.name}">
-                        <img src="${u.icon}" alt="${u.name}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                      <div class="relative w-10 h-10 rounded-md border cost-${Number(u.cost) || 1} overflow-hidden bg-slate-900" title="${escapeHtml(u.name)}">
+                        <img src="${escapeHtml(u.icon)}" alt="${escapeHtml(u.name)}" class="w-full h-full object-cover" onerror="this.style.display='none'">
                         ${u.is_carry ? '<span class="absolute top-0 left-0 bg-[#f0c374] text-slate-950 text-[7px] font-bold px-1 rounded-br">C</span>' : ''}
+                        ${u.is_three_star ? '<span class="absolute top-0 right-0 bg-amber-400 text-slate-950 text-[7px] font-bold px-1 rounded-bl mono">3★</span>' : ''}
                       </div>
                       ${u.bis_items && u.bis_items.length > 0 ? `
                         <div class="flex items-center gap-0.5">
                           ${u.bis_items.slice(0, 3).map(item => `
-                            <img src="${item.icon}" alt="${item.name}" title="${item.name}" class="w-3.5 h-3.5 rounded-sm border border-[#2a3750] object-cover bg-slate-900" onerror="this.style.display='none'">
+                            <img src="${escapeHtml(item.icon)}" alt="${escapeHtml(item.name)}" title="${escapeHtml(item.name)}" class="w-3.5 h-3.5 rounded-sm border border-[#2a3750] object-cover bg-slate-900" onerror="this.style.display='none'">
                           `).join('')}
                         </div>
                       ` : ''}
@@ -829,8 +901,8 @@
                       ${card.board_grid.map((row, rIdx) => `
                         <div class="flex items-center gap-1.5 ${rIdx % 2 === 1 ? 'pl-4' : ''}">
                           ${row.map(cell => cell ? `
-                            <div class="relative w-8 h-8 rounded border cost-${cell.cost} bg-slate-900 flex items-center justify-center shrink-0 shadow" title="${cell.name}">
-                              <img src="${cell.icon}" alt="${cell.name}" class="w-full h-full object-cover rounded-sm" onerror="this.style.display='none'">
+                            <div class="relative w-8 h-8 rounded border cost-${Number(cell.cost) || 1} bg-slate-900 flex items-center justify-center shrink-0 shadow" title="${escapeHtml(cell.name)}">
+                              <img src="${escapeHtml(cell.icon)}" alt="${escapeHtml(cell.name)}" class="w-full h-full object-cover rounded-sm" onerror="this.style.display='none'">
                               ${cell.is_carry ? '<span class="absolute -top-1 -right-0.5 bg-[#f0c374] text-slate-950 text-[6px] font-bold px-0.5 rounded">C</span>' : ''}
                             </div>
                           ` : `<div class="w-8 h-8 rounded border border-dashed border-[#1c2536] bg-[#0d121c]/40 shrink-0"></div>`).join('')}
@@ -844,15 +916,83 @@
           } else if (card.card_type === 'augment') {
             cardsHtml += `
               <div class="mt-2.5 bg-[#121722] border border-[#222d42] hover:border-amber-400/50 rounded-xl p-3 flex items-start gap-3 shadow-md">
-                <img src="${card.icon}" alt="${card.name}" class="w-9 h-9 rounded-lg border border-[#29364f] p-0.5 bg-[#0a0e17] shrink-0" onerror="this.style.display='none'">
+                <img src="${escapeHtml(card.icon)}" alt="${escapeHtml(card.name)}" class="w-9 h-9 rounded-lg border border-[#29364f] p-0.5 bg-[#0a0e17] shrink-0" onerror="this.style.display='none'">
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2">
-                    <span class="px-1.5 py-0.5 rounded text-[10px] font-black mono text-slate-950" style="background-color: ${card.tier_color || '#f0c374'};">${card.tier}</span>
-                    <h5 class="font-bold text-white text-xs">${card.name} (${card.rarity})</h5>
-                    <span class="text-[10px] text-slate-400 mono">${(card.rounds || []).join(', ')}</span>
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-black mono text-slate-950" style="background-color: ${escapeHtml(card.tier_color || '#f0c374')};">${escapeHtml(card.tier)}</span>
+                    <h5 class="font-bold text-white text-xs">${escapeHtml(card.name)} (${escapeHtml(card.rarity)})</h5>
+                    <span class="text-[10px] text-slate-400 mono">${escapeHtml((card.rounds || []).join(', '))}</span>
                   </div>
-                  <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">${card.desc}</p>
+                  <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">${escapeHtml(card.desc)}</p>
                 </div>
+              </div>
+            `;
+          } else if (card.card_type === 'encounter') {
+            cardsHtml += `
+              <div class="mt-2.5 bg-[#121722] border border-[#222d42] hover:border-purple-400/50 rounded-xl p-3.5 shadow-md space-y-2">
+                <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#1c2536]">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 mono">
+                      <span class="lang-tr">${escapeHtml(card.category || 'Karşılaşma')}</span>
+                      <span class="lang-en">${escapeHtml(card.category_en || card.category || 'Encounter')}</span>
+                    </span>
+                    <h5 class="font-bold text-white text-xs sm:text-sm">
+                      <span class="lang-tr">${escapeHtml(card.name)}</span>
+                      <span class="lang-en">${escapeHtml(card.name_en || card.name)}</span>
+                    </h5>
+                  </div>
+                  ${card.tempo_rating ? `
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold mono text-slate-950" style="background-color: ${escapeHtml(card.tempo_color || '#f0c374')};">
+                      <span class="lang-tr">${escapeHtml(card.tempo_rating)}</span>
+                      <span class="lang-en">${escapeHtml(card.tempo_rating_en || card.tempo_rating)}</span>
+                    </span>
+                  ` : ''}
+                </div>
+                ${card.post_spawn ? `
+                  <p class="text-[11px] text-amber-200 font-medium">
+                    <span class="lang-tr">${escapeHtml(card.post_spawn)}</span>
+                    <span class="lang-en">${escapeHtml(card.post_spawn_en || card.post_spawn)}</span>
+                  </p>
+                ` : ''}
+                ${(card.strategy_tr || card.strategy_en) ? `
+                  <p class="text-[11px] text-slate-300 leading-relaxed">
+                    <span class="lang-tr">${escapeHtml(card.strategy_tr || '')}</span>
+                    <span class="lang-en">${escapeHtml(card.strategy_en || card.strategy_tr || '')}</span>
+                  </p>
+                ` : ''}
+              </div>
+            `;
+          } else if (card.card_type === 'charm') {
+            cardsHtml += `
+              <div class="mt-2.5 bg-[#121722] border border-[#222d42] hover:border-amber-400/50 rounded-xl p-3.5 shadow-md space-y-2">
+                <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#1c2536]">
+                  <div class="flex items-center gap-2">
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-black mono bg-amber-500/20 text-[#f0c374] border border-[#f0c374]/40">
+                      ${card.cost ? `${Number(card.cost)}g` : `T${escapeHtml(card.tier)}`}
+                    </span>
+                    <h5 class="font-bold text-white text-xs sm:text-sm">
+                      <span class="lang-tr">${escapeHtml(card.name)}</span>
+                      <span class="lang-en">${escapeHtml(card.name_en || card.name)}</span>
+                    </h5>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mono">
+                    <span>
+                      <span class="lang-tr">${escapeHtml(card.category_tr || card.category || '')}</span>
+                      <span class="lang-en">${escapeHtml(card.category || card.category_tr || '')}</span>
+                    </span>
+                    ${card.stages ? `<span>&bull; ${escapeHtml(card.stages)}</span>` : ''}
+                  </div>
+                </div>
+                <p class="text-[11px] text-slate-300 leading-relaxed">
+                  <span class="lang-tr">${escapeHtml(card.desc || '')}</span>
+                  <span class="lang-en">${escapeHtml(card.desc_en || card.desc || '')}</span>
+                </p>
+                ${(card.rec_tr || card.rec_en) ? `
+                  <p class="text-[11px] text-[#f0c374] font-medium">
+                    <span class="lang-tr">💡 ${escapeHtml(card.rec_tr || '')}</span>
+                    <span class="lang-en">💡 ${escapeHtml(card.rec_en || card.rec_tr || '')}</span>
+                  </p>
+                ` : ''}
               </div>
             `;
           } else if (card.card_type === 'match_review') {
@@ -867,12 +1007,12 @@
               <div class="flex items-center justify-between py-1 border-b border-[#1c2536] text-[11px]">
                 <div class="flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full ${u.severity === 'HIGH' ? 'bg-rose-400' : 'bg-amber-400'}"></span>
-                  <span class="font-bold text-white">${u.unit_name}</span>
-                  <span class="text-slate-400">(${u.player_tier}★)</span>
+                  <span class="font-bold text-white">${escapeHtml(u.unit_name)}</span>
+                  <span class="text-slate-400">(${Number(u.player_tier) || 1}★)</span>
                 </div>
                 <div class="text-right mono">
-                  <span class="text-slate-300 font-semibold">${u.opponents_count} rakipte var</span>
-                  <span class="text-slate-500 text-[10px]">(${u.pool_depleted_pct}% havuz tükendi)</span>
+                  <span class="text-slate-300 font-semibold">${Number(u.opponents_count) || 0} rakipte var</span>
+                  <span class="text-slate-500 text-[10px]">(${escapeHtml(u.pool_depleted_pct)}% havuz tükendi)</span>
                 </div>
               </div>
             `).join('');
@@ -880,14 +1020,14 @@
             const mistakesHtml = (card.critical_mistakes || []).map(m => `
               <li class="flex items-start gap-1.5 text-[11px] text-rose-300">
                 <span class="text-rose-400 font-bold shrink-0">✕</span>
-                <span>${m}</span>
+                <span>${escapeHtml(m)}</span>
               </li>
             `).join('');
 
             const recommendationsHtml = (card.recommendations || []).map(r => `
               <li class="flex items-start gap-1.5 text-[11px] text-[#f0c374]">
                 <span class="text-[#f0c374] font-bold shrink-0">💡</span>
-                <span>${r}</span>
+                <span>${escapeHtml(r)}</span>
               </li>
             `).join('');
 
@@ -896,16 +1036,16 @@
                 <div class="flex items-center justify-between pb-2.5 border-b border-[#1c2536]">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-base mono border ${placeColor}">
-                      #${card.placement}
+                      #${Number(card.placement) || 8}
                     </div>
                     <div>
-                      <h4 class="font-bold text-white text-xs sm:text-sm">${card.summary_headline || '#' + card.placement + ' Sıralama Analizi'}</h4>
+                      <h4 class="font-bold text-white text-xs sm:text-sm">${escapeHtml(card.summary_headline || '#' + card.placement + ' Sıralama Analizi')}</h4>
                       <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400 mono">
-                        <span>Lvl ${card.level}</span>
+                        <span>Lvl ${Number(card.level) || 8}</span>
                         <span>&bull;</span>
-                        <span>Aşama ${card.last_round}</span>
+                        <span>Aşama ${escapeHtml(card.last_round)}</span>
                         <span>&bull;</span>
-                        <span>Kalan: ${card.gold_left}g</span>
+                        <span>Kalan: ${Number(card.gold_left) || 0}g</span>
                       </div>
                     </div>
                   </div>
@@ -943,17 +1083,17 @@
       botMsg.innerHTML = `
         <div class="max-w-2xl bg-[#0d121c] border border-[#222d42] rounded-2xl rounded-tl-sm p-4 text-xs sm:text-sm text-slate-100 shadow-md">
           <div class="prose prose-invert prose-xs sm:prose-sm leading-relaxed text-slate-200">
-            ${msg.content.replace(/\\n/g, '<br>')}
+            ${escapeHtml(msg.content).replace(/\r?\n/g, '<br>')}
           </div>
           ${cardsHtml}
           <div class="mt-3 pt-2.5 border-t border-[#1c2536] flex items-center justify-between text-[10px] text-slate-400">
             <div class="flex items-center gap-2 mono">
-              <span class="text-[#f0c374] font-semibold">${msg.model_used}</span>
-              ${msg.latency_ms ? `<span>&bull;</span><span>${msg.latency_ms}ms</span>` : ''}
+              <span class="text-[#f0c374] font-semibold">${escapeHtml(msg.model_used)}</span>
+              ${msg.latency_ms ? `<span>&bull;</span><span>${Number(msg.latency_ms)}ms</span>` : ''}
             </div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="voteFeedback(${msg.id}, 1, this)" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors">👍</button>
-              <button type="button" onclick="voteFeedback(${msg.id}, -1, this)" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors">👎</button>
+              <button type="button" onclick="voteFeedback(${Number(msg.id)}, 1, this)" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors">👍</button>
+              <button type="button" onclick="voteFeedback(${Number(msg.id)}, -1, this)" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors">👎</button>
             </div>
           </div>
         </div>
@@ -972,7 +1112,7 @@
             <span>⚠️</span>
             <span>${isQuota ? 'Günlük Soru Limiti Aşıldı' : 'Hata'}</span>
           </div>
-          <p>${errMsg}</p>
+          <p>${escapeHtml(errMsg)}</p>
           ${isQuota ? `
             <div class="mt-3 pt-2 border-t border-rose-500/20 flex items-center gap-2">
               <button type="button" onclick="openAuthModal('register')" class="px-3 py-1 rounded-lg bg-[#f0c374] text-slate-950 font-bold text-[11px] shadow">
@@ -1348,6 +1488,13 @@
       const dockInput = document.getElementById('riot-id-input');
       if (dockInput && riotName && riotTag) {
         dockInput.value = `${riotName}#${riotTag}`;
+      }
+      const dockRegion = document.getElementById('riot-region-select');
+      if (dockRegion && riotRegion) {
+        dockRegion.value = riotRegion;
+      }
+      if (typeof setGlobalLang === 'function' && (prefLang === 'tr' || prefLang === 'en')) {
+        setGlobalLang(prefLang);
       }
       setTimeout(() => {
         closeProfileModal();

@@ -15,7 +15,10 @@ if env_file.exists():
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
-                os.environ.setdefault(k.strip(), v.strip())
+                val = v.strip()
+                if len(val) >= 2 and val[0] == val[-1] and val[0] in ('"', "'"):
+                    val = val[1:-1]
+                os.environ.setdefault(k.strip(), val)
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-tft-set18-dev-secret-key-apexq-2026")
 
@@ -96,7 +99,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT.mkdir(parents=True, exist_ok=True)
+_static_dir = BASE_DIR / "static"
+STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

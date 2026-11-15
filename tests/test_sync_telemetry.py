@@ -63,3 +63,20 @@ def test_telemetry_rag_service_retrieval_and_cards():
     # Query 2: Set 18 Encounter / Portal
     res_enc = TelemetryRAGService.retrieve_chunks_and_cards("altın şöleni portalı", top_k=4)
     assert any(c.get("card_type") == "encounter" for c in res_enc["ui_cards"])
+
+
+@pytest.mark.django_db
+def test_fast9_composition_preserves_all_nine_units():
+    call_command("sync_tft_meta")
+    snapshot = PatchSnapshot.objects.filter(is_active=True).first()
+    assert snapshot is not None
+
+    fast9_comps = [
+        c for c in snapshot.full_report_json.get("live_meta", {}).get("compositions", [])
+        if len(c.get("units", [])) == 9
+    ]
+    if fast9_comps:
+        target = fast9_comps[0]
+        chunk = snapshot.chunks.filter(chunk_id=f"comp:{target['cluster_id']}").first()
+        assert chunk is not None
+        assert len(chunk.ui_card_payload.get("units", [])) == 9

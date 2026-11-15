@@ -3,12 +3,11 @@ from django.db import models
 
 class PlayerMatchCache(models.Model):
     """
-    Riot resmi tft-match-v1 API'sinden çekilen maç verilerini önbelleğe alır.
-    Tekil match_id ile saklanır ve lobi rekabet analizi (contested units) içerir.
+    Riot resmi tft-match-v1 API'sinden çekilen maç verilerini oyuncu bazında önbelleğe alır.
+    Her (match_id, puuid) çifti için ayrı kayıt saklanır ve lobi rekabet analizi içerir.
     """
     match_id = models.CharField(
         max_length=64,
-        unique=True,
         db_index=True,
         verbose_name="Riot Maç Kimliği (Örn: TR1_1592837412)",
     )
@@ -82,6 +81,15 @@ class PlayerMatchCache(models.Model):
         verbose_name = "Oyuncu Maç Önbelleği"
         verbose_name_plural = "Oyuncu Maç Önbellekleri"
         ordering = ["-game_datetime"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["match_id", "puuid"],
+                name="uniq_match_per_player",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["match_id", "puuid"], name="idx_match_puuid"),
+        ]
 
     def __str__(self) -> str:
         return f"{self.riot_id_display} - #{self.placement} ({self.match_id})"

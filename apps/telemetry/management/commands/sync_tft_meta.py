@@ -129,7 +129,7 @@ class Command(BaseCommand):
                             "win_rate": comp.get("master_stats", {}).get("win_rate", 12.5),
                             "team_planner_code": comp.get("team_planner_code", ""),
                             "comp_item_ids": comp.get("comp_item_ids", []),
-                            "units": comp.get("units", [])[:8],
+                            "units": comp.get("units", [])[:10],
                             "carry_builds": comp.get("carry_builds", []),
                             "board_grid": comp.get("board_grid", []),
                             "level_schedule": comp.get("level_schedule", []),

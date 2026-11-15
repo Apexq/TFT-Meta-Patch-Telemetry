@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import time
+from django.core.exceptions import ValidationError
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -29,14 +30,39 @@ def send_message_view(request):
     except Exception:
         body = {}
 
-    query = body.get("query", "").strip()
+    raw_query = body.get("query", "")
+    if not isinstance(raw_query, str):
+        return JsonResponse({"error": "Soru metni geçersiz."}, status=400)
+    query = raw_query.strip()
     mode = body.get("mode", "META_COACH")
     session_id = body.get("session_id")
     selected_items = body.get("selected_items", [])
     match_id = body.get("match_id")
+    raw_lang = body.get("lang")
 
     if not query:
         return JsonResponse({"error": "Soru metni boş olamaz."}, status=400)
+
+    # Ensure guest session key & validate existing ChatSession ownership before consuming quota
+    session_key = request.session.session_key or ""
+    if not session_key:
+        request.session.save()
+        session_key = request.session.session_key
+
+    session = None
+    if session_id:
+        try:
+            session = ChatSession.objects.filter(id=session_id).first()
+        except (ValueError, TypeError, ValidationError):
+            return JsonResponse({"error": "Geçersiz sohbet oturumu kimliği."}, status=400)
+
+        if session:
+            if request.user.is_authenticated:
+                if session.user_id != request.user.id:
+                    return JsonResponse({"error": "Yetkisiz işlem: Bu sohbet oturumu size ait değil."}, status=403)
+            else:
+                if not session_key or session.guest_session_key != session_key or session.user_id is not None:
+                    return JsonResponse({"error": "Yetkisiz işlem: Bu misafir sohbeti size ait değil."}, status=403)
 
     # Quota Enforcement
     profile = None
@@ -45,7 +71,7 @@ def send_message_view(request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         if not profile.consume_quota():
             return JsonResponse({
-                "error": "Günlük soru limitinize ulaştınız (30 soru/gün). Yarın tekrar deneyin veya planınızı yükseltin.",
+                "error": f"Günlük soru limitinize ulaştınız ({profile.daily_quota_limit} soru/gün). Yarın tekrar deneyin veya planınızı yükseltin.",
                 "quota_exceeded": True,
             }, status=429)
     else:
@@ -59,20 +85,21 @@ def send_message_view(request):
         request.session["guest_quota_used"] = guest_used + 1
         request.session.modified = True
 
-    # Resolve or create ChatSession
-    session_key = request.session.session_key or ""
-    if not session_key:
-        request.session.save()
-        session_key = request.session.session_key
-
-    session = None
-    if session_id:
-        session = ChatSession.objects.filter(id=session_id).first()
+    if raw_lang in ("tr", "en"):
+        preferred_lang = raw_lang
+    elif profile and profile.preferred_lang in ("tr", "en"):
+        preferred_lang = profile.preferred_lang
+    else:
+        preferred_lang = "tr"
 
     attached_match = None
     if match_id:
         from apps.riot_sync.models import PlayerMatchCache
-        attached_match = PlayerMatchCache.objects.filter(match_id=str(match_id).strip()).first()
+        puuid = str(body.get("puuid") or "").strip()
+        if not puuid and profile and profile.riot_puuid:
+            puuid = profile.riot_puuid
+        qs = PlayerMatchCache.objects.filter(match_id=str(match_id).strip())
+        attached_match = (qs.filter(puuid=puuid).first() or qs.first()) if puuid else qs.first()
 
     if not session:
         session_title = query[:40] + ("..." if len(query) > 40 else "")
@@ -113,7 +140,7 @@ def send_message_view(request):
     rag_result = TelemetryRAGService.retrieve_chunks_and_cards(
         query=query,
         top_k=8,
-        preferred_lang="tr",
+        preferred_lang=preferred_lang,
         selected_items=selected_items,
         history_text=recent_history_text,
     )
@@ -123,7 +150,7 @@ def send_message_view(request):
         query=query,
         retrieved_chunks=rag_result["chunks"],
         ui_cards=rag_result["ui_cards"],
-        preferred_lang="tr",
+        preferred_lang=preferred_lang,
         mode=mode,
         history=history,
         attached_match=attached_match,
@@ -185,15 +212,24 @@ def send_message_view(request):
 
 @require_POST
 def message_feedback_view(request, message_id: int):
-    """Saves user thumbs up/down vote for a response."""
+    """Saves user thumbs up/down vote for a response with session ownership verification."""
     try:
         body = json.loads(request.body.decode("utf-8"))
         vote = int(body.get("vote", 0))
     except Exception:
         vote = 0
 
-    msg = ChatMessage.objects.filter(id=message_id).first()
+    msg = ChatMessage.objects.select_related("session").filter(id=message_id).first()
     if msg and vote in (1, -1, 0):
+        sess = msg.session
+        if sess.user_id is not None:
+            if not request.user.is_authenticated or sess.user_id != request.user.id:
+                return JsonResponse({"error": "Yetkisiz işlem."}, status=403)
+        elif sess.guest_session_key:
+            session_key = request.session.session_key or ""
+            if request.user.is_authenticated or not session_key or sess.guest_session_key != session_key:
+                return JsonResponse({"error": "Yetkisiz işlem."}, status=403)
+
         msg.feedback = vote
         msg.save(update_fields=["feedback"])
         return JsonResponse({"status": "saved", "feedback": vote})

@@ -62,7 +62,7 @@
 
   {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full text-slate-100 font-sans antialiased flex flex-col overflow-hidden" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body class="h-full text-slate-100 font-sans antialiased flex flex-col overflow-hidden" data-user-lang="{% if profile and profile.preferred_lang %}{{ profile.preferred_lang }}{% else %}tr{% endif %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
   <!-- Riot Production Legal Jibber Jabber Strip (Top Compact Banner) -->
   <div class="bg-[#080b12] border-b border-[#1c2536] px-3 py-1 text-[11px] text-slate-400 flex items-center justify-between z-30 shrink-0">
@@ -88,6 +88,12 @@
   <div class="flex-1 flex overflow-hidden relative">
     {% block content %}{% endblock %}
   </div>
+
+  <!-- Mandatory Riot Games Legal Jibber Jabber Strip -->
+  <footer class="bg-[#080b12] border-t border-[#1c2536] px-3 py-1 text-[10px] text-slate-500 text-center shrink-0 z-20 truncate" title="Riot Games Legal Jibber Jabber">
+    <span class="lang-tr">TFT Set 18 AI Coach, Riot Games tarafından desteklenmemektedir ve Riot Games'in veya Riot Games ürünlerinin oluşturulmasında ya da yönetilmesinde resmi olarak yer alan kişilerin görüş ve düşüncelerini yansıtmaz. Riot Games ve Teamfight Tactics, Riot Games, Inc.'nin ticari markaları veya tescilli ticari markalarıdır.</span>
+    <span class="lang-en">TFT Set 18 AI Coach isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and Teamfight Tactics are trademarks or registered trademarks of Riot Games, Inc.</span>
+  </footer>
 
   <!-- Global Slide-Over Drawer Container (Slide from Right) -->
   <div id="drawer-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden transition-opacity" onclick="closeDrawer()"></div>
@@ -125,8 +131,9 @@
         btnTr.className = 'px-2 py-0.5 rounded text-slate-300 hover:text-white';
       }
     }
-    // Initialize language from storage
-    const savedLang = localStorage.getItem('tft_lang') || 'tr';
+    // Initialize language from storage or authenticated profile preference
+    const userDefaultLang = document.body.getAttribute('data-user-lang') || 'tr';
+    const savedLang = localStorage.getItem('tft_lang') || userDefaultLang;
     setGlobalLang(savedLang);
 
     // Slide-Over Drawer Controls

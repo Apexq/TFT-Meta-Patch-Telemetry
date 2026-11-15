@@ -10,7 +10,8 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.accounts.models import UserProfile
 from apps.accounts.forms import (
@@ -128,7 +129,15 @@ def login_view(request: HttpRequest) -> HttpResponse:
 
                 login(request, user)
 
-                next_url = request.GET.get("next") or request.POST.get("next") or "/"
+                raw_next = request.GET.get("next") or request.POST.get("next") or ""
+                if raw_next and url_has_allowed_host_and_scheme(
+                    url=raw_next,
+                    allowed_hosts={request.get_host()},
+                    require_https=request.is_secure(),
+                ):
+                    next_url = raw_next
+                else:
+                    next_url = "/"
                 if _is_json_request(request):
                     return JsonResponse({
                         "status": "success",
@@ -158,7 +167,7 @@ def login_view(request: HttpRequest) -> HttpResponse:
     return render(request, "accounts/login.html", {"form": form})
 
 
-@require_http_methods(["GET", "POST"])
+@require_POST
 def logout_view(request: HttpRequest) -> HttpResponse:
     """
     Logs out the user and redirects to home.
