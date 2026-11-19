@@ -6,6 +6,7 @@ Supports both JSON responses (for AJAX/modals) and full-page HTML template rende
 from __future__ import annotations
 
 import json
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.contrib.auth import login, logout, authenticate
@@ -14,6 +15,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.accounts.models import UserProfile, PromoCode, PromoRedemption, SubscriptionEvent
+from apps.core.ratelimit import check_rate_limit
 from apps.accounts.forms import (
     UserRegistrationForm,
     UserLoginForm,
@@ -57,6 +59,20 @@ def register_view(request: HttpRequest) -> HttpResponse:
         return redirect("/")
 
     if request.method == "POST":
+        ok, _ = check_rate_limit(
+            request,
+            scope="register",
+            limit=getattr(settings, "RATELIMIT_LOGIN_PER_MIN", 10),
+            period="min",
+        )
+        if not ok:
+            if _is_json_request(request):
+                return JsonResponse(
+                    {"status": "error", "error": "Çok fazla kayıt denemesi yaptınız. Lütfen 1 dakika bekleyin."},
+                    status=429,
+                )
+            return HttpResponse("Çok fazla kayıt denemesi yaptınız. Lütfen 1 dakika bekleyin.", status=429)
+
         data = _extract_request_data(request)
         form = UserRegistrationForm(data)
 
@@ -109,6 +125,20 @@ def login_view(request: HttpRequest) -> HttpResponse:
         return redirect("/")
 
     if request.method == "POST":
+        ok, _ = check_rate_limit(
+            request,
+            scope="login",
+            limit=getattr(settings, "RATELIMIT_LOGIN_PER_MIN", 10),
+            period="min",
+        )
+        if not ok:
+            if _is_json_request(request):
+                return JsonResponse(
+                    {"status": "error", "error": "Çok fazla giriş denemesi yaptınız. Lütfen 1 dakika bekleyin."},
+                    status=429,
+                )
+            return HttpResponse("Çok fazla giriş denemesi yaptınız. Lütfen 1 dakika bekleyin.", status=429)
+
         data = _extract_request_data(request)
         form = UserLoginForm(data)
 
@@ -315,6 +345,19 @@ def redeem_promo_code_view(request: HttpRequest) -> JsonResponse:
         return JsonResponse(
             {"error": "Davet veya PRO kodu kullanmak için önce giriş yapmalısınız."},
             status=401,
+        )
+
+    ok, _ = check_rate_limit(
+        request,
+        scope="promo_redeem",
+        limit=getattr(settings, "RATELIMIT_PROMO_PER_MIN", 8),
+        period="min",
+        user_scoped=True,
+    )
+    if not ok:
+        return JsonResponse(
+            {"error": "Çok fazla kod denemesi yaptınız. Lütfen 1 dakika bekleyin."},
+            status=429,
         )
 
     from django.db import transaction

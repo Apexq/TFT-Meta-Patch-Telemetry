@@ -9,9 +9,11 @@ venv/
 ENV/
 env/
 
-# Environment variables & secrets (Never commit API keys!)
+# Environment variables, certificates & secrets (Never commit!)
 .env
-.env.local
+.env.*
+*.pem
+*.key
 
 # Local cache & temporary raw CDragon downloads (large files)
 .cache/
@@ -28,10 +30,19 @@ Thumbs.db
 .coverage
 htmlcov/
 
-# Local SQLite databases & staticfiles
+# Local SQLite databases (including WAL/SHM) & collected staticfiles
 *.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
 staticfiles/
 
+# Server & private deployment ops (not for public self-hosting)
+Dockerfile
+.dockerignore
+docker-compose*.yml
+deploy/
+
+# Edge worker local state
 .wrangler/
 worker/.wrangler/
 

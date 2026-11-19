@@ -9,10 +9,11 @@ import json
 import logging
 from typing import Any, Dict
 
+from django.conf import settings
 from django.http import JsonResponse, HttpRequest
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_GET
 
+from apps.core.ratelimit import check_rate_limit
 from apps.riot_sync.client import (
     RiotApiClient,
     RiotApiError,
@@ -26,7 +27,6 @@ from apps.riot_sync.analyzer import MatchAnalyzer
 logger = logging.getLogger("apps.riot_sync")
 
 
-@csrf_exempt
 @require_http_methods(["GET", "POST"])
 def fetch_player_matches_view(request: HttpRequest) -> JsonResponse:
     """
@@ -34,6 +34,17 @@ def fetch_player_matches_view(request: HttpRequest) -> JsonResponse:
     Resolves PUUID, fetches rank badge, caches matches in PlayerMatchCache,
     and returns match summaries with contested status and diagnosis.
     """
+    ok, _ = check_rate_limit(
+        request,
+        scope="riot_sync",
+        limit=getattr(settings, "RATELIMIT_RIOT_PER_MIN", 20),
+        period="min",
+    )
+    if not ok:
+        return JsonResponse(
+            {"error": "Çok sık maç sorgusu yapıyorsunuz. Lütfen bir dakika bekleyip tekrar deneyin.", "error_type": "rate_limit"},
+            status=429,
+        )
     if request.method == "POST":
         try:
             body = json.loads(request.body.decode("utf-8"))
@@ -80,7 +91,7 @@ def fetch_player_matches_view(request: HttpRequest) -> JsonResponse:
         return JsonResponse({"error": str(e), "error_type": "api_error"}, status=500)
     except Exception as e:
         logger.error(f"Unexpected error in fetch_player_matches_view: {e}", exc_info=True)
-        return JsonResponse({"error": f"Beklenmeyen bir hata oluştu: {e}"}, status=500)
+        return JsonResponse({"error": "Maçlar getirilirken beklenmeyen bir sunucu hatası oluştu."}, status=500)
 
     matches_payload = []
     for m in matches:
@@ -122,12 +133,22 @@ def _extract_match_param(request: HttpRequest, key: str, default: str = "") -> s
     return default
 
 
-@csrf_exempt
 @require_http_methods(["GET", "POST"])
 def analyze_match_view(request: HttpRequest, match_id: str) -> JsonResponse:
     """
     Returns cached or computed full post-game diagnosis and coach prompt for a specific match.
     """
+    ok, _ = check_rate_limit(
+        request,
+        scope="riot_analyze",
+        limit=getattr(settings, "RATELIMIT_RIOT_PER_MIN", 20),
+        period="min",
+    )
+    if not ok:
+        return JsonResponse(
+            {"error": "Çok sık maç analizi isteği gönderiyorsunuz. Lütfen biraz bekleyin."},
+            status=429,
+        )
     match_id = match_id.strip()
     puuid = _extract_match_param(request, "puuid", "")
     if not puuid and request.user.is_authenticated:
@@ -162,8 +183,9 @@ def analyze_match_view(request: HttpRequest, match_id: str) -> JsonResponse:
                 ),
             })
         except Exception as e:
+            logger.warning("Failed to fetch match %s from Riot API: %s", match_id, e)
             return JsonResponse(
-                {"error": f"'{match_id}' kimlikli maç önbellekte bulunamadı ve Riot API'den alınamadı: {e}"},
+                {"error": f"'{match_id}' kimlikli maç önbellekte bulunamadı ve Riot API'den alınamadı."},
                 status=404,
             )
 

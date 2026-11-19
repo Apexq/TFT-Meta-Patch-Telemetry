@@ -4,12 +4,15 @@ Views for apps.core: Chat-First home page and live telemetry drawers.
 
 from __future__ import annotations
 
+import logging
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import ValidationError
 from django.db import connection
 from apps.telemetry.models import PatchSnapshot
 from apps.chat.models import ChatSession
+
+logger = logging.getLogger("apps.core")
 
 
 def chat_home_view(request):
@@ -150,5 +153,6 @@ def health_check_view(request):
             "pbe_label": active_snap["pbe_label"] if active_snap else None,
             "snapshot_ready": bool(active_snap),
         })
-    except Exception as exc:
-        return JsonResponse({"status": "error", "detail": str(exc)}, status=503)
+    except Exception:
+        logger.exception("Health check failed")
+        return JsonResponse({"status": "error", "detail": "Service unavailable."}, status=503)

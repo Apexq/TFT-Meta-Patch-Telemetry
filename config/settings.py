@@ -24,15 +24,42 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-local-development-f
 
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() in ("true", "1", "yes")
 
+if not DEBUG and (not SECRET_KEY or SECRET_KEY.startswith("django-insecure-") or len(SECRET_KEY) < 24):
+    raise RuntimeError(
+        "DJANGO_SECRET_KEY must be set to a strong, unique value (>=24 chars) when DJANGO_DEBUG=False."
+    )
+
 ALLOWED_HOSTS = ["*"] if DEBUG else [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
 
 _csrf_origins = os.getenv("CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(",") if o.strip()]
 
+# Upload caps (15 MB JSON telemetry sync, 6 MB screenshot upload)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+
+# Cookie & HTTP Security Defaults
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+# Rate Limiting Thresholds (IP-hash backed via RateLimitLog)
+RATELIMIT_ENABLED = os.getenv("RATELIMIT_ENABLED", "True").lower() in ("true", "1", "yes")
+RATELIMIT_CHAT_PER_MIN = int(os.getenv("RATELIMIT_CHAT_PER_MIN", "60"))
+RATELIMIT_GUEST_DAILY = int(os.getenv("RATELIMIT_GUEST_DAILY", "45"))
+RATELIMIT_LOGIN_PER_MIN = int(os.getenv("RATELIMIT_LOGIN_PER_MIN", "10"))
+RATELIMIT_PROMO_PER_MIN = int(os.getenv("RATELIMIT_PROMO_PER_MIN", "8"))
+RATELIMIT_RIOT_PER_MIN = int(os.getenv("RATELIMIT_RIOT_PER_MIN", "20"))
 
 # Application definition
 INSTALLED_APPS = [

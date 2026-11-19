@@ -11,19 +11,21 @@ import json
 import time
 from typing import Any, Dict, Optional, Tuple
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from PIL import Image, UnidentifiedImageError
 
 from apps.chat.llm_service import AICoachLLMService
 from apps.chat.models import ChatMessage, ChatSession
+from apps.core.ratelimit import check_rate_limit
 from apps.telemetry.services import TelemetryRAGService
 
 MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
 MAX_IMAGE_WIDTH = 1600
+Image.MAX_IMAGE_PIXELS = 25_000_000  # Guard against decompression bombs
 ALLOWED_PIL_FORMATS = {"PNG": "image/png", "JPEG": "image/jpeg", "WEBP": "image/webp"}
 
 
@@ -75,6 +77,8 @@ def _validate_and_encode_image(
             mime_type = ALLOWED_PIL_FORMATS[fmt]
     except ValueError:
         raise
+    except Image.DecompressionBombError:
+        raise ValueError("Görsel çözünürlüğü güvenlik sınırını aşıyor (en fazla 25 MP).")
     except (UnidentifiedImageError, OSError):
         raise ValueError("Geçersiz veya bozuk görsel dosyası.")
 
@@ -185,6 +189,20 @@ def _prepare_chat_turn(request) -> Tuple[Optional[Dict[str, Any]], Optional[Json
                         {"error": "Yetkisiz işlem: Bu misafir sohbeti size ait değil."}, status=403
                     )
 
+    # IP/User burst rate limit before quota or LLM invocation
+    burst_ok, _ = check_rate_limit(
+        request,
+        scope="chat",
+        limit=getattr(settings, "RATELIMIT_CHAT_PER_MIN", 60),
+        period="min",
+        user_scoped=request.user.is_authenticated,
+    )
+    if not burst_ok:
+        return None, JsonResponse({
+            "error": "Çok hızlı istek gönderiyorsunuz. Lütfen bir dakika bekleyip tekrar deneyin.",
+            "rate_limited": True,
+        }, status=429)
+
     # Atomic Quota Enforcement
     profile = None
     if request.user.is_authenticated:
@@ -196,6 +214,18 @@ def _prepare_chat_turn(request) -> Tuple[Optional[Dict[str, Any]], Optional[Json
                 "quota_exceeded": True,
             }, status=429)
     else:
+        guest_ip_ok, _ = check_rate_limit(
+            request,
+            scope="guest_chat",
+            limit=getattr(settings, "RATELIMIT_GUEST_DAILY", 45),
+            period="day",
+            user_scoped=False,
+        )
+        if not guest_ip_ok:
+            return None, JsonResponse({
+                "error": "Bu ağ üzerinden günlük misafir soru limitine ulaşıldı. Ücretsiz kayıt olarak devam edebilirsiniz.",
+                "quota_exceeded": True,
+            }, status=429)
         guest_used = request.session.get("guest_quota_used", 0)
         guest_limit = 30
         if guest_used >= guest_limit:
@@ -280,7 +310,6 @@ def _prepare_chat_turn(request) -> Tuple[Optional[Dict[str, Any]], Optional[Json
     }, None
 
 
-@csrf_exempt
 @require_POST
 def send_message_view(request):
     """
@@ -342,7 +371,6 @@ def _sse_event(event_name: str, data: Dict[str, Any]) -> str:
     return f"event: {event_name}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
-@csrf_exempt
 @require_POST
 def stream_message_view(request):
     """
