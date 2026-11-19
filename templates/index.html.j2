@@ -806,8 +806,13 @@
             </span>
           </div>
           <span class="text-xs text-slate-400">
+            {% if report.pbe_diff.is_new_set and report.pbe_preview %}
+            <span class="lang-tr">Yeni Set {{ report.pbe_preview.set_number }} Kataloğu ({{ report.pbe_preview.source }})</span>
+            <span class="lang-en">New Set {{ report.pbe_preview.set_number }} Catalog ({{ report.pbe_preview.source }})</span>
+            {% else %}
             <span class="lang-tr">Canlı Master+ Desteleri Üzerine PBE Değişim Projeksiyonu</span>
             <span class="lang-en">PBE Balance Overlay on Live Master+ Archetypes</span>
+            {% endif %}
           </span>
         </div>
         <h2 class="text-lg sm:text-xl font-bold text-white mb-2">
@@ -818,9 +823,169 @@
           <span class="lang-tr">{{ report.ai_summary.pbe_analysis }}</span>
           <span class="lang-en">{{ report.ai_summary.pbe_analysis_en or report.ai_summary.pbe_analysis }}</span>
         </p>
+
+        {% if report.pbe_diff.is_new_set and report.pbe_preview %}
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-[#222d42]">
+          <div class="px-3 py-2.5 rounded-lg bg-[#0d121c] border border-[#222d42]">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+              <span class="lang-tr">Set {{ report.pbe_preview.set_number }} Şampiyon</span>
+              <span class="lang-en">Set {{ report.pbe_preview.set_number }} Champions</span>
+            </div>
+            <div class="text-lg font-bold text-white mono">{{ report.pbe_preview.total_champions }}</div>
+          </div>
+          <div class="px-3 py-2.5 rounded-lg bg-[#0d121c] border border-[#222d42]">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+              <span class="lang-tr">Özellik / Sinerji</span>
+              <span class="lang-en">Traits &amp; Synergies</span>
+            </div>
+            <div class="text-lg font-bold text-[#f0c374] mono">{{ report.pbe_preview.total_traits }}</div>
+          </div>
+          <div class="px-3 py-2.5 rounded-lg bg-[#0d121c] border border-amber-500/30">
+            <div class="text-[10px] uppercase tracking-wider text-[#f0c374] font-semibold">
+              <span class="lang-tr">5 Altınlık Birimler</span>
+              <span class="lang-en">5-Cost Units</span>
+            </div>
+            <div class="text-lg font-bold text-amber-300 mono">{{ report.pbe_preview.five_cost_count }}</div>
+          </div>
+          <div class="px-3 py-2.5 rounded-lg bg-[#0d121c] border border-emerald-500/30">
+            <div class="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold">PBE Dalı</div>
+            <div class="text-sm font-bold text-emerald-300 mono mt-0.5">{{ report.versions.pbe_label }}</div>
+          </div>
+        </div>
+        {% endif %}
       </section>
 
-      {% if report.pbe_diff.champion_diffs or report.pbe_diff.trait_diffs %}
+      {% if report.pbe_diff.is_new_set and report.pbe_preview %}
+      {% if report.pbe_meta.compositions %}
+      <section class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-base sm:text-lg font-bold text-white">
+            <span class="lang-tr">Set {{ report.pbe_preview.set_number }} Öne Çıkan Özellik Çekirdekleri (Erken Önizleme)</span>
+            <span class="lang-en">Set {{ report.pbe_preview.set_number }} Featured Trait Cores (Early Preview)</span>
+          </h3>
+          <span class="text-xs text-slate-400">
+            <span class="lang-tr">PBE birim sinerjilerinden otomatik türetilmiştir</span>
+            <span class="lang-en">Synthesized from PBE unit trait rosters</span>
+          </span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          {% for comp in report.pbe_meta.compositions[:8] %}
+          <div class="surface-card rounded-xl p-4 flex items-center justify-between gap-4">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold px-2 py-0.5 rounded bg-[#182030] text-[#f0c374] border border-[#29364f] mono">
+                  {{ comp.primary_trait }}
+                </span>
+                <span class="text-xs text-slate-400 mono">{{ comp.unit_count }} <span class="lang-tr">Birim</span><span class="lang-en">Units</span></span>
+              </div>
+              <h4 class="font-bold text-white mt-1 text-sm truncate">
+                <span class="lang-tr">{{ comp.comp_name }}</span>
+                <span class="lang-en">{{ comp.comp_name_en or comp.comp_name }}</span>
+              </h4>
+            </div>
+            <div class="flex -space-x-2 shrink-0">
+              {% for u in comp.units[:6] %}
+              <img src="{{ u.icon }}" alt="{{ u.name }}" title="{{ u.name }} ({{ u.cost }}G)" class="w-8 h-8 rounded-full border-2 border-[#121722] bg-slate-800 object-cover" onerror="this.style.display='none'" />
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h3 class="text-base sm:text-lg font-bold text-white">
+            <span class="lang-tr">Set {{ report.pbe_preview.set_number }} PBE Şampiyon Kataloğu ({{ report.pbe_preview.total_champions }})</span>
+            <span class="lang-en">Set {{ report.pbe_preview.set_number }} PBE Champions ({{ report.pbe_preview.total_champions }})</span>
+          </h3>
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="inline-flex rounded-lg bg-[#0d121c] p-1 border border-[#222d42] text-xs font-semibold gap-1" id="pbe-cost-bar">
+              <button type="button" data-pbe-cost="ALL" onclick="filterPbeCost('ALL')" class="pbe-cost-btn px-2.5 py-1 rounded bg-[#f0c374] text-slate-950 font-bold">ALL</button>
+              <button type="button" data-pbe-cost="5" onclick="filterPbeCost('5')" class="pbe-cost-btn px-2.5 py-1 rounded text-amber-300 hover:bg-slate-800">5G</button>
+              <button type="button" data-pbe-cost="4" onclick="filterPbeCost('4')" class="pbe-cost-btn px-2.5 py-1 rounded text-purple-300 hover:bg-slate-800">4G</button>
+              <button type="button" data-pbe-cost="3" onclick="filterPbeCost('3')" class="pbe-cost-btn px-2.5 py-1 rounded text-sky-300 hover:bg-slate-800">3G</button>
+              <button type="button" data-pbe-cost="2" onclick="filterPbeCost('2')" class="pbe-cost-btn px-2.5 py-1 rounded text-emerald-300 hover:bg-slate-800">2G</button>
+              <button type="button" data-pbe-cost="1" onclick="filterPbeCost('1')" class="pbe-cost-btn px-2.5 py-1 rounded text-slate-300 hover:bg-slate-800">1G</button>
+            </div>
+            <input id="pbe-search-input" type="text" oninput="applyPbeChampionFilter()"
+              placeholder="Şampiyon veya özellik ara..."
+              class="bg-[#0d121c] border border-[#222d42] focus:border-[#f0c374] rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-400 outline-none w-48" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="pbe-champ-grid">
+          {% for ch in report.pbe_preview.champions %}
+          <div class="pbe-champ-card surface-card rounded-xl p-3.5 flex items-start gap-3"
+               data-cost="{{ ch.cost }}"
+               data-search="{{ (ch.name ~ ' ' ~ ch.name_en ~ ' ' ~ (ch.traits|join(' ')) ~ ' ' ~ (ch.traits_en|join(' ')))|lower }}">
+            <div class="relative shrink-0">
+              <img src="{{ ch.icon }}" alt="{{ ch.name }}"
+                   class="w-12 h-12 rounded-lg object-cover bg-slate-900 border-2 {% if ch.cost == 5 %}border-amber-400{% elif ch.cost == 4 %}border-purple-400{% elif ch.cost == 3 %}border-sky-400{% elif ch.cost == 2 %}border-emerald-400{% else %}border-slate-500{% endif %}"
+                   onerror="this.style.display='none'" />
+              <span class="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded text-[10px] font-black mono bg-[#0a0e17] text-[#f0c374] border border-[#29364f]">{{ ch.cost }}G</span>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-2">
+                <h4 class="font-bold text-white text-sm truncate">
+                  <span class="lang-tr">{{ ch.name }}</span>
+                  <span class="lang-en">{{ ch.name_en }}</span>
+                </h4>
+              </div>
+              {% if ch.ability_name %}
+              <p class="text-[11px] text-slate-400 truncate mt-0.5">
+                <span class="lang-tr">{{ ch.ability_name }}</span>
+                <span class="lang-en">{{ ch.ability_name_en or ch.ability_name }}</span>
+              </p>
+              {% endif %}
+              <div class="flex flex-wrap gap-1 mt-1.5">
+                {% for tr in ch.traits %}
+                <span class="px-1.5 py-0.5 rounded bg-[#161e2e] border border-[#253147] text-[10px] text-slate-200">
+                  <span class="lang-tr">{{ tr }}</span>
+                  <span class="lang-en">{{ ch.traits_en[loop.index0] if ch.traits_en and loop.index0 < ch.traits_en|length else tr }}</span>
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h3 class="text-base sm:text-lg font-bold text-white">
+          <span class="lang-tr">Set {{ report.pbe_preview.set_number }} PBE Özellikler &amp; Sinerjiler ({{ report.pbe_preview.total_traits }})</span>
+          <span class="lang-en">Set {{ report.pbe_preview.set_number }} PBE Traits &amp; Synergies ({{ report.pbe_preview.total_traits }})</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {% for tr in report.pbe_preview.traits %}
+          <div class="surface-card rounded-xl p-3.5 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <img src="{{ tr.icon }}" alt="{{ tr.name }}" class="w-7 h-7 rounded bg-[#0d121c] p-0.5 border border-[#29364f] shrink-0" onerror="this.style.display='none'" />
+                <h4 class="font-bold text-white text-sm truncate">
+                  <span class="lang-tr">{{ tr.name }}</span>
+                  <span class="lang-en">{{ tr.name_en }}</span>
+                </h4>
+              </div>
+              {% if tr.breakpoints %}
+              <span class="text-[10px] font-semibold mono px-2 py-0.5 rounded bg-[#161e2e] text-[#f0c374] border border-[#29364f] shrink-0">
+                {{ tr.breakpoints|join(' / ') }}
+              </span>
+              {% endif %}
+            </div>
+            {% if tr.desc %}
+            <p class="text-xs text-slate-300 leading-relaxed line-clamp-3">
+              <span class="lang-tr">{{ tr.desc }}</span>
+              <span class="lang-en">{{ tr.desc_en or tr.desc }}</span>
+            </p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% elif report.pbe_diff.champion_diffs or report.pbe_diff.trait_diffs %}
       <section class="space-y-4">
         <h3 class="text-base sm:text-lg font-bold text-white">
           <span class="lang-tr">PBE Değişikliklerinden Etkilenen Master+ Desteleri</span>
@@ -1951,6 +2116,29 @@
       setTimeout(() => {
         btnEl.innerHTML = origHtml;
       }, 1800);
+    }
+
+    let activePbeCost = 'ALL';
+
+    function filterPbeCost(costVal) {
+      activePbeCost = costVal;
+      document.querySelectorAll('#pbe-cost-bar .pbe-cost-btn').forEach(btn => {
+        if (btn.getAttribute('data-pbe-cost') === costVal) {
+          btn.className = 'pbe-cost-btn px-2.5 py-1 rounded bg-[#f0c374] text-slate-950 font-bold';
+        } else {
+          btn.className = 'pbe-cost-btn px-2.5 py-1 rounded text-slate-300 hover:bg-slate-800';
+        }
+      });
+      applyPbeChampionFilter();
+    }
+
+    function applyPbeChampionFilter() {
+      const q = (document.getElementById('pbe-search-input')?.value || '').trim().toLowerCase();
+      document.querySelectorAll('#pbe-champ-grid .pbe-champ-card').forEach(card => {
+        const costMatch = activePbeCost === 'ALL' || card.getAttribute('data-cost') === activePbeCost;
+        const textMatch = !q || (card.getAttribute('data-search') || '').includes(q);
+        card.classList.toggle('hidden', !(costMatch && textMatch));
+      });
     }
 
     function switchLeaderboardRegion(regionId) {

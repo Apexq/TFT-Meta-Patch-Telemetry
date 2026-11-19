@@ -401,12 +401,15 @@ class RiotTFTAnalyzer:
         icon_version: str = "latest",
         riot_telemetry: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
+        is_new_set_pbe = is_pbe and bool(diff_report.get("is_new_set"))
+        pbe_set_num = int(set18_data.get("set_number") or 18)
+
         if riot_telemetry is None and not is_pbe:
             riot_telemetry = self.fetch_official_riot_api_telemetry()
         elif riot_telemetry is None:
             riot_telemetry = {"configured": bool(self.api_key), "connected": False}
 
-        metatft_data = self.fetch_metatft_master_plus_data()
+        metatft_data = None if is_new_set_pbe else self.fetch_metatft_master_plus_data()
         if metatft_data:
             total_games = metatft_data["total_master_games"]
             comps = self._build_from_metatft_clusters(
@@ -423,6 +426,24 @@ class RiotTFTAnalyzer:
                 data_source_tr = f"Canlı Master / Grandmaster / Challenger Verisi ({total_games:,} Gerçek Set 18 Maçı)"
                 data_source_en = f"Live Master / Grandmaster / Challenger Data ({total_games:,} Real Set 18 Matches)"
             riot_active = True
+        elif is_new_set_pbe:
+            total_games = 0
+            comps = self._synthesize_fallback_comps(
+                set18_data,
+                diff_report,
+                is_pbe,
+                icon_version,
+                min_trait_units=3,
+            )
+            data_source_tr = (
+                f"Set {pbe_set_num} PBE Erken Önizleme Verisi "
+                f"({len(set18_data.get('champions', []))} Şampiyon, {len(set18_data.get('traits', []))} Özellik)"
+            )
+            data_source_en = (
+                f"Set {pbe_set_num} PBE Early Preview "
+                f"({len(set18_data.get('champions', []))} Champions, {len(set18_data.get('traits', []))} Traits)"
+            )
+            riot_active = False
         else:
             total_games = 0
             comps = self._synthesize_fallback_comps(set18_data, diff_report, is_pbe, icon_version)
@@ -435,6 +456,8 @@ class RiotTFTAnalyzer:
 
         return {
             "is_pbe": is_pbe,
+            "is_new_set": is_new_set_pbe,
+            "set_number": pbe_set_num,
             "data_source": data_source_tr,
             "data_source_en": data_source_en,
             "riot_api_active": riot_active,
@@ -727,6 +750,7 @@ class RiotTFTAnalyzer:
         diff_report: Dict[str, Any],
         is_pbe: bool,
         icon_version: str,
+        min_trait_units: int = 6,
     ) -> List[Dict[str, Any]]:
         champions = set18_data.get("champions", [])
         champ_diff_map = {c["apiName"]: c for c in diff_report.get("champion_diffs", [])}
@@ -737,9 +761,10 @@ class RiotTFTAnalyzer:
 
         comps: List[Dict[str, Any]] = []
         for tr_name, units in by_trait.items():
-            if len(units) < 6:
+            if len(units) < min_trait_units:
                 continue
-            picked = sorted(units, key=lambda x: x.get("cost", 1))[:8]
+            picked = sorted(units, key=lambda x: (-x.get("cost", 1), x.get("name", "")))[:8]
+            picked.sort(key=lambda x: x.get("cost", 1))
             score = sum(champ_diff_map.get(u["apiName"], {}).get("impact_score", 0.0) for u in picked)
             comps.append({
                 "cluster_id": tr_name,
@@ -789,6 +814,7 @@ class RiotTFTAnalyzer:
                     "is_simulated": True,
                 },
             })
+        comps.sort(key=lambda c: (-c["unit_count"], -c["comp_delta_score"]))
         return comps[:12]
 
 

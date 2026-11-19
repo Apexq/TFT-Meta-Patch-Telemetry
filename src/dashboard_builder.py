@@ -145,6 +145,16 @@ class DashboardBuilder:
             "",
             f"{ai.get('pbe_analysis_en') or ai['pbe_analysis']}",
             "",
-            f"*Generated at: {report['generated_at']} | Target Mutator: `TFTSet18`*",
         ])
+        pbe_prev = report.get("pbe_preview")
+        if pbe_prev and pbe_prev.get("champions"):
+            five_costs = [
+                f"**{c.get('name_en') or c['name']}** ({', '.join(c.get('traits_en') or c.get('traits') or [])})"
+                for c in pbe_prev["champions"]
+                if int(c.get("cost") or 0) == 5
+            ][:10]
+            if five_costs:
+                lines.append(f"- **Set {pbe_prev['set_number']} 5-Cost Preview:** " + " · ".join(five_costs))
+                lines.append("")
+        lines.append(f"*Generated at: {report['generated_at']} | Target Mutator: `TFTSet18`*")
         return "\n".join(lines)

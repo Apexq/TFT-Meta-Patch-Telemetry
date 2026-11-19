@@ -361,20 +361,39 @@ class RAGBuilder:
     def _pbe_chunk(self) -> Dict[str, Any]:
         ai = self.report.get("ai_summary", {})
         pd = self.report.get("pbe_diff", {})
-        changed = [
-            f"{c.get('name_en') or c.get('name')} {c.get('status')}"
-            for c in pd.get("champion_diffs", []) + pd.get("trait_diffs", [])
-        ]
+        pbe_prev = self.report.get("pbe_preview") or {}
+        if pd.get("is_new_set") and pbe_prev.get("champions"):
+            five_costs = [
+                f"{c.get('name_en') or c.get('name')} ({', '.join(c.get('traits_en') or c.get('traits') or [])})"
+                for c in pbe_prev["champions"]
+                if int(c.get("cost") or 0) == 5
+            ][:12]
+            top_traits = [t.get("name_en") or t.get("name") for t in pbe_prev.get("traits", [])[:12]]
+            detail = (
+                f"Set {pbe_prev.get('set_number')} PBE includes {pbe_prev.get('total_champions', 0)} champions "
+                f"and {pbe_prev.get('total_traits', 0)} traits. "
+                f"5-costs: {', '.join(five_costs)}. Key traits: {', '.join(top_traits)}."
+            )
+            kw = _keywords(
+                "pbe", "next set", f"set {pbe_prev.get('set_number')}", f"tftset{pbe_prev.get('set_number')}",
+                "yeni set", self.v.get("pbe_label"),
+            )
+        else:
+            changed = [
+                f"{c.get('name_en') or c.get('name')} {c.get('status')}"
+                for c in pd.get("champion_diffs", []) + pd.get("trait_diffs", [])
+            ]
+            detail = f"Changes on PBE: {', '.join(changed) if changed else 'none detected'}."
+            kw = _keywords("pbe", "next patch", "gelecek yama", "upcoming", self.v.get("pbe_label"))
         return {
             "id": "pbe",
             "type": "pbe",
             "title": f"PBE preview {self.v.get('pbe_label')}",
-            "keywords": _keywords("pbe", "next patch", "gelecek yama", "upcoming", self.v.get("pbe_label")),
+            "keywords": kw,
             "text": (
                 f"[PBE {self.v.get('pbe_label')}] {ai.get('pbe_headline_en') or ai.get('pbe_headline', '')} "
                 f"{ai.get('pbe_analysis_en') or ai.get('pbe_analysis', '')} "
-                f"Changes on PBE: {', '.join(changed) if changed else 'none detected'}. "
-                f"PBE data is unreleased and may change before going live."
+                f"{detail} PBE data is unreleased and may change before going live."
             ).strip(),
         }
 

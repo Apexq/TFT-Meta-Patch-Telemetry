@@ -75,8 +75,18 @@ class Set18DiffEngine:
         old_label: str,
         new_label: str,
     ) -> Dict[str, Any]:
+        old_set = int(old_data.get("set_number") or 18)
+        new_set = int(new_data.get("set_number") or 18)
+        is_new_set = new_set != old_set
+
         champ_diffs = self._diff_champions(old_data.get("champions", []), new_data.get("champions", []))
-        trait_diffs = self._diff_traits(old_data.get("traits", []), new_data.get("traits", []))
+        if is_new_set:
+            champ_diffs.sort(key=lambda c: (-int(c.get("cost") or 0), str(c.get("name_en") or c.get("name") or "")))
+        trait_diffs = self._diff_traits(
+            old_data.get("traits", []),
+            new_data.get("traits", []),
+            include_new=is_new_set,
+        )
 
         buffed_champs = [c for c in champ_diffs if c["status"] == "BUFF"]
         nerfed_champs = [c for c in champ_diffs if c["status"] == "NERF"]
@@ -90,7 +100,8 @@ class Set18DiffEngine:
             "new_patch": new_label,
             "old_cdragon": old_data.get("cdragon_version"),
             "new_cdragon": new_data.get("cdragon_version"),
-            "set_number": 18,
+            "set_number": new_set,
+            "is_new_set": is_new_set,
             "summary_counts": {
                 "total_champions_changed": len(champ_diffs),
                 "buffed_champions": len(buffed_champs),
@@ -254,6 +265,7 @@ class Set18DiffEngine:
         self,
         old_traits: List[Dict[str, Any]],
         new_traits: List[Dict[str, Any]],
+        include_new: bool = False,
     ) -> List[Dict[str, Any]]:
         old_map = {t["apiName"]: t for t in old_traits}
         results: List[Dict[str, Any]] = []
@@ -261,10 +273,30 @@ class Set18DiffEngine:
         for nt in new_traits:
             api_name = nt["apiName"]
             ot = old_map.get(api_name)
-            if not ot:
-                continue
-
             icon_url = CDragonClient.resolve_icon_url(nt.get("icon"), self.icon_version)
+            if not ot:
+                if include_new:
+                    tr_name = nt.get("name", api_name)
+                    en_name = self.en_trait_names.get(api_name, tr_name)
+                    results.append({
+                        "apiName": api_name,
+                        "name": tr_name,
+                        "name_en": en_name,
+                        "icon": icon_url,
+                        "status": "NEW",
+                        "impact_score": 10.0,
+                        "changes": [
+                            {
+                                "label": "Yeni Özellik",
+                                "label_en": "New Trait",
+                                "old": "-",
+                                "new": "Added",
+                                "delta_pct": 100.0,
+                                "type": "BUFF",
+                            }
+                        ],
+                    })
+                continue
             old_effects = ot.get("effects", [])
             new_effects = nt.get("effects", [])
 

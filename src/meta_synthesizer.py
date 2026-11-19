@@ -97,20 +97,34 @@ class MetaSynthesizer:
             for c in live_meta["compositions"][:5]
         ]
 
-        top_pbe_buffs = [f"{c['name_en']} (+{c['impact_score']})" for c in pbe_diff["champion_diffs"] if c["status"] == "BUFF"][:5]
+        top_pbe_buffs = [f"{c['name_en']} (+{c['impact_score']})" for c in pbe_diff.get("champion_diffs", []) if c["status"] == "BUFF"][:5]
         top_pbe_comps = [
             f"{c['comp_name']} / {c['comp_name_en']} (PBE Delta: {c['comp_delta_score']:+})"
-            for c in pbe_meta["compositions"][:4]
+            for c in pbe_meta.get("compositions", [])[:4]
         ]
+
+        if pbe_diff.get("is_new_set"):
+            pbe_new_units = [f"{c['name_en']} ({c['cost']}G)" for c in pbe_diff.get("champion_diffs", [])[:8]]
+            pbe_new_traits = [t['name_en'] for t in pbe_diff.get("trait_diffs", [])[:8]]
+            pbe_prompt_block = (
+                f"TFT Set {pbe_diff.get('set_number')} PBE Preview ({pbe_diff['new_patch']}):\n"
+                f"- Total Champions: {pbe_diff['summary_counts']['total_champions_changed']}, Traits: {pbe_diff['summary_counts']['total_traits_changed']}\n"
+                f"- Highlight Units: {', '.join(pbe_new_units) or 'None'}\n"
+                f"- Highlight Traits: {', '.join(pbe_new_traits) or 'None'}\n"
+            )
+        else:
+            pbe_prompt_block = (
+                f"TFT Set 18 PBE Patch ({pbe_diff['old_patch']} -> {pbe_diff['new_patch']}):\n"
+                f"- PBE Buffs: {', '.join(top_pbe_buffs) or 'None'}\n"
+                f"- PBE Impacted Comps: {', '.join(top_pbe_comps)}\n"
+            )
 
         return (
             f"TFT Set 18 Live Patch ({live_diff['old_patch']} -> {live_diff['new_patch']}):\n"
             f"- Buffed Champions: {', '.join(top_live_buffs) or 'None'}\n"
             f"- Nerfed Champions: {', '.join(top_live_nerfs) or 'None'}\n"
             f"- Top Master+ Compositions: {', '.join(top_live_comps)}\n\n"
-            f"TFT Set 18 PBE Patch ({pbe_diff['old_patch']} -> {pbe_diff['new_patch']}):\n"
-            f"- PBE Buffs: {', '.join(top_pbe_buffs) or 'None'}\n"
-            f"- PBE Impacted Comps: {', '.join(top_pbe_comps)}\n"
+            f"{pbe_prompt_block}"
         )
 
     def _build_bilingual_rule_based_report(
@@ -167,7 +181,32 @@ class MetaSynthesizer:
         pbe_buffs = [c for c in pbe_diff.get("champion_diffs", []) if c["status"] == "BUFF"]
         pbe_rising = [c for c in pbe_meta.get("compositions", []) if c["comp_delta_score"] > 0]
 
-        if not pbe_diff.get("champion_diffs") and not pbe_diff.get("trait_diffs"):
+        if pbe_diff.get("is_new_set"):
+            pbe_set = pbe_diff.get("set_number", 19)
+            champ_cnt = pbe_diff.get("summary_counts", {}).get("total_champions_changed", 0)
+            trait_cnt = pbe_diff.get("summary_counts", {}).get("total_traits_changed", 0)
+            five_costs_tr = ", ".join(
+                list(dict.fromkeys(c["name"] for c in pbe_diff.get("champion_diffs", []) if int(c.get("cost") or 0) == 5))[:6]
+            ) or "yüksek bedelli taşıyıcılar"
+            five_costs_en = ", ".join(
+                list(dict.fromkeys(c.get("name_en", c["name"]) for c in pbe_diff.get("champion_diffs", []) if int(c.get("cost") or 0) == 5))[:6]
+            ) or "high-cost carries"
+            top_traits_tr = ", ".join(t["name"] for t in pbe_diff.get("trait_diffs", [])[:5]) or "yeni özellikler"
+            top_traits_en = ", ".join(t.get("name_en", t["name"]) for t in pbe_diff.get("trait_diffs", [])[:5]) or "new traits"
+
+            pbe_headline_tr = f"{pbe_diff['new_patch']}: Set {pbe_set} PBE'de Yayında — {champ_cnt} Şampiyon ve {trait_cnt} Özellik"
+            pbe_analysis_tr = (
+                f"Test sunucusu (PBE) üzerinde Set {pbe_set} ({pbe_diff['new_patch']}) döngüsü aktifleşti. "
+                f"Verilerde toplam {champ_cnt} oynanabilir şampiyon ve {trait_cnt} özellik ({top_traits_tr} vb.) tespit edildi. "
+                f"Öne çıkan 5 altınlık birimler arasında {five_costs_tr} yer alıyor; PBE oynanış verileri biriktikçe kompozisyon önerileri güncellenecektir."
+            )
+            pbe_headline_en = f"{pbe_diff['new_patch']}: Set {pbe_set} Live on PBE — {champ_cnt} Champions & {trait_cnt} Traits"
+            pbe_analysis_en = (
+                f"Set {pbe_set} ({pbe_diff['new_patch']}) is now live on PBE with {champ_cnt} playable champions and "
+                f"{trait_cnt} traits ({top_traits_en}, etc.) detected in telemetry lookups. "
+                f"Headline 5-cost units include {five_costs_en}; live Master+ tiering will populate once ranked telemetry begins."
+            )
+        elif not pbe_diff.get("champion_diffs") and not pbe_diff.get("trait_diffs"):
             pbe_headline_tr = f"{pbe_diff['new_patch']}: PBE Verisi Güncel Canlı Yama ({live_diff['new_patch']}) ile Senkronize"
             pbe_analysis_tr = (
                 f"CommunityDragon üzerindeki PBE dalında şu an {live_diff['new_patch']} yamasından farklı bir Set 18 değişikliği bulunmuyor. "
