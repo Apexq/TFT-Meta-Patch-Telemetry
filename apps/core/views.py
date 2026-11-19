@@ -5,8 +5,9 @@ Views for apps.core: Chat-First home page and live telemetry drawers.
 from __future__ import annotations
 
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import ValidationError
+from django.db import connection
 from apps.telemetry.models import PatchSnapshot
 from apps.chat.models import ChatSession
 
@@ -102,3 +103,52 @@ def drawer_mechanics_view(request):
     encounters = report.get("mechanics", {}).get("encounters", [])
     charms = report.get("mechanics", {}).get("charms", [])
     return render(request, "partials/drawer_mechanics.html", {"active_snapshot": snapshot, "encounters": encounters, "charms": charms})
+
+
+def drawer_pbe_view(request):
+    """Slide-over drawer content: Set 19 PBE Catalog, Traits & Early Vertical Synergies."""
+    snapshot = PatchSnapshot.objects.filter(is_active=True).first()
+    report = snapshot.full_report_json if snapshot else {}
+    pbe_preview = report.get("pbe_preview") or {}
+    pbe_meta = report.get("pbe_meta") or {}
+    pbe_diff = report.get("pbe_diff") or {}
+    ai_summary = report.get("ai_summary") or {}
+    versions = report.get("versions") or {}
+    return render(
+        request,
+        "partials/drawer_pbe.html",
+        {
+            "active_snapshot": snapshot,
+            "pbe_preview": pbe_preview,
+            "pbe_comps": pbe_meta.get("compositions", []),
+            "pbe_diff": pbe_diff,
+            "ai_summary": ai_summary,
+            "pbe_label": versions.get("pbe_label") or (snapshot.pbe_label if snapshot else ""),
+        },
+    )
+
+
+def health_check_view(request):
+    """Lightweight health endpoint verifying DB connectivity and active telemetry snapshot."""
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+            journal_mode = ""
+            if connection.vendor == "sqlite":
+                cursor.execute("PRAGMA journal_mode;")
+                row = cursor.fetchone()
+                journal_mode = str(row[0]) if row else ""
+        active_snap = PatchSnapshot.objects.filter(is_active=True).values(
+            "patch_label", "pbe_label", "fingerprint", "created_at"
+        ).first()
+        return JsonResponse({
+            "status": "ok",
+            "database": connection.vendor,
+            "journal_mode": journal_mode,
+            "active_patch": active_snap["patch_label"] if active_snap else None,
+            "pbe_label": active_snap["pbe_label"] if active_snap else None,
+            "snapshot_ready": bool(active_snap),
+        })
+    except Exception as exc:
+        return JsonResponse({"status": "error", "detail": str(exc)}, status=503)

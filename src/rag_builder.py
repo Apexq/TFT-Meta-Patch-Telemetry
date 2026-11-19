@@ -89,7 +89,7 @@ class RAGBuilder:
         chunks.extend(self._champion_diff_chunks())
         chunks.extend(self._trait_diff_chunks())
         chunks.extend(self._leaderboard_chunks())
-        chunks.append(self._pbe_chunk())
+        chunks.extend(self._pbe_chunks())
         return chunks
 
     def _overview_chunk(self) -> Dict[str, Any]:
@@ -361,22 +361,87 @@ class RAGBuilder:
     def _pbe_chunk(self) -> Dict[str, Any]:
         ai = self.report.get("ai_summary", {})
         pd = self.report.get("pbe_diff", {})
-        changed = [
-            f"{c.get('name_en') or c.get('name')} {c.get('status')}"
-            for c in pd.get("champion_diffs", []) + pd.get("trait_diffs", [])
-        ]
+        pbe_prev = self.report.get("pbe_preview") or {}
+        if pd.get("is_new_set") and pbe_prev.get("champions"):
+            five_costs = [
+                f"{c.get('name_en') or c.get('name')} ({', '.join(c.get('traits_en') or c.get('traits') or [])})"
+                for c in pbe_prev["champions"]
+                if int(c.get("cost") or 0) == 5
+            ][:12]
+            top_traits = [t.get("name_en") or t.get("name") for t in pbe_prev.get("traits", [])[:12]]
+            detail = (
+                f"Set {pbe_prev.get('set_number')} PBE includes {pbe_prev.get('total_champions', 0)} champions "
+                f"and {pbe_prev.get('total_traits', 0)} traits. "
+                f"5-costs: {', '.join(five_costs)}. Key traits: {', '.join(top_traits)}."
+            )
+            kw = _keywords(
+                "pbe", "next set", f"set {pbe_prev.get('set_number')}", f"tftset{pbe_prev.get('set_number')}",
+                "yeni set", self.v.get("pbe_label"),
+            )
+        else:
+            changed = [
+                f"{c.get('name_en') or c.get('name')} {c.get('status')}"
+                for c in pd.get("champion_diffs", []) + pd.get("trait_diffs", [])
+            ]
+            detail = f"Changes on PBE: {', '.join(changed) if changed else 'none detected'}."
+            kw = _keywords("pbe", "next patch", "gelecek yama", "upcoming", self.v.get("pbe_label"))
         return {
             "id": "pbe",
             "type": "pbe",
             "title": f"PBE preview {self.v.get('pbe_label')}",
-            "keywords": _keywords("pbe", "next patch", "gelecek yama", "upcoming", self.v.get("pbe_label")),
+            "keywords": kw,
             "text": (
                 f"[PBE {self.v.get('pbe_label')}] {ai.get('pbe_headline_en') or ai.get('pbe_headline', '')} "
                 f"{ai.get('pbe_analysis_en') or ai.get('pbe_analysis', '')} "
-                f"Changes on PBE: {', '.join(changed) if changed else 'none detected'}. "
-                f"PBE data is unreleased and may change before going live."
+                f"{detail} PBE data is unreleased and may change before going live."
             ).strip(),
         }
+
+    def _pbe_chunks(self) -> List[Dict[str, Any]]:
+        out: List[Dict[str, Any]] = [self._pbe_chunk()]
+        pd = self.report.get("pbe_diff", {})
+        pbe_prev = self.report.get("pbe_preview") or {}
+        if not (pd.get("is_new_set") and pbe_prev.get("champions")):
+            return out
+
+        set_num = pbe_prev.get("set_number", 19)
+        five_costs = [c for c in pbe_prev["champions"] if int(c.get("cost") or 0) == 5]
+        if five_costs:
+            champ_lines = []
+            champ_names = []
+            for c in five_costs[:16]:
+                name_en = c.get("name_en") or c.get("name") or ""
+                name_tr = c.get("name") or name_en
+                traits = ", ".join(c.get("traits_en") or c.get("traits") or [])
+                ab = c.get("ability_name_en") or c.get("ability_name") or ""
+                champ_names.extend([name_en, name_tr])
+                champ_lines.append(f"{name_en} ({traits}" + (f", Ability: {ab}" if ab else "") + ")")
+            out.append({
+                "id": "pbe:champions_5g",
+                "type": "pbe",
+                "title": f"Set {set_num} PBE 5-Cost Champions",
+                "keywords": _keywords("pbe", f"set {set_num}", "5 cost", "5 altin", "5g", "legendary", "sampiyon", *champ_names),
+                "text": f"[Set {set_num} PBE 5-Cost Champions] " + "; ".join(champ_lines) + ".",
+            })
+
+        traits = pbe_prev.get("traits") or []
+        if traits:
+            trait_lines = []
+            trait_names = []
+            for t in traits[:24]:
+                name_en = t.get("name_en") or t.get("name") or ""
+                name_tr = t.get("name") or name_en
+                bps = "/".join(str(b) for b in (t.get("breakpoints") or []))
+                trait_names.extend([name_en, name_tr])
+                trait_lines.append(f"{name_en}/{name_tr} ({bps})" if bps else f"{name_en}/{name_tr}")
+            out.append({
+                "id": "pbe:traits",
+                "type": "pbe",
+                "title": f"Set {set_num} PBE Traits & Synergies",
+                "keywords": _keywords("pbe", f"set {set_num}", "trait", "ozellik", "sinerji", "synergy", *trait_names),
+                "text": f"[Set {set_num} PBE Traits] " + ", ".join(trait_lines) + ".",
+            })
+        return out
 
     # ------------------------------------------------------------------ #
     # Markdown artifacts                                                  #

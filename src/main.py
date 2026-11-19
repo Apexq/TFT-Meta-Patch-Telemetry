@@ -34,6 +34,98 @@ def load_state() -> Dict[str, Any]:
     return {}
 
 
+def _build_pbe_preview(
+    pbe_data: Dict[str, Any],
+    en_pbe_data: Dict[str, Any],
+    pbe_en_champ_names: Dict[str, str],
+    pbe_en_trait_names: Dict[str, str],
+    versions: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Builds a structured bilingual PBE catalog when PBE hosts a newer Set than Live."""
+    en_traits_by_api = {t["apiName"]: t for t in (en_pbe_data or {}).get("traits", []) if t.get("apiName")}
+    en_champs_by_api = {c["apiName"]: c for c in (en_pbe_data or {}).get("champions", []) if c.get("apiName")}
+    en_trait_by_tr_name: Dict[str, str] = {}
+    for t in pbe_data.get("traits", []):
+        api = t.get("apiName")
+        if api and t.get("name"):
+            en_trait_by_tr_name[t["name"]] = pbe_en_trait_names.get(api, t["name"])
+
+    champions_out = []
+    for c in pbe_data.get("champions", []):
+        api = c.get("apiName", "")
+        cost = int(c.get("cost") or 1)
+        tr_name = c.get("name") or api
+        en_name = pbe_en_champ_names.get(api) or c.get("en_name") or tr_name
+        en_c = en_champs_by_api.get(api, {})
+        tr_traits = list(c.get("traits") or [])
+        en_traits = list(en_c.get("traits") or [en_trait_by_tr_name.get(tr, tr) for tr in tr_traits])
+        tr_ab = c.get("ability") or {}
+        en_ab = en_c.get("ability") or {}
+        champions_out.append({
+            "apiName": api,
+            "name": tr_name,
+            "name_en": en_name,
+            "cost": cost,
+            "traits": tr_traits,
+            "traits_en": en_traits,
+            "ability_name": tr_ab.get("name", ""),
+            "ability_name_en": en_ab.get("name", tr_ab.get("name", "")),
+            "icon": CDragonClient.resolve_icon_url(c.get("tileIcon") or c.get("squareIcon") or c.get("icon"), "pbe"),
+        })
+    champions_out.sort(key=lambda x: (-x["cost"], x["name_en"]))
+
+    traits_out = []
+    for t in pbe_data.get("traits", []):
+        api = t.get("apiName", "")
+        tr_name = t.get("name") or api
+        en_t = en_traits_by_api.get(api, {})
+        en_name = pbe_en_trait_names.get(api, tr_name)
+        breakpoints = [e.get("minUnits") for e in (t.get("effects") or []) if e.get("minUnits")]
+        desc_tr = RiotTFTAnalyzer._clean_curve_tooltip(t.get("desc", ""), curve_values=t.get("curveValues"))
+        desc_en = RiotTFTAnalyzer._clean_curve_tooltip(en_t.get("desc", ""), curve_values=en_t.get("curveValues")) or desc_tr
+        traits_out.append({
+            "apiName": api,
+            "name": tr_name,
+            "name_en": en_name,
+            "desc": desc_tr,
+            "desc_en": desc_en,
+            "breakpoints": breakpoints,
+            "icon": CDragonClient.resolve_icon_url(t.get("icon"), "pbe"),
+        })
+    traits_out.sort(key=lambda x: (-len(x["breakpoints"]), x["name_en"]))
+
+    en_enc_by_api = {e.get("apiName"): e for e in (en_pbe_data or {}).get("encounters", []) if e.get("apiName")}
+    encounters_out = []
+    for enc in pbe_data.get("encounters", []):
+        api = enc.get("apiName", "")
+        en_e = en_enc_by_api.get(api, {})
+        tr_name = enc.get("name") or api
+        en_name = enc.get("en_name") or en_e.get("name") or tr_name
+        desc_tr = RiotTFTAnalyzer._clean_curve_tooltip(enc.get("postSpawnDesc") or enc.get("desc") or "")
+        desc_en = RiotTFTAnalyzer._clean_curve_tooltip(en_e.get("postSpawnDesc") or en_e.get("desc") or "") or desc_tr
+        encounters_out.append({
+            "apiName": api,
+            "name": tr_name,
+            "name_en": en_name,
+            "desc": desc_tr,
+            "desc_en": desc_en,
+        })
+
+    return {
+        "is_new_set": True,
+        "set_number": int(pbe_data.get("set_number") or 19),
+        "mutator": pbe_data.get("mutator", "TFTSet19"),
+        "patch_label": versions.get("pbe_label", "19.1 (PBE)"),
+        "source": pbe_data.get("pbe_source", "CommunityDragon PBE"),
+        "total_champions": len(champions_out),
+        "total_traits": len(traits_out),
+        "five_cost_count": sum(1 for c in champions_out if c["cost"] == 5),
+        "champions": champions_out,
+        "traits": traits_out,
+        "encounters": encounters_out,
+    }
+
+
 def save_state(state: Dict[str, Any]) -> None:
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -81,6 +173,17 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
             return {"should_run": False, "versions": versions}
         raise
 
+    live_set_num = int(latest_data.get("set_number", 18))
+    pbe_set_num = int(pbe_data.get("set_number", live_set_num))
+    if pbe_set_num != live_set_num:
+        versions["pbe_set_number"] = pbe_set_num
+        versions["pbe_mutator"] = pbe_data.get("mutator", f"TFTSet{pbe_set_num}")
+        versions["pbe_label"] = pbe_data.get("patch_label") or f"{pbe_set_num}.1 (PBE)"
+        print(f"[PBE Set Transition] Detected Set {pbe_set_num} on PBE: {versions['pbe_label']} (source: {pbe_data.get('pbe_source')})")
+    else:
+        versions["pbe_set_number"] = live_set_num
+        versions["pbe_mutator"] = pbe_data.get("mutator", "TFTSet18")
+
     latest_fp = CDragonClient.compute_set18_fingerprint(latest_data)
     pbe_fp = CDragonClient.compute_set18_fingerprint(pbe_data)
 
@@ -90,7 +193,10 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         or prev_state.get("ddragon_version") != versions.get("ddragon_version")
         or prev_state.get("latest_fingerprint") != latest_fp
     )
-    pbe_changed = prev_state.get("pbe_fingerprint") != pbe_fp
+    pbe_changed = (
+        prev_state.get("pbe_fingerprint") != pbe_fp
+        or prev_state.get("pbe_set_number") != pbe_set_num
+    )
     meta_stale = _is_meta_telemetry_stale(prev_state, max_hours=12.0)
 
     should_run = (
@@ -114,7 +220,7 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
     if check_only:
         print(
             f"[Check-Only] should_run={should_run} "
-            f"(live_changed={live_changed}, pbe_changed={pbe_changed}, meta_stale={meta_stale})"
+            f"(live_changed={live_changed}, pbe_changed={pbe_changed}, meta_stale={meta_stale}, pbe_set={pbe_set_num})"
         )
         return {"should_run": should_run, "versions": versions}
 
@@ -124,6 +230,20 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
     en_latest = en_client.fetch_set18_data(versions["latest_cdragon"])
     en_champ_names = {c["apiName"]: c.get("name", c["apiName"]) for c in en_latest.get("champions", [])}
     en_trait_names = {t["apiName"]: t.get("name", t["apiName"]) for t in en_latest.get("traits", [])}
+
+    pbe_en_champ_names = dict(en_champ_names)
+    pbe_en_trait_names = dict(en_trait_names)
+    en_pbe_data: Dict[str, Any] = {}
+    if pbe_set_num != live_set_num:
+        try:
+            en_pbe_data = en_client.fetch_set18_data("pbe", force_refresh=force)
+            for c in en_pbe_data.get("champions", []):
+                pbe_en_champ_names[c["apiName"]] = c.get("en_name") or c.get("name", c["apiName"])
+            for t in en_pbe_data.get("traits", []):
+                pbe_en_trait_names[t["apiName"]] = t.get("name", t["apiName"])
+        except Exception as exc:
+            print(f"[Warning] Failed to fetch English PBE metadata: {exc}")
+
     tr_items = latest_data.get("items", {})
     en_items = en_latest.get("items", {})
 
@@ -141,8 +261,8 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
 
     pbe_diff_engine = Set18DiffEngine(
         icon_version="pbe",
-        en_champ_names=en_champ_names,
-        en_trait_names=en_trait_names,
+        en_champ_names=pbe_en_champ_names,
+        en_trait_names=pbe_en_trait_names,
     )
     pbe_diff = pbe_diff_engine.compare_patches(
         latest_data,
@@ -207,6 +327,12 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         pbe_meta=pbe_meta,
     )
 
+    pbe_preview = (
+        _build_pbe_preview(pbe_data, en_pbe_data, pbe_en_champ_names, pbe_en_trait_names, versions)
+        if pbe_set_num != live_set_num
+        else None
+    )
+
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     full_report = {
         "generated_at": now_str,
@@ -218,6 +344,7 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         "live_meta": live_meta,
         "pbe_diff": pbe_diff,
         "pbe_meta": pbe_meta,
+        "pbe_preview": pbe_preview,
         "leaderboards": leaderboards,
         "tier_lists": tier_lists,
         "augments": augments_data,
@@ -253,6 +380,7 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         "previous_label": versions["previous_label"],
         "latest_label": versions["latest_label"],
         "pbe_label": versions["pbe_label"],
+        "pbe_set_number": pbe_set_num,
         "latest_fingerprint": latest_fp,
         "pbe_fingerprint": pbe_fp,
         "riot_api_verified": live_meta["riot_api_active"],

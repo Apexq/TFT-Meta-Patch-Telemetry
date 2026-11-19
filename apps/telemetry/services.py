@@ -71,6 +71,7 @@ class TelemetryRAGService:
         preferred_lang: str = "tr",
         selected_items: Optional[List[str]] = None,
         history_text: str = "",
+        mode: str = "META_COACH",
     ) -> Dict[str, Any]:
         """
         Retrieves top relevant RAG chunks and extracts candidate Generative UI cards
@@ -127,13 +128,18 @@ class TelemetryRAGService:
                 if rnd in norm_query and rnd in kw_text:
                     score += 6.0
 
-            # Charm / encounter boosters
+            # Charm / encounter / augment / PBE boosters
             if any(k in norm_query for k in ("tilsim", "charm")) and ch["chunk_type"] == "charm":
                 score += 7.0
             if any(k in norm_query for k in ("portal", "karsilasma", "encounter")) and ch["chunk_type"] == "encounter":
                 score += 7.0
             if any(k in norm_query for k in ("eklenti", "augment")) and ch["chunk_type"] == "augment":
                 score += 7.0
+            if (
+                mode == "PBE_SCOUT"
+                or any(k in norm_query for k in ("pbe", "set 19", "set19", "19 1", "yeni set", "next set"))
+            ) and ch["chunk_type"] == "pbe":
+                score += 14.0
 
             if score > 0:
                 scored.append((score, ch))
@@ -164,3 +170,217 @@ class TelemetryRAGService:
             "ui_cards": ui_cards[:4],
             "cited_chunk_ids": [c["chunk_id"] for c in top_results if c.get("chunk_id")],
         }
+
+
+def sync_telemetry_payload(report_data: Dict[str, Any], rag_payload: Any) -> Dict[str, Any]:
+    """
+    Atomically synchronizes meta_report.json and rag_context.json payloads into
+    PatchSnapshot and RAGChunk tables with Generative UI card attachments.
+    Shared by both `manage.py sync_tft_meta` and `POST /api/telemetry/sync/`.
+    """
+    from django.db import transaction
+
+    rag_chunks_raw = rag_payload.get("chunks", []) if isinstance(rag_payload, dict) else (rag_payload or [])
+
+    versions = report_data.get("versions", {})
+    patch_label = versions.get("latest_label", "18.6")
+    previous_label = versions.get("previous_label", "18.5")
+    pbe_label = versions.get("pbe_label", "18.7")
+    cdragon_version = report_data.get("cdragon_version", "16.22")
+    fingerprint = report_data.get("fingerprint") or report_data.get("set18_fingerprint") or f"snap-{patch_label}"
+    matches_analyzed = report_data.get("live_meta", {}).get("matches_analyzed", 0)
+
+    comps_by_id = {c.get("cluster_id"): c for c in report_data.get("live_meta", {}).get("compositions", [])}
+    augments_by_id = {a.get("apiName"): a for a in report_data.get("augments", {}).get("augments", [])}
+    encounters_by_id = {e.get("apiName"): e for e in report_data.get("mechanics", {}).get("encounters", [])}
+    charms_by_id = {c.get("apiName"): c for c in report_data.get("mechanics", {}).get("charms", [])}
+    pbe_preview = report_data.get("pbe_preview") or {}
+    pbe_meta = report_data.get("pbe_meta") or {}
+
+    pbe_card_payload: Dict[str, Any] = {}
+    if pbe_preview and pbe_preview.get("champions"):
+        five_costs = [
+            {
+                "name": c.get("name"),
+                "name_en": c.get("name_en") or c.get("name"),
+                "cost": c.get("cost", 5),
+                "traits": c.get("traits", []),
+                "traits_en": c.get("traits_en") or c.get("traits", []),
+                "icon": c.get("icon", ""),
+            }
+            for c in pbe_preview.get("champions", [])
+            if int(c.get("cost") or 0) == 5
+        ][:10]
+        pbe_card_payload = {
+            "card_type": "pbe_preview",
+            "title": f"Set {pbe_preview.get('set_number', 19)} PBE ({pbe_label})",
+            "set_number": pbe_preview.get("set_number", 19),
+            "pbe_label": pbe_label,
+            "source": pbe_preview.get("source", "MetaTFT PBE"),
+            "total_champions": pbe_preview.get("total_champions", len(pbe_preview.get("champions", []))),
+            "total_traits": pbe_preview.get("total_traits", len(pbe_preview.get("traits", []))),
+            "champions_5g": five_costs,
+            "top_traits": [
+                {
+                    "name": t.get("name"),
+                    "name_en": t.get("name_en") or t.get("name"),
+                    "breakpoints": t.get("breakpoints", []),
+                    "icon": t.get("icon", ""),
+                }
+                for t in pbe_preview.get("traits", [])[:8]
+            ],
+            "early_comps": [
+                {
+                    "comp_name": comp.get("comp_name"),
+                    "comp_name_en": comp.get("comp_name_en") or comp.get("comp_name"),
+                    "tier": comp.get("tier", "PBE"),
+                    "units": (comp.get("units") or [])[:6],
+                }
+                for comp in (pbe_meta.get("compositions") or [])[:3]
+            ],
+        }
+
+    with transaction.atomic():
+        PatchSnapshot.objects.filter(is_active=True).update(is_active=False)
+
+        snapshot, created = PatchSnapshot.objects.update_or_create(
+            patch_label=patch_label,
+            fingerprint=fingerprint,
+            defaults={
+                "previous_label": previous_label,
+                "pbe_label": pbe_label,
+                "cdragon_version": cdragon_version,
+                "is_active": True,
+                "matches_analyzed": matches_analyzed,
+                "full_report_json": report_data,
+            },
+        )
+
+        snapshot.chunks.all().delete()
+
+        chunk_objects = []
+        for item in rag_chunks_raw:
+            chunk_id = item.get("id", "")
+            chunk_type = item.get("type", "overview")
+            title = item.get("title", "")
+            keywords = item.get("keywords", "")
+            content_text = item.get("text", "")
+
+            ui_card_payload: Dict[str, Any] = {}
+
+            if chunk_type == "composition":
+                raw_id = chunk_id.split(":", 1)[-1] if ":" in chunk_id else chunk_id
+                comp = comps_by_id.get(raw_id)
+                if comp:
+                    ui_card_payload = {
+                        "card_type": "composition",
+                        "cluster_id": comp.get("cluster_id"),
+                        "comp_name": comp.get("comp_name"),
+                        "comp_name_en": comp.get("comp_name_en") or comp.get("comp_name"),
+                        "tier": comp.get("tier"),
+                        "levelling": comp.get("levelling"),
+                        "meta_status": comp.get("meta_status"),
+                        "comp_delta_score": comp.get("comp_delta_score", 0.0),
+                        "active_traits": comp.get("active_traits", []),
+                        "active_traits_en": comp.get("active_traits_en", []),
+                        "avg_placement": comp.get("master_stats", {}).get("avg_placement", 4.5),
+                        "top4_rate": comp.get("master_stats", {}).get("top4_rate", 50.0),
+                        "win_rate": comp.get("master_stats", {}).get("win_rate", 12.5),
+                        "team_planner_code": comp.get("team_planner_code", ""),
+                        "comp_item_ids": comp.get("comp_item_ids", []),
+                        "units": comp.get("units", [])[:10],
+                        "carry_builds": comp.get("carry_builds", []),
+                        "board_grid": comp.get("board_grid", []),
+                        "level_schedule": comp.get("level_schedule", []),
+                    }
+
+            elif chunk_type == "augment":
+                raw_id = chunk_id.split(":", 1)[-1] if ":" in chunk_id else chunk_id
+                aug = augments_by_id.get(raw_id)
+                if aug:
+                    ui_card_payload = {
+                        "card_type": "augment",
+                        "apiName": aug.get("apiName"),
+                        "name": aug.get("name"),
+                        "name_en": aug.get("name_en"),
+                        "tier": aug.get("tier"),
+                        "tier_color": aug.get("tier_color", "#f0c374"),
+                        "rarity": aug.get("rarity"),
+                        "rarity_tr": aug.get("rarity_tr"),
+                        "rounds": aug.get("rounds", []),
+                        "tags": aug.get("tags", []),
+                        "desc": aug.get("desc"),
+                        "desc_en": aug.get("desc_en"),
+                        "icon": aug.get("icon"),
+                        "synergy_comps": aug.get("synergy_comps", []),
+                    }
+
+            elif chunk_type == "encounter":
+                raw_id = chunk_id.split(":", 1)[-1] if ":" in chunk_id else chunk_id
+                enc = encounters_by_id.get(raw_id)
+                if enc:
+                    ui_card_payload = {
+                        "card_type": "encounter",
+                        "apiName": enc.get("apiName"),
+                        "name": enc.get("name"),
+                        "name_en": enc.get("name_en"),
+                        "category": enc.get("category"),
+                        "category_en": enc.get("category_en"),
+                        "tempo_rating": enc.get("tempo_rating"),
+                        "tempo_rating_en": enc.get("tempo_rating_en"),
+                        "tempo_color": enc.get("tempo_color", "#a855f7"),
+                        "post_spawn": enc.get("post_spawn"),
+                        "post_spawn_en": enc.get("post_spawn_en"),
+                        "strategy_tr": enc.get("strategy_tr"),
+                        "strategy_en": enc.get("strategy_en"),
+                        "synergy_comps_tr": enc.get("synergy_comps_tr", []),
+                        "synergy_comps_en": enc.get("synergy_comps_en", []),
+                    }
+
+            elif chunk_type == "charm":
+                raw_id = chunk_id.split(":", 1)[-1] if ":" in chunk_id else chunk_id
+                chm = charms_by_id.get(raw_id)
+                if chm:
+                    ui_card_payload = {
+                        "card_type": "charm",
+                        "apiName": chm.get("apiName"),
+                        "name": chm.get("name"),
+                        "name_en": chm.get("name_en"),
+                        "cost": chm.get("cost"),
+                        "tier": chm.get("tier"),
+                        "category": chm.get("category"),
+                        "category_tr": chm.get("category_tr"),
+                        "stages": chm.get("stages"),
+                        "desc": chm.get("desc"),
+                        "desc_en": chm.get("desc_en"),
+                        "rec_tr": chm.get("rec_tr"),
+                        "rec_en": chm.get("rec_en"),
+                    }
+
+            elif chunk_type == "pbe" and pbe_card_payload:
+                ui_card_payload = pbe_card_payload
+
+            chunk_objects.append(
+                RAGChunk(
+                    snapshot=snapshot,
+                    chunk_id=chunk_id,
+                    chunk_type=chunk_type,
+                    title_tr=title,
+                    title_en=title,
+                    keywords_normalized=keywords,
+                    content_text=content_text,
+                    ui_card_payload=ui_card_payload,
+                )
+            )
+
+        RAGChunk.objects.bulk_create(chunk_objects, batch_size=200)
+        TelemetryRAGService.invalidate_cache()
+
+    return {
+        "snapshot": snapshot,
+        "created": created,
+        "patch_label": patch_label,
+        "pbe_label": pbe_label,
+        "fingerprint": fingerprint,
+        "chunks_synced": len(chunk_objects),
+    }

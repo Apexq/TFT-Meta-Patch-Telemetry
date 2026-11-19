@@ -159,6 +159,36 @@ jobs:
         with:
           path: ./docs
 
+      - name: Trigger v2 Django Telemetry Sync Webhook (Optional)
+        env:
+          V2_SYNC_WEBHOOK_URL: ${{ secrets.V2_SYNC_WEBHOOK_URL }}
+          V2_SYNC_TOKEN: ${{ secrets.V2_SYNC_TOKEN }}
+        run: |
+          python - << 'EOF'
+          import json, os, sys, urllib.request
+          url = (os.environ.get("V2_SYNC_WEBHOOK_URL") or "").strip()
+          token = (os.environ.get("V2_SYNC_TOKEN") or "").strip()
+          if not url or not token:
+              print("V2_SYNC_WEBHOOK_URL or V2_SYNC_TOKEN not configured; skipping v2 sync webhook.")
+              sys.exit(0)
+          with open("docs/meta_report.json", "r", encoding="utf-8") as f:
+              meta_report = json.load(f)
+          with open("docs/api/rag_context.json", "r", encoding="utf-8") as f:
+              rag_context = json.load(f)
+          payload = json.dumps({"meta_report": meta_report, "rag_context": rag_context}).encode("utf-8")
+          req = urllib.request.Request(
+              url,
+              data=payload,
+              headers={
+                  "Content-Type": "application/json",
+                  "X-Sync-Token": token,
+              },
+              method="POST",
+          )
+          with urllib.request.urlopen(req, timeout=30) as resp:
+              print("v2 sync webhook response:", resp.status, resp.read().decode("utf-8"))
+          EOF
+
       - name: Upload Report Artifact for Release Job
         uses: actions/upload-artifact@v4
         with:

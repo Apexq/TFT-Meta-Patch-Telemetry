@@ -56,6 +56,37 @@
     .cost-5 { border-color: #f59e0b; }
     .cost-6 { border-color: #ef4444; }
 
+    /* True 4x7 TFT Hexagonal Board Cells */
+    .hex-wrap {
+      width: 38px;
+      height: 42px;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      transition: transform 0.15s ease;
+    }
+    .hex-wrap:hover { transform: scale(1.1); z-index: 10; }
+    .hex-inner {
+      width: 100%;
+      height: 100%;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      background: #0d121c;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hex-cost-1 { background: #94a3b8; }
+    .hex-cost-2 { background: #10b981; }
+    .hex-cost-3 { background: #0ea5e9; }
+    .hex-cost-4 { background: #d946ef; }
+    .hex-cost-5 { background: #f59e0b; }
+    .hex-cost-6 { background: #ef4444; }
+    .hex-empty { background: #1e2738; opacity: 0.55; }
+    .board-grid-rows.is-mirrored .board-grid-row { flex-direction: row-reverse; }
+
     [data-lang="en"] .lang-tr { display: none !important; }
     [data-lang="tr"] .lang-en { display: none !important; }
   </style>

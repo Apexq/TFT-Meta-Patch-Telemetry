@@ -9,4 +9,6 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("profile/", views.profile_view, name="profile"),
     path("status/", views.profile_status_view, name="status"),
+    path("pricing/", views.pricing_view, name="pricing"),
+    path("redeem-code/", views.redeem_promo_code_view, name="redeem_code"),
 ]

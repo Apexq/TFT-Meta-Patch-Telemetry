@@ -158,3 +158,103 @@ class UserProfile(models.Model):
                 return False
             self.refresh_from_db(fields=["daily_quota_used"])
             return True
+
+
+class PromoCode(models.Model):
+    """Admin tarafından oluşturulan davet / PRO yükseltme kodları."""
+    code = models.CharField(
+        max_length=48,
+        unique=True,
+        db_index=True,
+        verbose_name="Davet / Promo Kodu",
+    )
+    target_tier = models.CharField(
+        max_length=16,
+        choices=UserProfile.PLAN_CHOICES,
+        default="PRO",
+        verbose_name="Hedef Üyelik Planı",
+    )
+    max_uses = models.PositiveIntegerField(
+        default=1,
+        verbose_name="Maksimum Kullanım Hakkı",
+    )
+    uses_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Kullanım Sayısı",
+    )
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Son Geçerlilik Tarihi",
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Aktif mi?")
+    note = models.CharField(max_length=200, blank=True, default="", verbose_name="Yönetici Notu")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Promo / Davet Kodu"
+        verbose_name_plural = "Promo / Davet Kodları"
+        ordering = ["-created_at"]
+
+    def save(self, *args, **kwargs):
+        self.code = (self.code or "").strip().upper()
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"{self.code} -> {self.target_tier} ({self.uses_count}/{self.max_uses})"
+
+
+class PromoRedemption(models.Model):
+    """Aynı kullanıcının aynı kodu birden fazla kez kullanmasını engelleyen kayıt."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="promo_redemptions",
+    )
+    promo_code = models.ForeignKey(
+        PromoCode,
+        on_delete=models.CASCADE,
+        related_name="redemptions",
+    )
+    redeemed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Promo Kodu Kullanımı"
+        verbose_name_plural = "Promo Kodu Kullanımları"
+        unique_together = [("user", "promo_code")]
+
+    def __str__(self) -> str:
+        return f"{self.user.username} -> {self.promo_code.code}"
+
+
+class SubscriptionEvent(models.Model):
+    """
+    İleride İyzico / LemonSqueezy / Admin abonelik olaylarını idempotent
+    biçimde kaydetmek için ödeme & plan geçiş günlüğü.
+    """
+    PROVIDER_CHOICES = [
+        ("promo", "Promo / Davet Kodu"),
+        ("admin", "Admin Manuel"),
+        ("iyzico", "İyzico"),
+        ("lemonsqueezy", "LemonSqueezy"),
+    ]
+
+    provider = models.CharField(max_length=24, choices=PROVIDER_CHOICES, default="promo")
+    external_event_id = models.CharField(max_length=128, unique=True, db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="subscription_events",
+    )
+    plan_tier = models.CharField(max_length=16, choices=UserProfile.PLAN_CHOICES, default="PRO")
+    status = models.CharField(max_length=32, default="active")
+    payload_json = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Abonelik Olayı"
+        verbose_name_plural = "Abonelik Olayları"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"[{self.provider}] {self.user.username} -> {self.plan_tier} ({self.status})"

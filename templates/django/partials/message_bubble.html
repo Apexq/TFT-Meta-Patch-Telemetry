@@ -2,7 +2,14 @@
 <!-- USER BUBBLE -->
 <div class="flex justify-end">
   <div class="max-w-xl bg-gradient-to-r from-amber-500/20 to-[#f0c374]/20 border border-[#f0c374]/40 rounded-2xl rounded-tr-sm p-3.5 text-xs sm:text-sm text-white shadow-sm leading-relaxed">
-    {{ message.content_markdown|linebreaksbr }}
+    {% if message.has_image %}
+    <div class="inline-flex items-center gap-1 px-2 py-0.5 mb-1.5 rounded-md bg-slate-950/60 border border-[#f0c374]/40 text-[10px] font-semibold text-[#f0c374]">
+      <span>📷</span>
+      <span class="lang-tr">Ekran Görüntüsü Analizi</span>
+      <span class="lang-en">Screenshot Vision Analysis</span>
+    </div>
+    {% endif %}
+    <div>{{ message.content_markdown|linebreaksbr }}</div>
   </div>
 </div>
 {% else %}

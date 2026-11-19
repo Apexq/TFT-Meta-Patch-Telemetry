@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Üyelik Planları &amp; PRO Aktivasyon — TFT AI Koç{% endblock %}
+
+{% block content %}
+<div class="flex-1 overflow-y-auto p-6 sm:p-10 bg-[#0a0e17]">
+  <div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <span class="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-[#f0c374]/40 text-[#f0c374] text-[10px] font-bold mono">TFT AI KOÇ</span>
+        <h1 class="text-2xl font-black text-white mt-2">Üyelik Planları &amp; PRO Yükseltme</h1>
+        <p class="text-xs text-slate-400 mt-1">Mevcut Planınız: <strong class="text-[#f0c374] mono">{{ plan_tier }}</strong> &bull; Kalan Günlük Kota: <strong class="text-emerald-400 mono">{{ quota_left }}</strong></p>
+      </div>
+      <a href="{% url 'core:home' %}" class="px-3.5 py-2 rounded-xl bg-[#121722] hover:bg-[#1a2334] border border-[#222d42] text-xs font-semibold text-slate-200 transition-colors">&larr; Sohbete Dön</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- FREE PLAN -->
+      <div class="p-5 rounded-2xl bg-[#0d121c] border border-[#1e2738] space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-bold text-white">FREE Plan</h2>
+          <span class="text-lg font-black text-slate-200 mono">Ücretsiz</span>
+        </div>
+        <ul class="space-y-2 text-xs text-slate-300">
+          <li>✓ Günlük <strong>30 AI Koç sorusu</strong></li>
+          <li>✓ Canlı Set 18 + Set 19 PBE İzci erişimi</li>
+          <li>✓ 4&times;7 Altıgen Dizilim &amp; Opener Eşya Seçici</li>
+          <li>✓ Tekil Riot ID Maç Sonu Teşhisi</li>
+        </ul>
+      </div>
+
+      <!-- PRO PLAN -->
+      <div class="p-5 rounded-2xl bg-gradient-to-b from-[#151c2c] to-[#0d121c] border border-[#f0c374]/50 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-bold text-[#f0c374]">PRO Koçluk Planı</h2>
+          <span class="px-2 py-0.5 rounded bg-amber-500/20 text-[#f0c374] text-xs font-bold mono">500 soru/gün</span>
+        </div>
+        <ul class="space-y-2 text-xs text-slate-200">
+          <li>⚡ Günlük <strong>500 AI Koç sorusu</strong> (16&times; daha fazla kota)</li>
+          <li>⚡ Ekran Görüntüsü (Board / Shop Vision) sınırsız öncelik</li>
+          <li>⚡ SSE Akan Yanıt &amp; Set 19 PBE Erken Bakış erişimi</li>
+          <li>⚡ Erken erişim döneminde davet / promo koduyla anında aktivasyon</li>
+        </ul>
+        <p class="text-[11px] text-slate-400">Online kart ödemesi (İyzico / LemonSqueezy) domain geçişi sonrası açılacaktır. Şu an elinizdeki davet koduyla anında aktif edebilirsiniz:</p>
+      </div>
+    </div>
+
+    <!-- PROMO CODE REDEMPTION CARD -->
+    <div class="p-5 rounded-2xl bg-[#0d121c] border border-[#222d42] space-y-3">
+      <h3 class="text-sm font-bold text-white">🎟️ Davet / Promo Kodu Kullan</h3>
+      {% if user.is_authenticated %}
+      <div id="pricing-promo-alert" class="hidden p-2.5 rounded-xl text-xs"></div>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <input id="pricing-promo-input" type="text" placeholder="Örn: TFTPRO2026" class="flex-1 bg-[#121722] border border-[#222d42] focus:border-[#f0c374] rounded-xl px-3.5 py-2 text-xs text-white uppercase mono outline-none">
+        <button type="button" onclick="redeemPricingPromo()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#f0c374] hover:from-amber-600 hover:to-[#e5b35c] text-slate-950 font-bold text-xs transition-all">Kodu Aktif Et</button>
+      </div>
+      {% else %}
+      <p class="text-xs text-slate-300">Promo kodu kullanabilmek için önce <a href="{% url 'accounts:login' %}?next={% url 'accounts:pricing' %}" class="text-[#f0c374] underline font-semibold">giriş yapın</a> veya <a href="{% url 'accounts:register' %}" class="text-[#f0c374] underline font-semibold">ücretsiz kayıt olun</a>.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function redeemPricingPromo() {
+    const inp = document.getElementById('pricing-promo-input');
+    const alertBox = document.getElementById('pricing-promo-alert');
+    if (!inp || !alertBox) return;
+    const code = inp.value.trim();
+    if (!code) return;
+
+    fetch("{% url 'accounts:redeem_code' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}",
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: JSON.stringify({ code: code })
+    })
+    .then(async res => ({ ok: res.ok, data: await res.json() }))
+    .then(({ ok, data }) => {
+      alertBox.classList.remove('hidden', 'bg-rose-500/15', 'border-rose-500/30', 'text-rose-300', 'bg-emerald-500/15', 'border-emerald-500/30', 'text-emerald-300');
+      if (ok) {
+        alertBox.classList.add('bg-emerald-500/15', 'border', 'border-emerald-500/30', 'text-emerald-300');
+        alertBox.innerText = data.message || "PRO planı aktif edildi!";
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        alertBox.classList.add('bg-rose-500/15', 'border', 'border-rose-500/30', 'text-rose-300');
+        alertBox.innerText = data.error || "Kod doğrulanamadı.";
+      }
+    });
+  }
+</script>
+{% endblock %}

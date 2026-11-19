@@ -1,0 +1,122 @@
+<!-- PBE NEW SET & EARLY PREVIEW DRAWER -->
+<div class="space-y-4">
+  <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[#1c2536]">
+    <div>
+      <span class="px-2 py-0.5 rounded bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 text-[10px] font-bold mono">
+        {{ pbe_label|default:"PBE" }}
+      </span>
+      <h4 class="text-sm font-bold text-white mt-1.5">
+        <span class="lang-tr">{{ ai_summary.pbe_headline|default:"PBE Erken Bakış" }}</span>
+        <span class="lang-en">{{ ai_summary.pbe_headline_en|default:ai_summary.pbe_headline|default:"PBE Early Preview" }}</span>
+      </h4>
+    </div>
+    <button type="button" onclick="closeDrawer(); setCoachMode('PBE_SCOUT', 'Set {{ pbe_preview.set_number|default:19 }} PBE İzci'); askPresetQuestion('Set {{ pbe_preview.set_number|default:19 }} PBE 5 altınlık şampiyonları ve en güçlü yeni özellikler hangileri?');"
+      class="px-2.5 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 text-[11px] font-bold transition-colors">
+      🔭 <span class="lang-tr">PBE İzci'ye Sor</span><span class="lang-en">Ask PBE Scout</span>
+    </button>
+  </div>
+
+  {% if pbe_preview and pbe_preview.champions %}
+  <!-- KPI Strip -->
+  <div class="grid grid-cols-3 gap-2 text-center">
+    <div class="p-2.5 rounded-xl bg-[#0d121c] border border-[#1e2738]">
+      <div class="text-base font-black text-cyan-300 mono">{{ pbe_preview.total_champions|default:pbe_preview.champions|length }}</div>
+      <div class="text-[10px] text-slate-400"><span class="lang-tr">Şampiyon</span><span class="lang-en">Champions</span></div>
+    </div>
+    <div class="p-2.5 rounded-xl bg-[#0d121c] border border-[#1e2738]">
+      <div class="text-base font-black text-[#f0c374] mono">{{ pbe_preview.total_traits|default:pbe_preview.traits|length }}</div>
+      <div class="text-[10px] text-slate-400"><span class="lang-tr">Özellik / Trait</span><span class="lang-en">Traits</span></div>
+    </div>
+    <div class="p-2.5 rounded-xl bg-[#0d121c] border border-[#1e2738]">
+      <div class="text-base font-black text-purple-300 mono">{{ pbe_comps|length }}</div>
+      <div class="text-[10px] text-slate-400"><span class="lang-tr">Erken Sinerji</span><span class="lang-en">Early Cores</span></div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Controls -->
+  <div class="space-y-2">
+    <div class="flex flex-wrap items-center gap-1.5" id="drawer-pbe-cost-filters">
+      <button type="button" onclick="filterDrawerPbeCost('all', this)" class="drawer-pbe-cost-btn px-2 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 text-[10px] font-bold mono">Tümü</button>
+      <button type="button" onclick="filterDrawerPbeCost('5', this)" class="drawer-pbe-cost-btn px-2 py-1 rounded-lg bg-[#121722] border border-[#222d42] text-amber-300 text-[10px] font-bold mono">5G</button>
+      <button type="button" onclick="filterDrawerPbeCost('4', this)" class="drawer-pbe-cost-btn px-2 py-1 rounded-lg bg-[#121722] border border-[#222d42] text-purple-300 text-[10px] font-bold mono">4G</button>
+      <button type="button" onclick="filterDrawerPbeCost('3', this)" class="drawer-pbe-cost-btn px-2 py-1 rounded-lg bg-[#121722] border border-[#222d42] text-blue-300 text-[10px] font-bold mono">3G</button>
+      <button type="button" onclick="filterDrawerPbeCost('2', this)" class="drawer-pbe-cost-btn px-2 py-1 rounded-lg bg-[#121722] border border-[#222d42] text-emerald-300 text-[10px] font-bold mono">2G</button>
+      <button type="button" onclick="filterDrawerPbeCost('1', this)" class="drawer-pbe-cost-btn px-2 py-1 rounded-lg bg-[#121722] border border-[#222d42] text-slate-300 text-[10px] font-bold mono">1G</button>
+    </div>
+    <input type="text" id="drawer-pbe-search" oninput="applyDrawerPbeFilter()" placeholder="Şampiyon veya özellik ara..."
+      class="w-full bg-[#0d121c] border border-[#222d42] focus:border-cyan-400 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-400 outline-none">
+  </div>
+
+  <!-- Champions Grid -->
+  <div id="drawer-pbe-champ-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+    {% for c in pbe_preview.champions %}
+    <div class="drawer-pbe-champ-card p-2 rounded-xl bg-[#0d121c] border border-[#1e2738] hover:border-cyan-400/50 transition-colors flex items-center gap-2"
+      data-cost="{{ c.cost }}"
+      data-search="{{ c.name|lower }} {{ c.name_en|default:''|lower }} {{ c.traits|join:' '|lower }} {{ c.traits_en|join:' '|lower }}">
+      <div class="relative w-9 h-9 rounded-lg border cost-{{ c.cost }} overflow-hidden bg-slate-900 shrink-0">
+        <img src="{{ c.icon }}" alt="{{ c.name }}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">
+        <span class="absolute bottom-0 right-0 bg-slate-950/90 text-[#f0c374] text-[8px] font-bold px-1 rounded-tl mono">{{ c.cost }}G</span>
+      </div>
+      <div class="min-w-0">
+        <div class="text-[11px] font-bold text-white truncate">
+          <span class="lang-tr">{{ c.name }}</span>
+          <span class="lang-en">{{ c.name_en|default:c.name }}</span>
+        </div>
+        <div class="text-[9px] text-slate-400 truncate">
+          <span class="lang-tr">{{ c.traits|join:", " }}</span>
+          <span class="lang-en">{{ c.traits_en|join:", " }}</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Traits Preview -->
+  {% if pbe_preview.traits %}
+  <div class="pt-2 border-t border-[#1c2536] space-y-2">
+    <h5 class="text-[11px] font-bold uppercase tracking-wider text-cyan-300">
+      <span class="lang-tr">Yeni Set Özellikleri ({{ pbe_preview.traits|length }})</span>
+      <span class="lang-en">New Set Traits ({{ pbe_preview.traits|length }})</span>
+    </h5>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {% for t in pbe_preview.traits|slice:":18" %}
+      <div class="p-2.5 rounded-xl bg-[#0d121c] border border-[#1e2738] space-y-1">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 min-w-0">
+            {% if t.icon %}
+            <img src="{{ t.icon }}" alt="{{ t.name }}" class="w-4 h-4 rounded-sm opacity-90 shrink-0" loading="lazy" onerror="this.style.display='none'">
+            {% endif %}
+            <span class="text-xs font-bold text-white truncate">
+              <span class="lang-tr">{{ t.name }}</span>
+              <span class="lang-en">{{ t.name_en|default:t.name }}</span>
+            </span>
+          </div>
+          {% if t.breakpoints %}
+          <span class="text-[10px] text-cyan-300 mono shrink-0">{{ t.breakpoints|join:" / " }}</span>
+          {% endif %}
+        </div>
+        {% if t.desc %}
+        <p class="text-[10px] text-slate-400 line-clamp-2 leading-relaxed">
+          <span class="lang-tr">{{ t.desc }}</span>
+          <span class="lang-en">{{ t.desc_en|default:t.desc }}</span>
+        </p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="p-4 rounded-xl bg-[#0d121c] border border-[#1e2738] text-xs text-slate-300 space-y-2">
+    <p class="font-semibold text-white">
+      <span class="lang-tr">PBE yeni set önizlemesi henüz senkronize edilmedi.</span>
+      <span class="lang-en">PBE new set preview has not been synced yet.</span>
+    </p>
+    <p class="text-slate-400 leading-relaxed">
+      <span class="lang-tr">{{ ai_summary.pbe_analysis|default:"Günlük PBE taraması yeni set verisi yakaladığında bu panel otomatik güncellenir." }}</span>
+      <span class="lang-en">{{ ai_summary.pbe_analysis_en|default:"This panel automatically populates when daily PBE telemetry detects new set data." }}</span>
+    </p>
+  </div>
+  {% endif %}
+</div>

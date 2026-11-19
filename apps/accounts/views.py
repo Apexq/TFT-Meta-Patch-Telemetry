@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods, require_POST
 
-from apps.accounts.models import UserProfile
+from apps.accounts.models import UserProfile, PromoCode, PromoRedemption, SubscriptionEvent
 from apps.accounts.forms import (
     UserRegistrationForm,
     UserLoginForm,
@@ -303,3 +303,106 @@ def profile_status_view(request: HttpRequest) -> JsonResponse:
                 "plan_tier": "FREE",
             }
         })
+
+
+@require_POST
+def redeem_promo_code_view(request: HttpRequest) -> JsonResponse:
+    """
+    POST /accounts/redeem-code/
+    Atomically redeems a PromoCode to upgrade the authenticated user's plan_tier (e.g. FREE -> PRO).
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"error": "Davet veya PRO kodu kullanmak için önce giriş yapmalısınız."},
+            status=401,
+        )
+
+    from django.db import transaction
+    from django.utils import timezone
+
+    data = _extract_request_data(request)
+    raw_code = str(data.get("code") or "").strip().upper()
+    if not raw_code:
+        return JsonResponse({"error": "Lütfen geçerli bir davet / promo kodu girin."}, status=400)
+
+    with transaction.atomic():
+        promo = PromoCode.objects.select_for_update().filter(code=raw_code).first()
+        if not promo or not promo.is_active:
+            return JsonResponse({"error": "Geçersiz veya aktif olmayan promo kodu."}, status=404)
+
+        if promo.expires_at and promo.expires_at < timezone.now():
+            return JsonResponse({"error": "Bu promo kodunun süresi dolmuş."}, status=400)
+
+        if promo.uses_count >= promo.max_uses:
+            return JsonResponse({"error": "Bu promo kodunun kullanım limiti dolmuş."}, status=400)
+
+        if PromoRedemption.objects.filter(user=request.user, promo_code=promo).exists():
+            return JsonResponse({"error": "Bu promo kodunu hesabınızda zaten kullandınız."}, status=400)
+
+        profile, _ = UserProfile.objects.select_for_update().get_or_create(user=request.user)
+        profile.check_and_reset_quota()
+
+        promo.uses_count += 1
+        promo.save(update_fields=["uses_count"])
+        PromoRedemption.objects.create(user=request.user, promo_code=promo)
+
+        if profile.plan_tier != "ADMIN":
+            profile.plan_tier = promo.target_tier
+            target_quota = UserProfile.TIER_QUOTA_DEFAULTS.get(promo.target_tier, 500)
+            if profile.daily_quota_limit < target_quota:
+                profile.daily_quota_limit = target_quota
+            profile.save(update_fields=["plan_tier", "daily_quota_limit"])
+
+        SubscriptionEvent.objects.create(
+            provider="promo",
+            external_event_id=f"promo:{promo.code}:{request.user.id}",
+            user=request.user,
+            plan_tier=profile.plan_tier,
+            status="active",
+            payload_json={"code": promo.code, "note": promo.note},
+        )
+
+    quota_left = (
+        profile.daily_quota_limit - profile.daily_quota_used
+        if profile.plan_tier != "ADMIN"
+        else 999999
+    )
+    return JsonResponse({
+        "status": "success",
+        "message": f"Tebrikler! Hesabınız {profile.plan_tier} planına yükseltildi ({profile.daily_quota_limit} soru/gün).",
+        "plan_tier": profile.plan_tier,
+        "daily_quota_limit": profile.daily_quota_limit,
+        "quota_left": quota_left,
+    })
+
+
+def pricing_view(request: HttpRequest) -> HttpResponse:
+    """Renders FREE vs PRO comparison & promo code activation page (or JSON summary)."""
+    profile = None
+    quota_left = max(0, 30 - request.session.get("guest_quota_used", 0))
+    plan_tier = "FREE"
+    if request.user.is_authenticated:
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        profile.check_and_reset_quota()
+        plan_tier = profile.plan_tier
+        quota_left = (
+            profile.daily_quota_limit - profile.daily_quota_used
+            if profile.plan_tier != "ADMIN"
+            else 999999
+        )
+
+    if _is_json_request(request):
+        return JsonResponse({
+            "current_plan": plan_tier,
+            "quota_left": quota_left,
+            "plans": [
+                {"tier": "FREE", "daily_quota": 30, "price": "Ücretsiz"},
+                {"tier": "PRO", "daily_quota": 500, "price": "Erken Erişim / Davet Kodu"},
+            ],
+        })
+
+    return render(request, "accounts/pricing.html", {
+        "profile": profile,
+        "plan_tier": plan_tier,
+        "quota_left": quota_left,
+    })

@@ -37,6 +37,12 @@
       <span class="lang-tr">Maç Sonu Hata Analizi</span>
       <span class="lang-en">Post-Game Match Review</span>
     </button>
+    <button type="button" onclick="setCoachMode('PBE_SCOUT', 'Set 19 PBE İzci')"
+      class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-cyan-200 hover:bg-[#161e2e] hover:text-cyan-300 transition-colors text-left">
+      <span>🔭</span>
+      <span class="lang-tr">Set 19 PBE İzci</span>
+      <span class="lang-en">Set 19 PBE Scout</span>
+    </button>
   </div>
 
   <!-- Recent Chat Sessions History -->
@@ -75,7 +81,10 @@
         <span class="text-white font-semibold text-xs block truncate">{{ user_display }}</span>
         <span class="text-[10px] text-slate-400 mono">Kalan Kota: <strong id="sidebar-quota-left" class="text-emerald-400">{{ quota_left }}</strong></span>
       </div>
-      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#161e2e] text-[#f0c374] border border-[#f0c374]/30 mono">{{ plan_tier }}</span>
+      <button type="button" id="sidebar-plan-badge" onclick="openPricingModal()" title="Planlar &amp; PRO Yükseltme"
+        class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#161e2e] hover:bg-amber-500/20 text-[#f0c374] border border-[#f0c374]/30 hover:border-[#f0c374] mono transition-colors cursor-pointer">
+        {{ plan_tier }} ⚡
+      </button>
     </div>
 
     {% if user.is_authenticated %}
@@ -146,6 +155,12 @@
         class="px-2 sm:px-2.5 py-1 rounded bg-[#121722] hover:bg-[#182030] border border-[#222d42] hover:border-purple-400/50 text-slate-200 text-[11px] font-semibold transition-colors flex items-center gap-1">
         <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
         <span class="hidden sm:inline">Set 18</span> Mekanikler
+      </button>
+
+      <button type="button" onclick="openDrawer('Set 19 PBE Kataloğu &amp; Erken Sinerjiler', '{% url 'core:drawer_pbe' %}')"
+        class="px-2 sm:px-2.5 py-1 rounded bg-[#121722] hover:bg-[#182030] border border-cyan-500/40 hover:border-cyan-400 text-cyan-200 text-[11px] font-semibold transition-colors flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+        <span>PBE</span><span class="hidden sm:inline">Set 19</span>
       </button>
     </div>
   </header>
@@ -267,11 +282,30 @@
         <div id="recent-matches-container" class="space-y-2.5 max-h-80 overflow-y-auto pr-1"></div>
       </div>
 
+      <!-- Vision Screenshot Attachment Preview Bar -->
+      <div id="vision-preview-bar" class="hidden mb-2 px-3 py-2 rounded-xl bg-[#0d121c] border border-[#f0c374]/40 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <img id="vision-preview-thumb" src="" alt="Önizleme" class="w-10 h-10 rounded-lg object-cover border border-[#222d42] shrink-0">
+          <div class="min-w-0">
+            <div id="vision-preview-name" class="text-[11px] font-bold text-[#f0c374] truncate">ekran-goruntusu.png</div>
+            <div class="text-[10px] text-slate-400">Tahta / Eşya Vision analizi için hazır (Ctrl+V destekli)</div>
+          </div>
+        </div>
+        <button type="button" onclick="clearAttachedImage()" class="p-1.5 rounded-lg hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 text-xs" title="Görseli Kaldır">✕</button>
+      </div>
+
       <form id="chat-form" onsubmit="handleChatSubmit(event)" class="flex items-center gap-2 bg-[#121722] border border-[#222d42] focus-within:border-[#f0c374]/80 rounded-2xl p-1.5 transition-all shadow-inner">
         <!-- Item Opener Drawer Toggle Button -->
         <button type="button" onclick="toggleOpenerDrawer()" title="Elimdeki Eşyayla Ne Oynanır? (Opener Seçici)"
           class="p-2 rounded-xl text-slate-400 hover:text-[#f0c374] hover:bg-slate-800/60 transition-colors shrink-0 flex items-center gap-1">
           <span class="text-base leading-none">🎲</span>
+        </button>
+
+        <!-- Vision Screenshot Upload Button -->
+        <input id="chat-image-input" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="handleImageFileSelect(this.files[0])">
+        <button type="button" onclick="document.getElementById('chat-image-input').click()" title="Oyun İçi Ekran Görüntüsü Ekle (Tahta / Dükkân Vision)"
+          class="p-2 rounded-xl text-slate-400 hover:text-[#f0c374] hover:bg-slate-800/60 transition-colors shrink-0">
+          <span class="text-base leading-none">📷</span>
         </button>
 
         <!-- Voice Input Microphone Button -->
@@ -483,6 +517,63 @@
     </div>
   </div>
 </div>
+
+<!-- Hextech Pricing & PRO Promo Code Modal -->
+<div id="pricing-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden" role="dialog" aria-modal="true" aria-labelledby="pricing-modal-title">
+  <div class="relative w-full max-w-lg bg-[#0d121c] border border-[#f0c374]/40 rounded-2xl shadow-2xl p-5 overflow-hidden space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-[#1c2536]">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">⚡</span>
+        <h3 id="pricing-modal-title" class="text-sm font-bold text-white">Planlar &amp; PRO Koçluk Aktivasyonu</h3>
+      </div>
+      <button type="button" onclick="closePricingModal()" class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs">✕</button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div class="p-3 rounded-xl bg-[#121722] border border-[#222d42] space-y-1.5">
+        <div class="font-bold text-white flex items-center justify-between">
+          <span>FREE</span>
+          <span class="text-[10px] text-slate-400 mono">30/gün</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Canlı Set 18 + PBE Set 19 İzci, 4&times;7 Hex Dizilim ve tekil maç analizi.</p>
+      </div>
+      <div class="p-3 rounded-xl bg-amber-500/10 border border-[#f0c374]/50 space-y-1.5">
+        <div class="font-bold text-[#f0c374] flex items-center justify-between">
+          <span>PRO ⚡</span>
+          <span class="text-[10px] text-[#f0c374] mono">500/gün</span>
+        </div>
+        <p class="text-[11px] text-slate-200">16&times; günlük kota, Vision ekran görüntüsü önceliği ve erken erişim ayrıcalığı.</p>
+      </div>
+    </div>
+
+    <div class="pt-2 border-t border-[#1c2536] space-y-2.5">
+      <label class="block text-[10px] font-bold text-[#f0c374] uppercase tracking-wider">🎟️ Davet / Promo Kodu Kullan</label>
+      <div id="promo-status-msg" class="hidden p-2.5 rounded-xl text-xs"></div>
+      {% if user.is_authenticated %}
+      <div class="flex items-center gap-2">
+        <input id="promo-code-input" type="text" placeholder="Örn: TFTPRO2026"
+          onkeydown="if(event.key==='Enter'){event.preventDefault(); executeRedeemPromo();}"
+          class="flex-1 bg-[#121722] border border-[#222d42] focus:border-[#f0c374] rounded-xl px-3 py-2 text-xs text-white uppercase mono outline-none">
+        <button type="button" id="btn-redeem-promo" onclick="executeRedeemPromo()"
+          class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#f0c374] hover:from-amber-600 hover:to-[#e5b35c] text-slate-950 font-bold text-xs shadow-md">
+          Aktif Et
+        </button>
+      </div>
+      {% else %}
+      <p class="text-xs text-slate-300">
+        PRO kodunu tanımlamak için önce
+        <button type="button" onclick="closePricingModal(); openAuthModal('login');" class="text-[#f0c374] underline font-semibold">giriş yapın</button>
+        veya
+        <button type="button" onclick="closePricingModal(); openAuthModal('register');" class="text-[#f0c374] underline font-semibold">ücretsiz kayıt olun</button>.
+      </p>
+      {% endif %}
+      <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+        <span>Kart ödemesi (İyzico / LemonSqueezy) domain geçişinde açılacak.</span>
+        <a href="{% url 'accounts:pricing' %}" class="text-[#f0c374] hover:underline font-semibold">Detaylar &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -491,6 +582,8 @@
   let currentSessionId = '{{ current_session.id|default:"" }}';
   let selectedOpenerItems = [];
   let attachedMatchId = null;
+  let attachedImageFile = null;
+  let activeDrawerPbeCost = 'all';
 
   function escapeHtml(val) {
     return String(val ?? '')
@@ -764,349 +857,396 @@
     handleChatSubmit(new Event('submit'));
   }
 
-  function handleChatSubmit(e) {
+  function handleImageFileSelect(file) {
+    if (!file) return;
+    const allowed = ['image/png', 'image/jpeg', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      alert('Yalnızca PNG, JPEG veya WEBP ekran görüntüsü yükleyebilirsiniz.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ekran görüntüsü en fazla 5 MB olabilir.');
+      return;
+    }
+    attachedImageFile = file;
+    const bar = document.getElementById('vision-preview-bar');
+    const thumb = document.getElementById('vision-preview-thumb');
+    const nameEl = document.getElementById('vision-preview-name');
+    if (nameEl) nameEl.innerText = file.name || 'ekran-goruntusu.png';
+    if (thumb) thumb.src = URL.createObjectURL(file);
+    if (bar) bar.classList.remove('hidden');
+  }
+
+  function clearAttachedImage() {
+    attachedImageFile = null;
+    const inp = document.getElementById('chat-image-input');
+    if (inp) inp.value = '';
+    const bar = document.getElementById('vision-preview-bar');
+    if (bar) bar.classList.add('hidden');
+  }
+
+  function renderHexBoardHtml(boardGrid) {
+    return `
+      <div class="board-grid-rows space-y-0.5 min-w-[320px]">
+        ${(boardGrid || []).map((row, rIdx) => `
+          <div class="board-grid-row flex items-center gap-1 ${rIdx % 2 === 1 ? 'pl-5' : ''}">
+            ${(row || []).map(cell => cell ? `
+              <div class="relative shrink-0" title="${escapeHtml(cell.name)} (${Number(cell.cost) || 1}G)">
+                <div class="hex-wrap hex-cost-${Number(cell.cost) || 1} shadow">
+                  <div class="hex-inner">
+                    <img src="${escapeHtml(cell.icon)}" alt="${escapeHtml(cell.name)}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                  </div>
+                </div>
+                ${cell.is_carry ? '<span class="absolute -top-0.5 -right-0.5 bg-[#f0c374] text-slate-950 text-[7px] font-black px-1 rounded-full shadow">C</span>' : ''}
+              </div>
+            ` : `<div class="hex-wrap hex-empty shrink-0"><div class="hex-inner"></div></div>`).join('')}
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function renderUiCardsHtml(uiCards) {
+    let cardsHtml = '';
+    (uiCards || []).forEach(card => {
+      if (card.card_type === 'composition') {
+        cardsHtml += `
+          <div class="mt-3 bg-[#121722] border border-[#222d42] hover:border-[#f0c374]/60 rounded-xl p-3.5 transition-all shadow-md">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-[#1c2536]">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 mono bg-amber-500/20 text-[#f0c374] border border-[#f0c374]/50">
+                  ${escapeHtml(card.tier)}
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-xs sm:text-sm">
+                    <span class="lang-tr">${escapeHtml(card.comp_name)}</span>
+                    <span class="lang-en">${escapeHtml(card.comp_name_en || card.comp_name)}</span>
+                  </h4>
+                  <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
+                    <span class="px-1.5 py-0.2 rounded bg-[#0a0e17] text-slate-300 mono">${escapeHtml(card.levelling)}</span>
+                    <span>&bull;</span>
+                    <span class="text-emerald-400 mono font-semibold">Ort. #${escapeHtml(card.avg_placement)}</span>
+                    <span>&bull;</span>
+                    <span class="text-slate-300 mono font-semibold">Top 4: %${escapeHtml(card.top4_rate)}</span>
+                  </div>
+                </div>
+              </div>
+              ${card.team_planner_code ? `
+                <button type="button" onclick="copyTeamPlannerCode('${escapeHtml(escapeJsArg(card.team_planner_code))}', this)"
+                  class="self-start sm:self-auto px-2.5 py-1 rounded-lg bg-[#0a0e17] hover:bg-[#1a2334] border border-[#222d42] hover:border-[#f0c374]/60 text-[#f0c374] text-[11px] font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
+                  <span>📋</span>
+                  <span class="lang-tr">Takım Kodunu Kopyala</span>
+                  <span class="lang-en">Copy Team Code</span>
+                </button>
+              ` : ''}
+            </div>
+            <div class="py-2.5 flex flex-wrap items-start gap-2">
+              ${(card.units || []).map(u => `
+                <div class="flex flex-col items-center gap-1">
+                  <div class="relative w-10 h-10 rounded-md border cost-${Number(u.cost) || 1} overflow-hidden bg-slate-900" title="${escapeHtml(u.name)}">
+                    <img src="${escapeHtml(u.icon)}" alt="${escapeHtml(u.name)}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                    ${u.is_carry ? '<span class="absolute top-0 left-0 bg-[#f0c374] text-slate-950 text-[7px] font-bold px-1 rounded-br">C</span>' : ''}
+                    ${u.is_three_star ? '<span class="absolute top-0 right-0 bg-amber-400 text-slate-950 text-[7px] font-bold px-1 rounded-bl mono">3★</span>' : ''}
+                  </div>
+                  ${u.bis_items && u.bis_items.length > 0 ? `
+                    <div class="flex items-center gap-0.5">
+                      ${u.bis_items.slice(0, 3).map(item => `
+                        <img src="${escapeHtml(item.icon)}" alt="${escapeHtml(item.name)}" title="${escapeHtml(item.name)}" class="w-3.5 h-3.5 rounded-sm border border-[#2a3750] object-cover bg-slate-900" onerror="this.style.display='none'">
+                      `).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+            ${card.board_grid ? `
+              <div class="mt-2 pt-2 border-t border-[#1c2536] flex items-center justify-between gap-2">
+                <button type="button" onclick="toggleBoardGrid(this)" class="text-[11px] text-[#f0c374] hover:underline font-semibold flex items-center gap-1">
+                  <span>⬡ 4&times;7 Altıgen Dizilimi Göster / Gizle</span>
+                </button>
+                <button type="button" onclick="mirrorBoardGrid(this)" class="text-[10px] px-2 py-0.5 rounded bg-[#0a0e17] hover:bg-[#1a2334] border border-[#222d42] text-slate-300 hover:text-[#f0c374] font-semibold">
+                  ↔️ Aynala
+                </button>
+              </div>
+              <div class="board-grid-drawer hidden mt-3 p-3 bg-[#0a0e17] border border-[#222d42] rounded-xl overflow-x-auto">
+                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">4&times;7 Hex Tahta (Üst: Ön Saf / Alt: Arka Saf)</div>
+                ${renderHexBoardHtml(card.board_grid)}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      } else if (card.card_type === 'positioning_board') {
+        cardsHtml += `
+          <div class="mt-3 bg-[#121722] border border-[#f0c374]/40 rounded-xl p-3.5 shadow-lg space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#1c2536]">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-amber-500/20 border border-[#f0c374]/50 text-[#f0c374] text-[10px] font-black mono">⬡ 4&times;7 HEX</span>
+                <h4 class="font-bold text-white text-xs sm:text-sm">${escapeHtml(card.comp_name || 'Önerilen Tahta Dizilimi')}</h4>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="mirrorBoardGrid(this)" class="px-2.5 py-1 rounded-lg bg-[#0a0e17] hover:bg-[#1a2334] border border-[#222d42] hover:border-[#f0c374]/60 text-[#f0c374] text-[10px] font-bold">↔️ Tahtayı Aynala</button>
+                ${card.team_planner_code ? `<button type="button" onclick="copyTeamPlannerCode('${escapeHtml(escapeJsArg(card.team_planner_code))}', this)" class="px-2.5 py-1 rounded-lg bg-[#0a0e17] border border-[#222d42] text-slate-200 text-[10px] font-semibold">📋 Kod</button>` : ''}
+              </div>
+            </div>
+            <div class="board-grid-drawer p-3 bg-[#0a0e17] border border-[#1e2738] rounded-xl overflow-x-auto">
+              <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">
+                <span>Üst Satır: Ön Saf &bull; Alt Satır: Arka Saf</span>
+                <span class="text-[#f0c374] mono">C = Ana Taşıyıcı</span>
+              </div>
+              ${renderHexBoardHtml(card.board_grid)}
+            </div>
+          </div>
+        `;
+      } else if (card.card_type === 'pbe_preview') {
+        const champsHtml = (card.champions_5g || []).map(ch => `
+          <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#0a0e17] border border-amber-500/30 text-[10px]">
+            <img src="${escapeHtml(ch.icon)}" alt="${escapeHtml(ch.name)}" class="w-5 h-5 rounded object-cover" onerror="this.style.display='none'">
+            <span class="font-bold text-white">${escapeHtml(ch.name)}</span>
+          </div>
+        `).join('');
+        cardsHtml += `
+          <div class="mt-3 bg-[#121722] border border-cyan-400/40 rounded-xl p-3.5 shadow-lg space-y-2.5">
+            <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#1c2536]">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-[10px] font-black mono">${escapeHtml(card.pbe_label || 'PBE')}</span>
+                <h4 class="font-bold text-white text-xs sm:text-sm">${escapeHtml(card.title || 'Set 19 PBE')}</h4>
+              </div>
+              <button type="button" onclick="openDrawer('Set ${Number(card.set_number) || 19} PBE Kataloğu', '{% url 'core:drawer_pbe' %}')" class="px-2 py-1 rounded-lg bg-[#0a0e17] border border-cyan-400/40 text-cyan-300 text-[10px] font-bold">🔭 Tüm Katalog</button>
+            </div>
+            <div class="flex flex-wrap gap-2 text-[10px] text-slate-300 mono">
+              <span class="px-2 py-0.5 rounded bg-[#0a0e17] border border-[#1e2738]">${Number(card.total_champions) || 0} Şampiyon</span>
+              <span class="px-2 py-0.5 rounded bg-[#0a0e17] border border-[#1e2738]">${Number(card.total_traits) || 0} Özellik</span>
+            </div>
+            ${champsHtml ? `<div><div class="text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-1.5">5 Altınlık Şampiyonlar</div><div class="flex flex-wrap gap-1.5">${champsHtml}</div></div>` : ''}
+          </div>
+        `;
+      } else if (card.card_type === 'augment') {
+        cardsHtml += `
+          <div class="mt-2.5 bg-[#121722] border border-[#222d42] hover:border-amber-400/50 rounded-xl p-3 flex items-start gap-3 shadow-md">
+            <img src="${escapeHtml(card.icon)}" alt="${escapeHtml(card.name)}" class="w-9 h-9 rounded-lg border border-[#29364f] p-0.5 bg-[#0a0e17] shrink-0" onerror="this.style.display='none'">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-black mono text-slate-950" style="background-color: ${escapeHtml(card.tier_color || '#f0c374')};">${escapeHtml(card.tier)}</span>
+                <h5 class="font-bold text-white text-xs">${escapeHtml(card.name)} (${escapeHtml(card.rarity)})</h5>
+                <span class="text-[10px] text-slate-400 mono">${escapeHtml((card.rounds || []).join(', '))}</span>
+              </div>
+              <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">${escapeHtml(card.desc)}</p>
+            </div>
+          </div>
+        `;
+      } else if (card.card_type === 'encounter') {
+        cardsHtml += `
+          <div class="mt-2.5 bg-[#121722] border border-[#222d42] hover:border-purple-400/50 rounded-xl p-3.5 shadow-md space-y-2">
+            <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#1c2536]">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 mono">${escapeHtml(card.category || 'Karşılaşma')}</span>
+                <h5 class="font-bold text-white text-xs sm:text-sm">${escapeHtml(card.name)}</h5>
+              </div>
+              ${card.tempo_rating ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold mono text-slate-950" style="background-color: ${escapeHtml(card.tempo_color || '#f0c374')};">${escapeHtml(card.tempo_rating)}</span>` : ''}
+            </div>
+            ${card.post_spawn ? `<p class="text-[11px] text-amber-200 font-medium">${escapeHtml(card.post_spawn)}</p>` : ''}
+            ${card.strategy_tr ? `<p class="text-[11px] text-slate-300 leading-relaxed">${escapeHtml(card.strategy_tr)}</p>` : ''}
+          </div>
+        `;
+      } else if (card.card_type === 'charm') {
+        cardsHtml += `
+          <div class="mt-2.5 bg-[#121722] border border-[#222d42] hover:border-amber-400/50 rounded-xl p-3.5 shadow-md space-y-2">
+            <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#1c2536]">
+              <div class="flex items-center gap-2">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-black mono bg-amber-500/20 text-[#f0c374] border border-[#f0c374]/40">${card.cost ? `${Number(card.cost)}g` : `T${escapeHtml(card.tier)}`}</span>
+                <h5 class="font-bold text-white text-xs sm:text-sm">${escapeHtml(card.name)}</h5>
+              </div>
+              <div class="text-[10px] text-slate-400 mono">${escapeHtml(card.category_tr || card.category || '')}</div>
+            </div>
+            <p class="text-[11px] text-slate-300 leading-relaxed">${escapeHtml(card.desc || '')}</p>
+            ${card.rec_tr ? `<p class="text-[11px] text-[#f0c374] font-medium">💡 ${escapeHtml(card.rec_tr)}</p>` : ''}
+          </div>
+        `;
+      } else if (card.card_type === 'match_review') {
+        const isTop4 = card.placement <= 4;
+        const placeColor = card.placement === 1
+          ? 'bg-amber-500/20 text-[#f0c374] border-[#f0c374]/60'
+          : isTop4 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border-rose-500/40';
+        const contestedListHtml = (card.contested_units || []).map(u => `
+          <div class="flex items-center justify-between py-1 border-b border-[#1c2536] text-[11px]">
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full ${u.severity === 'HIGH' ? 'bg-rose-400' : 'bg-amber-400'}"></span><span class="font-bold text-white">${escapeHtml(u.unit_name)}</span><span class="text-slate-400">(${Number(u.player_tier) || 1}★)</span></div>
+            <div class="text-right mono"><span class="text-slate-300 font-semibold">${Number(u.opponents_count) || 0} rakipte</span></div>
+          </div>
+        `).join('');
+        const mistakesHtml = (card.critical_mistakes || []).map(m => `<li class="flex items-start gap-1.5 text-[11px] text-rose-300"><span class="text-rose-400 font-bold shrink-0">✕</span><span>${escapeHtml(m)}</span></li>`).join('');
+        const recommendationsHtml = (card.recommendations || []).map(r => `<li class="flex items-start gap-1.5 text-[11px] text-[#f0c374]"><span class="text-[#f0c374] font-bold shrink-0">💡</span><span>${escapeHtml(r)}</span></li>`).join('');
+        cardsHtml += `
+          <div class="mt-3 bg-[#0d121c] border border-[#f0c374]/40 rounded-xl p-4 shadow-lg space-y-3">
+            <div class="flex items-center justify-between pb-2.5 border-b border-[#1c2536]">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-base mono border ${placeColor}">#${Number(card.placement) || 8}</div>
+                <div>
+                  <h4 class="font-bold text-white text-xs sm:text-sm">${escapeHtml(card.summary_headline || '#' + card.placement + ' Sıralama Analizi')}</h4>
+                  <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400 mono"><span>Lvl ${Number(card.level) || 8}</span><span>&bull;</span><span>Aşama ${escapeHtml(card.last_round)}</span><span>&bull;</span><span>Kalan: ${Number(card.gold_left) || 0}g</span></div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold mono ${card.is_heavily_contested ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'}">${card.is_heavily_contested ? '⚠️ Contested' : '✓ Uncontested'}</span>
+            </div>
+            ${contestedListHtml ? `<div class="bg-[#121722] p-2.5 rounded-lg border border-[#222d42]">${contestedListHtml}</div>` : ''}
+            ${mistakesHtml ? `<div class="bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20"><ul class="space-y-1">${mistakesHtml}</ul></div>` : ''}
+            ${recommendationsHtml ? `<div class="bg-amber-500/10 p-2.5 rounded-lg border border-[#f0c374]/20"><ul class="space-y-1">${recommendationsHtml}</ul></div>` : ''}
+          </div>
+        `;
+      }
+    });
+    return cardsHtml;
+  }
+
+  async function handleChatSubmit(e) {
     e.preventDefault();
     const input = document.getElementById('chat-input');
-    const query = input.value.trim();
-    if (!query) return;
+    const rawQuery = input.value.trim();
+    const imageFile = attachedImageFile;
+    if (!rawQuery && !imageFile) return;
 
-    // Remove welcome hero once chat begins
+    const query = rawQuery || 'Bu oyun içi ekran görüntüsündeki tahtamı, eşyalarımı ve en iyi pivot / dizilim hamlesini analiz et.';
+
     const heroState = document.getElementById('hero-welcome-state');
-    if (heroState) {
-      heroState.remove();
-    }
+    if (heroState) heroState.remove();
 
-    // Render user message bubble immediately (HTML-escaped)
     const stream = document.getElementById('chat-stream');
     const userBubble = document.createElement('div');
     userBubble.className = 'flex justify-end';
     userBubble.innerHTML = `
       <div class="max-w-xl bg-gradient-to-r from-amber-500/20 to-[#f0c374]/20 border border-[#f0c374]/40 rounded-2xl rounded-tr-sm p-3 text-xs sm:text-sm text-white shadow-sm">
-        ${escapeHtml(query).replace(/\r?\n/g, '<br>')}
+        ${imageFile ? '<div class="inline-flex items-center gap-1 px-2 py-0.5 mb-1.5 rounded-md bg-slate-950/60 border border-[#f0c374]/40 text-[10px] font-semibold text-[#f0c374]"><span>📷</span><span>Ekran Görüntüsü Analizi</span></div>' : ''}
+        <div>${escapeHtml(query).replace(/\r?\n/g, '<br>')}</div>
       </div>
     `;
     stream.appendChild(userBubble);
     input.value = '';
+    clearAttachedImage();
     stream.scrollTop = stream.scrollHeight;
 
-    // Loading indicator bubble
-    const loadingBubble = document.createElement('div');
-    loadingBubble.id = 'bot-loading-indicator';
-    loadingBubble.className = 'flex justify-start';
-    loadingBubble.innerHTML = `
-      <div class="bg-[#121722] border border-[#222d42] rounded-2xl rounded-tl-sm p-3 text-xs text-slate-400 flex items-center gap-2">
-        <span class="animate-spin text-[#f0c374]">&#9696;</span>
-        <span>AI Koç telemetriyi analiz ediyor...</span>
+    // Create live streaming assistant bubble immediately
+    const botMsg = document.createElement('div');
+    botMsg.className = 'flex justify-start';
+    botMsg.innerHTML = `
+      <div class="max-w-2xl bg-[#0d121c] border border-[#222d42] rounded-2xl rounded-tl-sm p-4 text-xs sm:text-sm text-slate-100 shadow-md w-full">
+        <div class="stream-text-target prose prose-invert prose-xs sm:prose-sm leading-relaxed text-slate-200">
+          <span class="inline-flex items-center gap-2 text-slate-400 text-xs"><span class="animate-spin text-[#f0c374]">&#9696;</span> AI Koç yanıt akıtıyor...</span>
+        </div>
+        <div class="stream-cards-target"></div>
+        <div class="stream-footer-target mt-3 pt-2.5 border-t border-[#1c2536] flex items-center justify-between text-[10px] text-slate-400 hidden"></div>
       </div>
     `;
-    stream.appendChild(loadingBubble);
+    stream.appendChild(botMsg);
     stream.scrollTop = stream.scrollHeight;
 
-    // Dispatches to chat endpoint
+    const textTarget = botMsg.querySelector('.stream-text-target');
+    const cardsTarget = botMsg.querySelector('.stream-cards-target');
+    const footerTarget = botMsg.querySelector('.stream-footer-target');
+
     const itemApis = selectedOpenerItems.map(i => i.api);
-    fetch("{% url 'chat:send_message' %}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": "{{ csrf_token }}"
-      },
-      body: JSON.stringify({
-        query: query,
-        mode: currentCoachMode,
-        session_id: currentSessionId,
-        selected_items: itemApis,
-        match_id: attachedMatchId,
-        lang: document.documentElement.getAttribute('data-lang') || 'tr'
-      })
-    }).then(async res => {
-      const data = await res.json();
+    const langVal = document.documentElement.getAttribute('data-lang') || 'tr';
+    let fetchOpts;
+
+    if (imageFile) {
+      const fd = new FormData();
+      fd.append('query', query);
+      fd.append('mode', currentCoachMode);
+      if (currentSessionId) fd.append('session_id', currentSessionId);
+      fd.append('selected_items', JSON.stringify(itemApis));
+      if (attachedMatchId) fd.append('match_id', attachedMatchId);
+      fd.append('lang', langVal);
+      fd.append('image', imageFile);
+      fetchOpts = {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        body: fd
+      };
+    } else {
+      fetchOpts = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+          query: query,
+          mode: currentCoachMode,
+          session_id: currentSessionId,
+          selected_items: itemApis,
+          match_id: attachedMatchId,
+          lang: langVal
+        })
+      };
+    }
+
+    try {
+      const res = await fetch("{% url 'chat:stream_message' %}", fetchOpts);
       if (!res.ok) {
-        throw data;
+        const errData = await res.json().catch(() => ({ error: 'İstek işlenirken hata oluştu.' }));
+        throw errData;
       }
-      return data;
-    }).then(data => {
-      loadingBubble.remove();
-      currentSessionId = data.session_id;
-      prependSidebarSession(data.session_id, query);
-      if (data.quota_left !== undefined) {
-        const qEl = document.getElementById('sidebar-quota-left');
-        if (qEl) qEl.innerText = data.quota_left;
-      }
-      const msg = data.message;
-      
-      const botMsg = document.createElement('div');
-      botMsg.className = 'flex justify-start';
-      
-      let cardsHtml = '';
-      if (msg.ui_cards && msg.ui_cards.length > 0) {
-        msg.ui_cards.forEach(card => {
-          if (card.card_type === 'composition') {
-            cardsHtml += `
-              <div class="mt-3 bg-[#121722] border border-[#222d42] hover:border-[#f0c374]/60 rounded-xl p-3.5 transition-all shadow-md">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-[#1c2536]">
-                  <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 mono bg-amber-500/20 text-[#f0c374] border border-[#f0c374]/50">
-                      ${escapeHtml(card.tier)}
-                    </div>
-                    <div>
-                      <h4 class="font-bold text-white text-xs sm:text-sm">
-                        <span class="lang-tr">${escapeHtml(card.comp_name)}</span>
-                        <span class="lang-en">${escapeHtml(card.comp_name_en || card.comp_name)}</span>
-                      </h4>
-                      <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
-                        <span class="px-1.5 py-0.2 rounded bg-[#0a0e17] text-slate-300 mono">${escapeHtml(card.levelling)}</span>
-                        <span>&bull;</span>
-                        <span class="text-emerald-400 mono font-semibold">Ort. #${escapeHtml(card.avg_placement)}</span>
-                        <span>&bull;</span>
-                        <span class="text-slate-300 mono font-semibold">Top 4: %${escapeHtml(card.top4_rate)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  ${card.team_planner_code ? `
-                    <button type="button" onclick="copyTeamPlannerCode('${escapeHtml(escapeJsArg(card.team_planner_code))}', this)"
-                      class="self-start sm:self-auto px-2.5 py-1 rounded-lg bg-[#0a0e17] hover:bg-[#1a2334] border border-[#222d42] hover:border-[#f0c374]/60 text-[#f0c374] text-[11px] font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
-                      <span>📋</span>
-                      <span class="lang-tr">Takım Kodunu Kopyala</span>
-                      <span class="lang-en">Copy Team Code</span>
-                    </button>
-                  ` : ''}
-                </div>
-                <div class="py-2.5 flex flex-wrap items-start gap-2">
-                  ${(card.units || []).map(u => `
-                    <div class="flex flex-col items-center gap-1">
-                      <div class="relative w-10 h-10 rounded-md border cost-${Number(u.cost) || 1} overflow-hidden bg-slate-900" title="${escapeHtml(u.name)}">
-                        <img src="${escapeHtml(u.icon)}" alt="${escapeHtml(u.name)}" class="w-full h-full object-cover" onerror="this.style.display='none'">
-                        ${u.is_carry ? '<span class="absolute top-0 left-0 bg-[#f0c374] text-slate-950 text-[7px] font-bold px-1 rounded-br">C</span>' : ''}
-                        ${u.is_three_star ? '<span class="absolute top-0 right-0 bg-amber-400 text-slate-950 text-[7px] font-bold px-1 rounded-bl mono">3★</span>' : ''}
-                      </div>
-                      ${u.bis_items && u.bis_items.length > 0 ? `
-                        <div class="flex items-center gap-0.5">
-                          ${u.bis_items.slice(0, 3).map(item => `
-                            <img src="${escapeHtml(item.icon)}" alt="${escapeHtml(item.name)}" title="${escapeHtml(item.name)}" class="w-3.5 h-3.5 rounded-sm border border-[#2a3750] object-cover bg-slate-900" onerror="this.style.display='none'">
-                          `).join('')}
-                        </div>
-                      ` : ''}
-                    </div>
-                  `).join('')}
-                </div>
-                ${card.board_grid ? `
-                  <div class="mt-2 pt-2 border-t border-[#1c2536] flex justify-end">
-                    <button type="button" onclick="toggleBoardGrid(this)" class="text-[11px] text-[#f0c374] hover:underline font-semibold flex items-center gap-1">
-                      <span>⬡ 4&times;7 Tahta Dizilimini Göster / Gizle</span>
-                    </button>
-                  </div>
-                  <div class="board-grid-drawer hidden mt-3 p-3 bg-[#0a0e17] border border-[#222d42] rounded-xl overflow-x-auto">
-                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">4&times;7 Hex Tahta</div>
-                    <div class="space-y-1.5 min-w-[320px]">
-                      ${card.board_grid.map((row, rIdx) => `
-                        <div class="flex items-center gap-1.5 ${rIdx % 2 === 1 ? 'pl-4' : ''}">
-                          ${row.map(cell => cell ? `
-                            <div class="relative w-8 h-8 rounded border cost-${Number(cell.cost) || 1} bg-slate-900 flex items-center justify-center shrink-0 shadow" title="${escapeHtml(cell.name)}">
-                              <img src="${escapeHtml(cell.icon)}" alt="${escapeHtml(cell.name)}" class="w-full h-full object-cover rounded-sm" onerror="this.style.display='none'">
-                              ${cell.is_carry ? '<span class="absolute -top-1 -right-0.5 bg-[#f0c374] text-slate-950 text-[6px] font-bold px-0.5 rounded">C</span>' : ''}
-                            </div>
-                          ` : `<div class="w-8 h-8 rounded border border-dashed border-[#1c2536] bg-[#0d121c]/40 shrink-0"></div>`).join('')}
-                        </div>
-                      `).join('')}
-                    </div>
-                  </div>
-                ` : ''}
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      let accText = '';
+      let currentEvent = 'message';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop() || '';
+
+        for (const frame of parts) {
+          let evName = 'message';
+          let dataLine = '';
+          frame.split('\n').forEach(line => {
+            if (line.startsWith('event:')) evName = line.slice(6).trim();
+            else if (line.startsWith('data:')) dataLine += line.slice(5).trim();
+          });
+          if (!dataLine) continue;
+          let payload;
+          try { payload = JSON.parse(dataLine); } catch (_) { continue; }
+
+          if (evName === 'meta') {
+            currentSessionId = payload.session_id;
+            prependSidebarSession(payload.session_id, query);
+            if (payload.quota_left !== undefined) {
+              const qEl = document.getElementById('sidebar-quota-left');
+              if (qEl) qEl.innerText = payload.quota_left;
+            }
+          } else if (evName === 'token') {
+            accText += (payload.delta || '');
+            textTarget.innerHTML = escapeHtml(accText).replace(/\r?\n/g, '<br>');
+            stream.scrollTop = stream.scrollHeight;
+          } else if (evName === 'cards') {
+            if (payload.ui_cards && payload.ui_cards.length > 0) {
+              cardsTarget.innerHTML = renderUiCardsHtml(payload.ui_cards);
+              stream.scrollTop = stream.scrollHeight;
+            }
+          } else if (evName === 'done') {
+            footerTarget.classList.remove('hidden');
+            footerTarget.innerHTML = `
+              <div class="flex items-center gap-2 mono">
+                <span class="text-[#f0c374] font-semibold">${escapeHtml(payload.model_used || 'gemini')}</span>
+                ${payload.latency_ms ? `<span>&bull;</span><span>${Number(payload.latency_ms)}ms</span>` : ''}
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="voteFeedback(${Number(payload.message_id)}, 1, this)" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors">👍</button>
+                <button type="button" onclick="voteFeedback(${Number(payload.message_id)}, -1, this)" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors">👎</button>
               </div>
             `;
-          } else if (card.card_type === 'augment') {
-            cardsHtml += `
-              <div class="mt-2.5 bg-[#121722] border border-[#222d42] hover:border-amber-400/50 rounded-xl p-3 flex items-start gap-3 shadow-md">
-                <img src="${escapeHtml(card.icon)}" alt="${escapeHtml(card.name)}" class="w-9 h-9 rounded-lg border border-[#29364f] p-0.5 bg-[#0a0e17] shrink-0" onerror="this.style.display='none'">
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2">
-                    <span class="px-1.5 py-0.5 rounded text-[10px] font-black mono text-slate-950" style="background-color: ${escapeHtml(card.tier_color || '#f0c374')};">${escapeHtml(card.tier)}</span>
-                    <h5 class="font-bold text-white text-xs">${escapeHtml(card.name)} (${escapeHtml(card.rarity)})</h5>
-                    <span class="text-[10px] text-slate-400 mono">${escapeHtml((card.rounds || []).join(', '))}</span>
-                  </div>
-                  <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">${escapeHtml(card.desc)}</p>
-                </div>
-              </div>
-            `;
-          } else if (card.card_type === 'encounter') {
-            cardsHtml += `
-              <div class="mt-2.5 bg-[#121722] border border-[#222d42] hover:border-purple-400/50 rounded-xl p-3.5 shadow-md space-y-2">
-                <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#1c2536]">
-                  <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 mono">
-                      <span class="lang-tr">${escapeHtml(card.category || 'Karşılaşma')}</span>
-                      <span class="lang-en">${escapeHtml(card.category_en || card.category || 'Encounter')}</span>
-                    </span>
-                    <h5 class="font-bold text-white text-xs sm:text-sm">
-                      <span class="lang-tr">${escapeHtml(card.name)}</span>
-                      <span class="lang-en">${escapeHtml(card.name_en || card.name)}</span>
-                    </h5>
-                  </div>
-                  ${card.tempo_rating ? `
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold mono text-slate-950" style="background-color: ${escapeHtml(card.tempo_color || '#f0c374')};">
-                      <span class="lang-tr">${escapeHtml(card.tempo_rating)}</span>
-                      <span class="lang-en">${escapeHtml(card.tempo_rating_en || card.tempo_rating)}</span>
-                    </span>
-                  ` : ''}
-                </div>
-                ${card.post_spawn ? `
-                  <p class="text-[11px] text-amber-200 font-medium">
-                    <span class="lang-tr">${escapeHtml(card.post_spawn)}</span>
-                    <span class="lang-en">${escapeHtml(card.post_spawn_en || card.post_spawn)}</span>
-                  </p>
-                ` : ''}
-                ${(card.strategy_tr || card.strategy_en) ? `
-                  <p class="text-[11px] text-slate-300 leading-relaxed">
-                    <span class="lang-tr">${escapeHtml(card.strategy_tr || '')}</span>
-                    <span class="lang-en">${escapeHtml(card.strategy_en || card.strategy_tr || '')}</span>
-                  </p>
-                ` : ''}
-              </div>
-            `;
-          } else if (card.card_type === 'charm') {
-            cardsHtml += `
-              <div class="mt-2.5 bg-[#121722] border border-[#222d42] hover:border-amber-400/50 rounded-xl p-3.5 shadow-md space-y-2">
-                <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#1c2536]">
-                  <div class="flex items-center gap-2">
-                    <span class="px-1.5 py-0.5 rounded text-[10px] font-black mono bg-amber-500/20 text-[#f0c374] border border-[#f0c374]/40">
-                      ${card.cost ? `${Number(card.cost)}g` : `T${escapeHtml(card.tier)}`}
-                    </span>
-                    <h5 class="font-bold text-white text-xs sm:text-sm">
-                      <span class="lang-tr">${escapeHtml(card.name)}</span>
-                      <span class="lang-en">${escapeHtml(card.name_en || card.name)}</span>
-                    </h5>
-                  </div>
-                  <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mono">
-                    <span>
-                      <span class="lang-tr">${escapeHtml(card.category_tr || card.category || '')}</span>
-                      <span class="lang-en">${escapeHtml(card.category || card.category_tr || '')}</span>
-                    </span>
-                    ${card.stages ? `<span>&bull; ${escapeHtml(card.stages)}</span>` : ''}
-                  </div>
-                </div>
-                <p class="text-[11px] text-slate-300 leading-relaxed">
-                  <span class="lang-tr">${escapeHtml(card.desc || '')}</span>
-                  <span class="lang-en">${escapeHtml(card.desc_en || card.desc || '')}</span>
-                </p>
-                ${(card.rec_tr || card.rec_en) ? `
-                  <p class="text-[11px] text-[#f0c374] font-medium">
-                    <span class="lang-tr">💡 ${escapeHtml(card.rec_tr || '')}</span>
-                    <span class="lang-en">💡 ${escapeHtml(card.rec_en || card.rec_tr || '')}</span>
-                  </p>
-                ` : ''}
-              </div>
-            `;
-          } else if (card.card_type === 'match_review') {
-            const isTop4 = card.placement <= 4;
-            const placeColor = card.placement === 1
-              ? 'bg-amber-500/20 text-[#f0c374] border-[#f0c374]/60'
-              : isTop4
-                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                : 'bg-rose-500/20 text-rose-400 border-rose-500/40';
-
-            const contestedListHtml = (card.contested_units || []).map(u => `
-              <div class="flex items-center justify-between py-1 border-b border-[#1c2536] text-[11px]">
-                <div class="flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full ${u.severity === 'HIGH' ? 'bg-rose-400' : 'bg-amber-400'}"></span>
-                  <span class="font-bold text-white">${escapeHtml(u.unit_name)}</span>
-                  <span class="text-slate-400">(${Number(u.player_tier) || 1}★)</span>
-                </div>
-                <div class="text-right mono">
-                  <span class="text-slate-300 font-semibold">${Number(u.opponents_count) || 0} rakipte var</span>
-                  <span class="text-slate-500 text-[10px]">(${escapeHtml(u.pool_depleted_pct)}% havuz tükendi)</span>
-                </div>
-              </div>
-            `).join('');
-
-            const mistakesHtml = (card.critical_mistakes || []).map(m => `
-              <li class="flex items-start gap-1.5 text-[11px] text-rose-300">
-                <span class="text-rose-400 font-bold shrink-0">✕</span>
-                <span>${escapeHtml(m)}</span>
-              </li>
-            `).join('');
-
-            const recommendationsHtml = (card.recommendations || []).map(r => `
-              <li class="flex items-start gap-1.5 text-[11px] text-[#f0c374]">
-                <span class="text-[#f0c374] font-bold shrink-0">💡</span>
-                <span>${escapeHtml(r)}</span>
-              </li>
-            `).join('');
-
-            cardsHtml += `
-              <div class="mt-3 bg-[#0d121c] border border-[#f0c374]/40 rounded-xl p-4 shadow-lg space-y-3">
-                <div class="flex items-center justify-between pb-2.5 border-b border-[#1c2536]">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-base mono border ${placeColor}">
-                      #${Number(card.placement) || 8}
-                    </div>
-                    <div>
-                      <h4 class="font-bold text-white text-xs sm:text-sm">${escapeHtml(card.summary_headline || '#' + card.placement + ' Sıralama Analizi')}</h4>
-                      <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400 mono">
-                        <span>Lvl ${Number(card.level) || 8}</span>
-                        <span>&bull;</span>
-                        <span>Aşama ${escapeHtml(card.last_round)}</span>
-                        <span>&bull;</span>
-                        <span>Kalan: ${Number(card.gold_left) || 0}g</span>
-                      </div>
-                    </div>
-                  </div>
-                  <span class="px-2 py-0.5 rounded text-[10px] font-bold mono ${card.is_heavily_contested ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'}">
-                    ${card.is_heavily_contested ? '⚠️ Contested' : '✓ Uncontested'}
-                  </span>
-                </div>
-
-                ${contestedListHtml ? `
-                  <div class="bg-[#121722] p-2.5 rounded-lg border border-[#222d42]">
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Lobi Rekabeti (Contested Birimler)</div>
-                    ${contestedListHtml}
-                  </div>
-                ` : ''}
-
-                ${mistakesHtml ? `
-                  <div class="bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-rose-400 mb-1">Kritik Hatalar</div>
-                    <ul class="space-y-1">${mistakesHtml}</ul>
-                  </div>
-                ` : ''}
-
-                ${recommendationsHtml ? `
-                  <div class="bg-amber-500/10 p-2.5 rounded-lg border border-[#f0c374]/20">
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-[#f0c374] mb-1">Koç Tavsiyesi &amp; Pivot Planı</div>
-                    <ul class="space-y-1">${recommendationsHtml}</ul>
-                  </div>
-                ` : ''}
-              </div>
-            `;
+            stream.scrollTop = stream.scrollHeight;
           }
-        });
+        }
       }
-
-      botMsg.innerHTML = `
-        <div class="max-w-2xl bg-[#0d121c] border border-[#222d42] rounded-2xl rounded-tl-sm p-4 text-xs sm:text-sm text-slate-100 shadow-md">
-          <div class="prose prose-invert prose-xs sm:prose-sm leading-relaxed text-slate-200">
-            ${escapeHtml(msg.content).replace(/\r?\n/g, '<br>')}
-          </div>
-          ${cardsHtml}
-          <div class="mt-3 pt-2.5 border-t border-[#1c2536] flex items-center justify-between text-[10px] text-slate-400">
-            <div class="flex items-center gap-2 mono">
-              <span class="text-[#f0c374] font-semibold">${escapeHtml(msg.model_used)}</span>
-              ${msg.latency_ms ? `<span>&bull;</span><span>${Number(msg.latency_ms)}ms</span>` : ''}
-            </div>
-            <div class="flex items-center gap-1.5">
-              <button type="button" onclick="voteFeedback(${Number(msg.id)}, 1, this)" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors">👍</button>
-              <button type="button" onclick="voteFeedback(${Number(msg.id)}, -1, this)" class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors">👎</button>
-            </div>
-          </div>
-        </div>
-      `;
-      stream.appendChild(botMsg);
-      stream.scrollTop = stream.scrollHeight;
-    }).catch(err => {
-      loadingBubble.remove();
-      const botMsg = document.createElement('div');
-      botMsg.className = 'flex justify-start';
+    } catch (err) {
+      botMsg.remove();
+      const errBubble = document.createElement('div');
+      errBubble.className = 'flex justify-start';
       const errMsg = (err && err.error) ? err.error : 'İstek işlenirken bir hata oluştu.';
       const isQuota = (err && err.quota_exceeded);
-      botMsg.innerHTML = `
+      errBubble.innerHTML = `
         <div class="max-w-xl bg-rose-500/15 border border-rose-500/40 rounded-2xl rounded-tl-sm p-4 text-xs text-rose-300 shadow-md">
           <div class="flex items-center gap-2 font-bold mb-1 text-rose-200">
             <span>⚠️</span>
@@ -1114,21 +1254,124 @@
           </div>
           <p>${escapeHtml(errMsg)}</p>
           ${isQuota ? `
-            <div class="mt-3 pt-2 border-t border-rose-500/20 flex items-center gap-2">
-              <button type="button" onclick="openAuthModal('register')" class="px-3 py-1 rounded-lg bg-[#f0c374] text-slate-950 font-bold text-[11px] shadow">
-                Ücretsiz Kayıt Ol
+            <div class="mt-3 pt-2 border-t border-rose-500/20 flex flex-wrap items-center gap-2">
+              <button type="button" onclick="openPricingModal()" class="px-3 py-1 rounded-lg bg-[#f0c374] text-slate-950 font-bold text-[11px] shadow">
+                ⚡ PRO Plan / Promo Kodu
               </button>
-              <button type="button" onclick="openAuthModal('login')" class="px-3 py-1 rounded-lg bg-[#121722] border border-[#222d42] text-slate-200 text-[11px]">
-                Giriş Yap
+              <button type="button" onclick="openAuthModal('register')" class="px-3 py-1 rounded-lg bg-[#121722] border border-[#222d42] text-slate-200 text-[11px]">
+                Ücretsiz Kayıt Ol
               </button>
             </div>
           ` : ''}
         </div>
       `;
-      stream.appendChild(botMsg);
+      stream.appendChild(errBubble);
       stream.scrollTop = stream.scrollHeight;
+    }
+  }
+
+  // Helper: Mirror 4x7 Hex Board horizontally
+  function mirrorBoardGrid(btn) {
+    const parent = btn.closest('.bg-\\[\\#121722\\]');
+    const drawer = parent ? parent.querySelector('.board-grid-drawer') : null;
+    if (drawer && drawer.classList.contains('hidden')) {
+      drawer.classList.remove('hidden');
+    }
+    const rows = parent ? parent.querySelector('.board-grid-rows') : null;
+    if (rows) {
+      rows.classList.toggle('is-mirrored');
+    }
+  }
+
+  // Helper: PBE Drawer cost & search filtering
+  function filterDrawerPbeCost(cost, btn) {
+    activeDrawerPbeCost = String(cost);
+    document.querySelectorAll('.drawer-pbe-cost-btn').forEach(b => {
+      b.classList.remove('bg-cyan-500/20', 'border-cyan-400/50', 'text-cyan-200');
+      b.classList.add('bg-[#121722]', 'border-[#222d42]');
+    });
+    if (btn) {
+      btn.classList.remove('bg-[#121722]', 'border-[#222d42]');
+      btn.classList.add('bg-cyan-500/20', 'border-cyan-400/50', 'text-cyan-200');
+    }
+    applyDrawerPbeFilter();
+  }
+
+  function applyDrawerPbeFilter() {
+    const searchEl = document.getElementById('drawer-pbe-search');
+    const q = (searchEl ? searchEl.value : '').trim().toLowerCase();
+    document.querySelectorAll('.drawer-pbe-champ-card').forEach(card => {
+      const cCost = String(card.getAttribute('data-cost') || '');
+      const cSearch = String(card.getAttribute('data-search') || '');
+      const costOk = activeDrawerPbeCost === 'all' || cCost === activeDrawerPbeCost;
+      const searchOk = !q || cSearch.includes(q);
+      card.classList.toggle('hidden', !(costOk && searchOk));
     });
   }
+
+  // Pricing & Promo Code Modal Controls
+  function openPricingModal() {
+    const modal = document.getElementById('pricing-modal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function closePricingModal() {
+    const modal = document.getElementById('pricing-modal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function executeRedeemPromo() {
+    const inp = document.getElementById('promo-code-input');
+    const msgBox = document.getElementById('promo-status-msg');
+    const btn = document.getElementById('btn-redeem-promo');
+    const code = inp ? inp.value.trim() : '';
+    if (!code) return;
+    if (btn) btn.disabled = true;
+
+    fetch("{% url 'accounts:redeem_code' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}",
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: JSON.stringify({ code: code })
+    })
+    .then(async res => ({ ok: res.ok, data: await res.json() }))
+    .then(({ ok, data }) => {
+      if (msgBox) {
+        msgBox.className = ok
+          ? 'p-2.5 rounded-xl text-xs bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
+          : 'p-2.5 rounded-xl text-xs bg-rose-500/15 border border-rose-500/30 text-rose-300';
+        msgBox.innerText = ok ? (data.message || 'PRO planı aktif edildi!') : (data.error || 'Kod geçersiz.');
+        msgBox.classList.remove('hidden');
+      }
+      if (ok) {
+        const badge = document.getElementById('sidebar-plan-badge');
+        if (badge && data.plan_tier) badge.innerText = `${data.plan_tier} ⚡`;
+        const qEl = document.getElementById('sidebar-quota-left');
+        if (qEl && data.quota_left !== undefined) qEl.innerText = data.quota_left;
+        if (inp) inp.value = '';
+      }
+    })
+    .finally(() => {
+      if (btn) btn.disabled = false;
+    });
+  }
+
+  // Clipboard Paste (Ctrl+V) support for screenshots on chat input
+  document.addEventListener('paste', function(e) {
+    const items = (e.clipboardData || {}).items || [];
+    for (const item of items) {
+      if (item.type && item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          handleImageFileSelect(file);
+          break;
+        }
+      }
+    }
+  });
 
   // Helper: Copy Team Planner Code
   function copyTeamPlannerCode(code, btn) {
@@ -1519,10 +1762,19 @@
       closeDeleteSessionModal();
       closeAuthModal();
       closeProfileModal();
+      closePricingModal();
     }
   });
 
   document.addEventListener('DOMContentLoaded', function() {
+    const pricingModal = document.getElementById('pricing-modal');
+    if (pricingModal) {
+      pricingModal.addEventListener('click', function(e) {
+        if (e.target === pricingModal) {
+          closePricingModal();
+        }
+      });
+    }
     const deleteModal = document.getElementById('delete-session-modal');
     if (deleteModal) {
       deleteModal.addEventListener('click', function(e) {

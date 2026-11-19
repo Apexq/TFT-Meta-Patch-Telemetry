@@ -12,6 +12,7 @@ class ChatSession(models.Model):
         ("OPENER_BUILDER", "Elimdekilerle Ne Oynarım?"),
         ("POST_GAME", "Maç Sonu Analizi"),
         ("PATCH_DIFF", "Yama Farkı & Denge Analizi"),
+        ("PBE_SCOUT", "PBE İzci (Yeni Set)"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -128,6 +129,10 @@ class ChatMessage(models.Model):
         default=0,
         choices=[(1, "Beğenildi"), (-1, "Hatalı Bulundu"), (0, "Oylanmadı")],
         verbose_name="Kullanıcı Beğeni Oyu",
+    )
+    has_image = models.BooleanField(
+        default=False,
+        verbose_name="Ekran Görüntüsü İçeriyor mu?",
     )
     created_at = models.DateTimeField(
         auto_now_add=True,

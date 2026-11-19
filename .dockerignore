@@ -1,0 +1,14 @@
+.git
+.github
+.pytest_cache
+.cache
+__pycache__
+*.pyc
+*.pyo
+.env
+data/tft_coach.sqlite3
+data/tft_coach.sqlite3-shm
+data/tft_coach.sqlite3-wal
+staticfiles/
+worker/node_modules
+tests/
