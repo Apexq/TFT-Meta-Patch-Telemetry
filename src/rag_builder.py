@@ -89,7 +89,7 @@ class RAGBuilder:
         chunks.extend(self._champion_diff_chunks())
         chunks.extend(self._trait_diff_chunks())
         chunks.extend(self._leaderboard_chunks())
-        chunks.append(self._pbe_chunk())
+        chunks.extend(self._pbe_chunks())
         return chunks
 
     def _overview_chunk(self) -> Dict[str, Any]:
@@ -396,6 +396,52 @@ class RAGBuilder:
                 f"{detail} PBE data is unreleased and may change before going live."
             ).strip(),
         }
+
+    def _pbe_chunks(self) -> List[Dict[str, Any]]:
+        out: List[Dict[str, Any]] = [self._pbe_chunk()]
+        pd = self.report.get("pbe_diff", {})
+        pbe_prev = self.report.get("pbe_preview") or {}
+        if not (pd.get("is_new_set") and pbe_prev.get("champions")):
+            return out
+
+        set_num = pbe_prev.get("set_number", 19)
+        five_costs = [c for c in pbe_prev["champions"] if int(c.get("cost") or 0) == 5]
+        if five_costs:
+            champ_lines = []
+            champ_names = []
+            for c in five_costs[:16]:
+                name_en = c.get("name_en") or c.get("name") or ""
+                name_tr = c.get("name") or name_en
+                traits = ", ".join(c.get("traits_en") or c.get("traits") or [])
+                ab = c.get("ability_name_en") or c.get("ability_name") or ""
+                champ_names.extend([name_en, name_tr])
+                champ_lines.append(f"{name_en} ({traits}" + (f", Ability: {ab}" if ab else "") + ")")
+            out.append({
+                "id": "pbe:champions_5g",
+                "type": "pbe",
+                "title": f"Set {set_num} PBE 5-Cost Champions",
+                "keywords": _keywords("pbe", f"set {set_num}", "5 cost", "5 altin", "5g", "legendary", "sampiyon", *champ_names),
+                "text": f"[Set {set_num} PBE 5-Cost Champions] " + "; ".join(champ_lines) + ".",
+            })
+
+        traits = pbe_prev.get("traits") or []
+        if traits:
+            trait_lines = []
+            trait_names = []
+            for t in traits[:24]:
+                name_en = t.get("name_en") or t.get("name") or ""
+                name_tr = t.get("name") or name_en
+                bps = "/".join(str(b) for b in (t.get("breakpoints") or []))
+                trait_names.extend([name_en, name_tr])
+                trait_lines.append(f"{name_en}/{name_tr} ({bps})" if bps else f"{name_en}/{name_tr}")
+            out.append({
+                "id": "pbe:traits",
+                "type": "pbe",
+                "title": f"Set {set_num} PBE Traits & Synergies",
+                "keywords": _keywords("pbe", f"set {set_num}", "trait", "ozellik", "sinerji", "synergy", *trait_names),
+                "text": f"[Set {set_num} PBE Traits] " + ", ".join(trait_lines) + ".",
+            })
+        return out
 
     # ------------------------------------------------------------------ #
     # Markdown artifacts                                                  #

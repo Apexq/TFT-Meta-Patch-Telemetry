@@ -57,3 +57,42 @@ def test_llms_full_txt_lists_sections():
     text = builder.build_llms_full_txt(builder.build_chunks())
     assert "## Master+ Meta Compositions" in text
     assert "Adaptor Master Yi" in text
+
+
+def test_pbe_new_set_emits_5g_and_traits_chunks():
+    report = _sample_report()
+    report["versions"]["pbe_label"] = "19.1 (PBE)"
+    report["pbe_diff"] = {"is_new_set": True, "champion_diffs": [], "trait_diffs": []}
+    report["pbe_preview"] = {
+        "is_new_set": True,
+        "set_number": 19,
+        "total_champions": 60,
+        "total_traits": 24,
+        "champions": [
+            {
+                "apiName": "TFT19_AurelionSol",
+                "name": "Aurelion Sol",
+                "name_en": "Aurelion Sol",
+                "cost": 5,
+                "traits": ["Yıldız"],
+                "traits_en": ["Starforger"],
+                "ability_name_en": "Falling Star",
+            }
+        ],
+        "traits": [
+            {
+                "apiName": "TFT19_Starforger",
+                "name": "Yıldız",
+                "name_en": "Starforger",
+                "breakpoints": [2, 4, 6],
+            }
+        ],
+    }
+    chunks = RAGBuilder(report).build_chunks()
+    chunk_ids = {c["id"] for c in chunks}
+    assert {"pbe", "pbe:champions_5g", "pbe:traits"}.issubset(chunk_ids)
+    champ_chunk = next(c for c in chunks if c["id"] == "pbe:champions_5g")
+    assert "Aurelion Sol" in champ_chunk["text"]
+    assert "Starforger" in champ_chunk["text"]
+    trait_chunk = next(c for c in chunks if c["id"] == "pbe:traits")
+    assert "Starforger/Yıldız (2/4/6)" in trait_chunk["text"]
