@@ -186,10 +186,10 @@ class CDragonClient:
         detected_set_num = TARGET_SET_NUMBER
         detected_mutator = TARGET_MUTATOR
 
-        if cdragon_version == "pbe":
-            highest = self._find_standard_set_entry(full_data, prefer_highest=True)
-            if highest:
-                detected_set_num, detected_mutator, set_entry = highest
+        # Automatically detect the highest standard active TFT set on both Live and PBE
+        highest = self._find_standard_set_entry(full_data, prefer_highest=True)
+        if highest:
+            detected_set_num, detected_mutator, set_entry = highest
 
         if not set_entry:
             for s in full_data.get("setData", []):
@@ -217,7 +217,7 @@ class CDragonClient:
 
         if cdragon_version == "pbe" and detected_set_num <= TARGET_SET_NUMBER:
             next_set_data = self.fetch_metatft_set_lookup(
-                TARGET_SET_NUMBER + 1,
+                detected_set_num + 1,
                 force_refresh=force_refresh,
                 fallback_items=items_dict,
             )
@@ -237,7 +237,7 @@ class CDragonClient:
             "cdragon_version": cdragon_version,
             "mutator": detected_mutator,
             "set_number": detected_set_num,
-            "set_name": set_entry.get("name") if detected_set_num == TARGET_SET_NUMBER else f"Set {detected_set_num}",
+            "set_name": set_entry.get("name") or f"Set {detected_set_num}",
             "patch_label": patch_label,
             "pbe_source": "CommunityDragon PBE" if cdragon_version == "pbe" else "CommunityDragon",
             "champions": playable_champions,

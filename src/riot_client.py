@@ -22,6 +22,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from src import TARGET_SET_NUMBER
 from src.cdragon_client import CDragonClient
 
 METATFT_COMPS_URL = "https://api-hc.metatft.com/tft-comps-api/comps_data"
@@ -31,8 +32,9 @@ METATFT_STATS_URL = (
 )
 METATFT_COMP_DETAILS_URL = "https://api-hc.metatft.com/tft-comps-api/comp_details?comp={cid}&cluster_id={cluster_group}"
 METATFT_UNIT_ITEMS_URL = "https://api-hc.metatft.com/tft-comps-api/unit_items_processed"
-METATFT_SET18_LOOKUP_URL = "https://data.metatft.com/lookups/TFTSet18_latest_en_us.json"
-METATFT_SET18_LOOKUP_TR_URL = "https://data.metatft.com/lookups/TFTSet18_latest_tr_tr.json"
+METATFT_LOOKUP_URL_TEMPLATE = "https://data.metatft.com/lookups/TFTSet{set_num}_latest_{lang}.json"
+METATFT_SET18_LOOKUP_URL = METATFT_LOOKUP_URL_TEMPLATE.format(set_num=18, lang="en_us")
+METATFT_SET18_LOOKUP_TR_URL = METATFT_LOOKUP_URL_TEMPLATE.format(set_num=18, lang="tr_tr")
 METATFT_AUGMENT_TIERS_URL = (
     "https://api-hc.metatft.com/tft-stat-api/augments_tiers"
     "?queue=1100&patch=current&days=2&rank=CHALLENGER,GRANDMASTER,MASTER"
@@ -83,6 +85,7 @@ class RiotTFTAnalyzer:
         en_trait_names: Optional[Dict[str, str]] = None,
         tr_items: Optional[Dict[str, Dict[str, Any]]] = None,
         en_items: Optional[Dict[str, Dict[str, Any]]] = None,
+        set_number: Optional[int] = None,
     ) -> None:
         _load_dotenv_if_present()
         self.api_key = (api_key or os.environ.get("RIOT_API_KEY") or "").strip()
@@ -92,6 +95,8 @@ class RiotTFTAnalyzer:
         self.en_trait_names = en_trait_names or {}
         self.tr_items = tr_items or {}
         self.en_items = en_items or {}
+        self.set_number = int(set_number or TARGET_SET_NUMBER)
+        self.mutator = f"TFTSet{self.set_number}"
 
         self._item_lookup_tr: Dict[str, Dict[str, Any]] = {}
         self._item_lookup_en: Dict[str, Dict[str, Any]] = {}
@@ -978,16 +983,20 @@ class RiotTFTAnalyzer:
                 if c_hex and c_hex not in tp_codes:
                     tp_codes.append(c_hex)
             padded = (tp_codes[:10] + ["000"] * 10)[:10]
-            comp["team_planner_code"] = "02" + "".join(padded) + "TFTSet18"
+            comp["team_planner_code"] = "02" + "".join(padded) + self.mutator
+
+    def _lookup_url(self, lang: str = "en_us", set_number: Optional[int] = None) -> str:
+        s_num = int(set_number or self.set_number)
+        return METATFT_LOOKUP_URL_TEMPLATE.format(set_num=s_num, lang=lang)
 
     def _get_team_planner_code_map(self, champ_map: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
-        """Returns a mapping of Set 18 unit apiName -> 3-hex-digit League Client Team Planner code."""
+        """Returns a mapping of active set unit apiName -> 3-hex-digit League Client Team Planner code."""
         if getattr(self, "_cached_tp_map", None):
             return self._cached_tp_map  # type: ignore[return-value]
 
         tp_map: Dict[str, str] = {}
         try:
-            lookup = self._http_get_json(METATFT_SET18_LOOKUP_URL, timeout=15)
+            lookup = self._http_get_json(self._lookup_url("en_us"), timeout=15)
             for u_entry in lookup.get("units", []):
                 code = str(u_entry.get("code") or "").strip()
                 if not code or not u_entry.get("shopUnit", True):
@@ -1207,14 +1216,15 @@ class RiotTFTAnalyzer:
             if cid:
                 comp_by_cluster[cid] = c
 
-        # 1. Fetch lookups (EN & TR)
+        # 1. Fetch lookups (EN & TR) for active set
+        active_set_num = int((set18_data or {}).get("set_number") or self.set_number)
         try:
-            en_lookup = self._http_get_json(METATFT_SET18_LOOKUP_URL, timeout=15)
+            en_lookup = self._http_get_json(self._lookup_url("en_us", active_set_num), timeout=15)
         except Exception:
             en_lookup = {}
 
         try:
-            tr_lookup = self._http_get_json(METATFT_SET18_LOOKUP_TR_URL, timeout=15)
+            tr_lookup = self._http_get_json(self._lookup_url("tr_tr", active_set_num), timeout=15)
         except Exception:
             tr_lookup = {}
 
@@ -1415,13 +1425,14 @@ class RiotTFTAnalyzer:
         top_comp_names = [c.get("title", "") for c in meta_compositions[:4] if c.get("title")]
         top_comp_names_en = [c.get("title_en", "") for c in meta_compositions[:4] if c.get("title_en")]
 
+        active_set_num = int((set18_data or {}).get("set_number") or self.set_number)
         try:
-            en_lookup = self._http_get_json(METATFT_SET18_LOOKUP_URL, timeout=15)
+            en_lookup = self._http_get_json(self._lookup_url("en_us", active_set_num), timeout=15)
         except Exception:
             en_lookup = {}
 
         try:
-            tr_lookup = self._http_get_json(METATFT_SET18_LOOKUP_TR_URL, timeout=15)
+            tr_lookup = self._http_get_json(self._lookup_url("tr_tr", active_set_num), timeout=15)
         except Exception:
             tr_lookup = {}
 

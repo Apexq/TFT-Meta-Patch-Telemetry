@@ -179,7 +179,21 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         raise
 
     live_set_num = int(latest_data.get("set_number", 18))
+    live_mutator = str(latest_data.get("mutator") or f"TFTSet{live_set_num}")
     pbe_set_num = int(pbe_data.get("set_number", live_set_num))
+
+    # If Live CDragon transitions to a newer set (e.g., Set 19 goes Live), adapt patch labels dynamically
+    if live_set_num != 18:
+        versions["live_set_number"] = live_set_num
+        versions["live_mutator"] = live_mutator
+        if not str(versions.get("latest_label", "")).startswith(f"{live_set_num}."):
+            versions["previous_label"] = versions.get("latest_label", f"{live_set_num - 1}.7")
+            versions["latest_label"] = f"{live_set_num}.1"
+            versions["pbe_label"] = f"{live_set_num}.2 (PBE)"
+    else:
+        versions["live_set_number"] = live_set_num
+        versions["live_mutator"] = live_mutator
+
     if pbe_set_num != live_set_num:
         versions["pbe_set_number"] = pbe_set_num
         versions["pbe_mutator"] = pbe_data.get("mutator", f"TFTSet{pbe_set_num}")
@@ -187,7 +201,7 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         print(f"[PBE Set Transition] Detected Set {pbe_set_num} on PBE: {versions['pbe_label']} (source: {pbe_data.get('pbe_source')})")
     else:
         versions["pbe_set_number"] = live_set_num
-        versions["pbe_mutator"] = pbe_data.get("mutator", "TFTSet18")
+        versions["pbe_mutator"] = pbe_data.get("mutator", live_mutator)
 
     latest_fp = CDragonClient.compute_set18_fingerprint(latest_data)
     pbe_fp = CDragonClient.compute_set18_fingerprint(pbe_data)
@@ -281,6 +295,7 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
         en_trait_names=en_trait_names,
         tr_items=tr_items,
         en_items=en_items,
+        set_number=live_set_num,
     )
     riot_telemetry = riot_analyzer.fetch_official_riot_api_telemetry()
     print(f"[Riot Official API] Connected={riot_telemetry.get('connected')} | {riot_telemetry.get('status_tr')}")
@@ -341,8 +356,8 @@ def run_pipeline(check_only: bool = False, force: bool = False) -> Dict[str, Any
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     full_report = {
         "generated_at": now_str,
-        "set_number": 18,
-        "mutator": "TFTSet18",
+        "set_number": live_set_num,
+        "mutator": live_mutator,
         "versions": versions,
         "ai_summary": ai_summary,
         "live_diff": live_diff,

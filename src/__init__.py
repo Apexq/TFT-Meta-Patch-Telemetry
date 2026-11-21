@@ -1,4 +1,6 @@
-"""TFT Set 18 Meta & Patch Intelligence Pipeline."""
+"""TFT Meta & Patch Intelligence Pipeline (Dynamic Active Set Support)."""
 
-TARGET_MUTATOR = "TFTSet18"
-TARGET_SET_NUMBER = 18
+import os
+
+TARGET_SET_NUMBER = int(os.environ.get("TFT_TARGET_SET_NUMBER", "18"))
+TARGET_MUTATOR = f"TFTSet{TARGET_SET_NUMBER}"
