@@ -51,6 +51,7 @@ def _build_pbe_preview(
             en_trait_by_tr_name[t["name"]] = pbe_en_trait_names.get(api, t["name"])
 
     champions_out = []
+    seen_champ_keys: set[tuple[str, int, tuple[str, ...]]] = set()
     for c in pbe_data.get("champions", []):
         api = c.get("apiName", "")
         cost = int(c.get("cost") or 1)
@@ -59,6 +60,10 @@ def _build_pbe_preview(
         en_c = en_champs_by_api.get(api, {})
         tr_traits = list(c.get("traits") or [])
         en_traits = list(en_c.get("traits") or [en_trait_by_tr_name.get(tr, tr) for tr in tr_traits])
+        dedup_key = (en_name.strip().lower(), cost, tuple(sorted(t.strip().lower() for t in en_traits)))
+        if dedup_key in seen_champ_keys:
+            continue
+        seen_champ_keys.add(dedup_key)
         tr_ab = c.get("ability") or {}
         en_ab = en_c.get("ability") or {}
         champions_out.append({
