@@ -9,9 +9,12 @@ venv/
 ENV/
 env/
 
-# Environment variables & secrets (Never commit API keys!)
+# Environment variables, templates & secrets (Never commit!)
 .env
-.env.local
+.env.*
+.env.example
+*.pem
+*.key
 
 # Local cache & temporary raw CDragon downloads (large files)
 .cache/
@@ -28,5 +31,23 @@ Thumbs.db
 .coverage
 htmlcov/
 
+# Local databases & runtime files
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+staticfiles/
+
+# Edge worker local state & internal docs
 .wrangler/
 worker/.wrangler/
+worker/README.md
+
+# Internal planning, architecture & agent notes (kept local only)
+ARCHITECTURE.md
+PLAN.md
+RULES.md
+DATABASE.md
+handoff.md
+.agents/
+*.log
+nul

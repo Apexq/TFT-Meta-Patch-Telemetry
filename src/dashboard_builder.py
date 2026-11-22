@@ -114,15 +114,15 @@ class DashboardBuilder:
         if aug_data and aug_data.get("augments"):
             lines.extend([
                 "",
-                "## Set 18 Top S-Tier Augments (Master+ Telemetry)",
-                "| Tier | Augment (EN / TR) | Rarity | Rounds | Avg Place | Pick Rate | Top 4 % | Win % |",
-                "| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: |",
+                "## Set 18 Top S-Tier Augments (Riot Policy Compliant)",
+                "| Tier | Augment (EN / TR) | Rarity | Rounds |",
+                "| :---: | :--- | :---: | :---: |",
             ])
             for aug in [a for a in aug_data.get("augments", []) if a.get("tier") == "S"][:10]:
                 name_en = aug.get("name_en", aug["name"])
                 rnds = ", ".join(aug.get("rounds", []))
                 lines.append(
-                    f"| **S** | {name_en} ({aug['name']}) | `{aug.get('rarity')}` | `{rnds}` | **#{aug['avg_place']}** | {aug['pick_rate']}% | {aug['top4_rate']}% | {aug['win_rate']}% |"
+                    f"| **S** | {name_en} ({aug['name']}) | `{aug.get('rarity')}` | `{rnds}` |"
                 )
 
         mech_data = report.get("mechanics", {})
