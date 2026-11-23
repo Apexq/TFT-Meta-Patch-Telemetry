@@ -1,33 +1,33 @@
 # TFT Set 18 Patch & Meta Report (18.6 -> 18.7)
 
-**Data Source:** Live Master / Grandmaster / Challenger Data (174,936 Real Set 18 Matches)
+**Data Source:** Live Master / Grandmaster / Challenger Data (169,072 Real Set 18 Matches)
 
 ### Executive Summary (EN)
-**Set 18 (18.7) Master+ Meta Led by 'Rapidfire Sentinel' (#4.09) and 'Adaptor Master Yi'**
-Across 174,936 real Challenger, Grandmaster, and Master matches, 'Rapidfire Sentinel' leads the meta with a #4.09 average placement. In the 18.6 -> 18.7 patch diff, 0 champions and 1 traits were adjusted: none received significant buffs while none was nerfed. 'Adaptor Master Yi' (+27.9) gained the largest mathematical boost from the patch.
+**Set 18 (18.7) Master+ Meta Led by 'Rapidfire Sentinel' (#3.97) and 'Adaptor Master Yi'**
+Across 169,072 real Challenger, Grandmaster, and Master matches, 'Rapidfire Sentinel' leads the meta with a #3.97 average placement. In the 18.6 -> 18.7 patch diff, 0 champions and 1 traits were adjusted: none received significant buffs while none was nerfed. 'Adaptor Master Yi' (+27.9) gained the largest mathematical boost from the patch.
 
 ### Özet Rapor (TR)
-**Set 18 (18.7) Master+ Metasında 'Bombardımancı Gözcü' (#4.09) ve 'Ahenkli Master Yi' Öne Çıkıyor**
-174,936 gerçek Challenger, Grandmaster ve Master maçı üzerinden yapılan kümeleme analizinde 'Bombardımancı Gözcü' ortalama #4.09 sıralama ile en yüksek performansı gösteriyor. 18.6 -> 18.7 yama geçişinde 0 şampiyon ve 1 özellik değişti: yok güçlenirken, yok zayıfladı. Yama değişikliklerinden en çok kazanan S-Tier deste 'Ahenkli Master Yi' (+27.9) oldu.
+**Set 18 (18.7) Master+ Metasında 'Bombardımancı Gözcü' (#3.97) ve 'Ahenkli Master Yi' Öne Çıkıyor**
+169,072 gerçek Challenger, Grandmaster ve Master maçı üzerinden yapılan kümeleme analizinde 'Bombardımancı Gözcü' ortalama #3.97 sıralama ile en yüksek performansı gösteriyor. 18.6 -> 18.7 yama geçişinde 0 şampiyon ve 1 özellik değişti: yok güçlenirken, yok zayıfladı. Yama değişikliklerinden en çok kazanan S-Tier deste 'Ahenkli Master Yi' (+27.9) oldu.
 
 ## Set 18 Master+ Meta Compositions & Carry Best-in-Slot Items
 | Tier | Composition (EN / TR) | Board | Carry BiS Items | Patch Delta | Avg Place | Top 4 % | Win % | Matches |
 | :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
-| **S** | Rapidfire Sentinel (Bombardımancı Gözcü) | `lvl 7 (8)` | **Mama Beak:** Guinsoo's Rageblade, Hextech Gunblade, Titan's Resolve | `STABLE (+0.0)` | **#4.09** | 59.4% | 9.6% | 1,586 |
-| **S** | Summoner Mama Beak (Efendi Anne Gaga) | `lvl 7 (8)` | **Mama Beak:** Guinsoo's Rageblade, Hextech Gunblade, Titan's Resolve | `STABLE (+0.0)` | **#4.12** | 58.3% | 10.2% | 7,181 |
-| **S** | Adaptor Master Yi (Ahenkli Master Yi) | `lvl 7 (8)` | **Master Yi:** Brawler Emblem, Edge of Night, Guinsoo's Rageblade | `RISING (+27.9)` | **#4.21** | 56.5% | 10.4% | 2,306 |
-| **S** | Defender Rengar (Savunucu Rengar) | `lvl 7 (7)` | **Rengar:** Defender Emblem, Guinsoo's Rageblade, Titan's Resolve | `STABLE (+0.0)` | **#4.23** | 55.3% | 10.9% | 1,104 |
-| **S** | Vanguard Alune (Öncü Alune) | `Fast 9 (9)` | **Alune:** Jeweled Gauntlet, Spear of Shojin, Striker's Flail | `STABLE (+0.0)` | **#4.23** | 53.4% | 20.5% | 9,802 |
-| **A** | Invoker Teemo Alistar (Manabaz Teemo Alistar) | `lvl 6 (8)` | **Teemo:** Jeweled Gauntlet, Spear of Shojin, Striker's Flail | `STABLE (+0.0)` | **#4.27** | 56.6% | 6.3% | 4,869 |
-| **A** | Blossom Karma (Çiçek Karma) | `lvl 5 (7)` | **Karma:** Blue Buff, Jeweled Gauntlet, Rabadon's Deathcap | `RISING (+27.9)` | **#4.31** | 54.7% | 13.3% | 10,738 |
-| **A** | Flora Fatalis Azir | `lvl 7 (7)` | **Azir:** Guinsoo's Rageblade, Hextech Gunblade, Rabadon's Deathcap | `STABLE (+0.0)` | **#4.33** | 53.5% | 11.8% | 3,317 |
-| **A** | Riftbeast Brambleback (Vadi Canavarı Korkabuk) | `Fast 8 (8)` | **Brambleback:** Edge of Night, Guinsoo's Rageblade, Quicksilver | `STABLE (+0.0)` | **#4.33** | 53.5% | 9.9% | 13,538 |
-| **A** | Elderwood Ezreal Draven (Kadim Orman Ezreal Draven) | `Fast 9 (9)` | **Draven:** Deathblade, Guinsoo's Rageblade, Kraken's Fury | `STABLE (+0.0)` | **#4.34** | 50.7% | 20.8% | 8,416 |
-| **A** | Juggernaut Nidalee (Ezergeçer Nidalee) | `Fast 8 (8)` | **Nidalee:** Archangel's Staff, Guinsoo's Rageblade, Hextech Gunblade | `STABLE (+0.0)` | **#4.34** | 52.6% | 11.9% | 1,984 |
-| **A** | Ravager Warwick (Tahripkâr Warwick) | `lvl 6 (8)` | **Warwick:** Spear of Shojin, Sterak's Gage, Titan's Resolve | `STABLE (+0.0)` | **#4.36** | 55.8% | 6.3% | 925 |
-| **A** | Blossom Ahri (Çiçek Ahri) | `Fast 8 (9)` | **Ahri:** Jeweled Gauntlet, Spear of Shojin, Striker's Flail | `RISING (+27.9)` | **#4.36** | 51.4% | 18.6% | 1,331 |
-| **A** | Adaptor Master Yi Rengar (Ahenkli Master Yi Rengar) | `lvl 7 (7)` | **Master Yi:** Brawler Emblem, Edge of Night, Guinsoo's Rageblade | `RISING (+27.9)` | **#4.37** | 52.1% | 11.1% | 3,984 |
-| **A** | Elderwood Ezreal Aphelios (Kadim Orman Ezreal Aphelios) | `Fast 8 (9)` | **Aphelios:** Elderwood Emblem, Guinsoo's Rageblade, Kraken's Fury | `STABLE (+0.0)` | **#4.41** | 50.4% | 14.1% | 6,153 |
+| **S** | Rapidfire Sentinel (Bombardımancı Gözcü) | `lvl 7 (8)` | **Mama Beak:** Guinsoo's Rageblade, Hextech Gunblade, Titan's Resolve | `STABLE (+0.0)` | **#3.97** | 60.6% | 12.0% | 1,735 |
+| **S** | Summoner Mama Beak (Efendi Anne Gaga) | `lvl 7 (8)` | **Mama Beak:** Guinsoo's Rageblade, Hextech Gunblade, Titan's Resolve | `STABLE (+0.0)` | **#4.07** | 59.1% | 11.0% | 6,804 |
+| **S** | Adaptor Master Yi (Ahenkli Master Yi) | `lvl 7 (8)` | **Master Yi:** Brawler Emblem, Edge of Night, Guinsoo's Rageblade | `RISING (+27.9)` | **#4.1** | 58.7% | 11.4% | 2,138 |
+| **S** | Vanguard Alune (Öncü Alune) | `Fast 9 (9)` | **Alune:** Jeweled Gauntlet, Spear of Shojin, Striker's Flail | `STABLE (+0.0)` | **#4.23** | 53.4% | 20.7% | 9,527 |
+| **S** | Adaptor Master Yi Rengar (Ahenkli Master Yi Rengar) | `lvl 7 (7)` | **Master Yi:** Brawler Emblem, Edge of Night, Guinsoo's Rageblade | `RISING (+27.9)` | **#4.24** | 55.0% | 12.1% | 3,774 |
+| **A** | Invoker Teemo Alistar (Manabaz Teemo Alistar) | `lvl 6 (8)` | **Teemo:** Jeweled Gauntlet, Spear of Shojin, Striker's Flail | `STABLE (+0.0)` | **#4.27** | 57.0% | 6.2% | 4,640 |
+| **A** | Ravager Warwick (Tahripkâr Warwick) | `lvl 6 (8)` | **Warwick:** Spear of Shojin, Sterak's Gage, Titan's Resolve | `STABLE (+0.0)` | **#4.27** | 56.7% | 6.2% | 825 |
+| **A** | Defender Rengar (Savunucu Rengar) | `lvl 7 (7)` | **Rengar:** Defender Emblem, Guinsoo's Rageblade, Titan's Resolve | `STABLE (+0.0)` | **#4.3** | 55.0% | 10.5% | 1,007 |
+| **A** | Juggernaut Nidalee (Ezergeçer Nidalee) | `Fast 8 (8)` | **Nidalee:** Archangel's Staff, Guinsoo's Rageblade, Hextech Gunblade | `STABLE (+0.0)` | **#4.31** | 53.4% | 11.7% | 1,971 |
+| **A** | Flora Fatalis Azir | `lvl 7 (7)` | **Azir:** Guinsoo's Rageblade, Hextech Gunblade, Rabadon's Deathcap | `STABLE (+0.0)` | **#4.32** | 53.9% | 11.2% | 3,410 |
+| **A** | Riftbeast Brambleback (Vadi Canavarı Korkabuk) | `Fast 8 (8)` | **Brambleback:** Edge of Night, Guinsoo's Rageblade, Quicksilver | `STABLE (+0.0)` | **#4.32** | 54.1% | 10.2% | 12,327 |
+| **A** | Blossom Karma (Çiçek Karma) | `lvl 5 (7)` | **Karma:** Executioner Emblem, Blue Buff, Rabadon's Deathcap | `RISING (+27.9)` | **#4.34** | 53.9% | 12.9% | 10,525 |
+| **A** | Elderwood Ezreal Draven (Kadim Orman Ezreal Draven) | `Fast 9 (9)` | **Draven:** Deathblade, Guinsoo's Rageblade, Kraken's Fury | `STABLE (+0.0)` | **#4.36** | 50.4% | 20.7% | 8,090 |
+| **A** | Spellweaver Veigar (Sihirkâr Veigar) | `lvl 5 (7)` | **Veigar:** Flora Fatalis Emblem, Blue Buff, Jeweled Gauntlet | `STABLE (+0.0)` | **#4.41** | 51.5% | 11.6% | 7,165 |
+| **A** | Hunter Sivir (Avcı Sivir) | `Fast 8 (8)` | **Sivir:** Blue Buff, Deathblade, Infinity Edge | `STABLE (+0.0)` | **#4.41** | 53.6% | 8.3% | 1,830 |
 
 ## Set 18 Champion Balance Changes (18.6 -> 18.7)
 | Champion | Cost | Status | Impact Score | Stat & Ability Adjustments |
@@ -36,16 +36,16 @@ Across 174,936 real Challenger, Grandmaster, and Master matches, 'Rapidfire Sent
 ## Set 18 Top S-Tier Augments (Riot Policy Compliant)
 | Tier | Augment (EN / TR) | Rarity | Rounds |
 | :---: | :--- | :---: | :---: |
-| **S** | Explosive Growth (Ani Büyüme) | `Gold` | `3-2` |
-| **S** | Spreading Roots+ (Yayılan Kökler+) | `Gold` | `3-2` |
 | **S** | The Trait Tree+ (Özellik Ağacı+) | `Prismatic` | `3-2` |
-| **S** | The Trait Tree (Özellik Ağacı) | `Prismatic` | `2-1` |
 | **S** | Booster Pack++ (Takviye Paketi++) | `Gold` | `4-2` |
-| **S** | U.R.F (U.R.F.) | `Gold` | `2-1, 3-2, 4-2` |
-| **S** | Item Extraction (Eşya Çıkarma) | `Gold` | `2-1, 3-2` |
+| **S** | The Trait Tree (Özellik Ağacı) | `Prismatic` | `2-1` |
 | **S** | Bronze For Life II (Bronzdan Şaşma II) | `Prismatic` | `3-2, 4-2` |
+| **S** | Baron's Lair (Baron'un İni) | `Prismatic` | `3-2, 4-2` |
 | **S** | Rolling For Days (Durmadan Yenile) | `Silver` | `3-2, 4-2` |
-| **S** | Flexible (Esnek) | `Prismatic` | `2-1` |
+| **S** | Branching Out (Dallan Budaklan) | `Silver` | `2-1` |
+| **S** | Pandora's Bench (Pandora'nın Yedekleri) | `Silver` | `2-1, 3-2` |
+| **S** | Spreading Roots+ (Yayılan Kökler+) | `Gold` | `3-2` |
+| **S** | Magic Roll (Büyülü Zarlar) | `Gold` | `3-2` |
 
 ## Set 18 Opening Encounters & Tempo Rating (20 Encounters)
 | Encounter (EN / TR) | Category | Tempo Rating | In-Game Rule |
@@ -66,4 +66,4 @@ Set 19 (19.1 (PBE)) is now live on PBE with 94 playable champions and 50 traits 
 
 - **Set 19 5-Cost Preview:** **Akali** (K/DA) · **Akali** (True Damage, Freestyle) · **Aphelios** (Heartsteel) · **Dr. Mundo** (Record Mogul, Manager) · **Gwen** (Ionic Spark, Melodic Heart) · **Janna** (Windblessed, Gu Feng, Prodigy) · **Lee Sin** (Gu Feng) · **Miss Fortune** (8-Bit, Hitmaker) · **Mordekaiser** (Pentakill) · **Nidalee** (Mariachi, Choreographer)
 
-*Generated at: 2026-11-22 23:25 UTC | Target Mutator: `TFTSet18`*
+*Generated at: 2026-11-23 23:36 UTC | Target Mutator: `TFTSet18`*
